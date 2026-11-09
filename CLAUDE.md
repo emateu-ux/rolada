@@ -28,7 +28,10 @@ Joc web (sense framework ni dependències) per entrenar tàctica de cenyida en O
 - Vaixells: polar d'Optimist a `POLAR`, virada de ~4 s amb pèrdua de velocitat, aire brut en un con de 40 m a sotavent, regla babord/estribord (`rightOfWay`) i restriccions per virar (`canTack`).
 - IA: estratègies `smart`, `shifty`, `press`, `sideL`, `sideR`, `middle`, `random` a `decide()`.
 - Ruta ideal: isòcrones per tram a `isoLeg()`; `ideal()` per a una cenyida i `idealFull()` per a la regata completa (prova les dues boies de la porta).
-- Recompenses: estrelles per nivell, XP i rangs, garatge de vaixells (`SKINS`), repte del dia amb llavor = data.
+- Recompenses: estrelles per nivell, XP i rangs, repte del dia amb llavor = data.
+- Monedes i garatge-botiga: `ITEMS` (categories `CATS`: vaixells, esteles, banderes, celebracions) amb 5 nivells a `TIERS` (Normal, Rar, Mític, Llegendari, Ultrallegendari). `free` = de sèrie, `special` = premi que no es ven, `old` = regla de la v1 per conservar el que ja tenien. Dibuixos a `drawSkin`, `drawFlag`, `drawTrail`, `drawCelebIcon`; efectes de victòria a `playCeleb`.
+- Rànquing: general (`rolada_board`) i per prova (`rolada_level_board`). `rolada_save` té una versió de 10 paràmetres amb `p_coins` i `p_items`; la de 8 es manté per a apps antigues.
+- Presortida: el rellotge no corre fins que es toca «Sortida»; la posició es tria tocant la línia o amb els botons (pin, mig, comitè, ±10 m).
 
 ## Full de ruta
 

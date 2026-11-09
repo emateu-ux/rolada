@@ -20,6 +20,9 @@ create table if not exists public.rolada_players (
   updated_at timestamptz not null default now()
 );
 create index if not exists rolada_players_family_idx on public.rolada_players (family_hash);
+-- v2.1: monedes i articles del garatge
+alter table public.rolada_players add column if not exists coins integer not null default 0 check (coins >= 0);
+alter table public.rolada_players add column if not exists items jsonb not null default '{}'::jsonb;
 
 create table if not exists public.rolada_results (
   id bigint generated always as identity primary key,
@@ -54,17 +57,19 @@ begin
   return public.rolada_fh(p_family);
 end $$;
 
+drop function if exists public.rolada_players_list(text);
 create or replace function public.rolada_players_list(p_family text)
-returns table (id uuid, name text, sail text, xp integer, wins integer, races integer, stars jsonb, streak jsonb, skin text)
+returns table (id uuid, name text, sail text, xp integer, wins integer, races integer, stars jsonb, streak jsonb, skin text, coins integer, items jsonb)
 language sql security definer set search_path = public, extensions as $$
-  select p.id, p.name, p.sail, p.xp, p.wins, p.races, p.stars, p.streak, p.skin
+  select p.id, p.name, p.sail, p.xp, p.wins, p.races, p.stars, p.streak, p.skin, p.coins, p.items
   from public.rolada_players p
   where p.family_hash = public.rolada_check(p_family)
   order by p.created_at
 $$;
 
+drop function if exists public.rolada_join(text, text, text);
 create or replace function public.rolada_join(p_family text, p_name text, p_sail text)
-returns table (id uuid, name text, sail text, xp integer, wins integer, races integer, stars jsonb, streak jsonb, skin text)
+returns table (id uuid, name text, sail text, xp integer, wins integer, races integer, stars jsonb, streak jsonb, skin text, coins integer, items jsonb)
 language plpgsql security definer set search_path = public, extensions as $$
 declare fh text := public.rolada_check(p_family);
 begin
@@ -76,7 +81,7 @@ begin
     values (fh, trim(p_name), upper(trim(coalesce(p_sail, ''))));
   end if;
   return query
-    select p.id, p.name, p.sail, p.xp, p.wins, p.races, p.stars, p.streak, p.skin
+    select p.id, p.name, p.sail, p.xp, p.wins, p.races, p.stars, p.streak, p.skin, p.coins, p.items
     from public.rolada_players p
     where p.family_hash = fh and lower(p.name) = lower(trim(p_name))
     limit 1;
@@ -91,6 +96,22 @@ returns void language sql security definer set search_path = public, extensions 
     stars = coalesce(p_stars, p.stars),
     streak = coalesce(p_streak, p.streak),
     skin = left(coalesce(p_skin, p.skin), 20),
+    updated_at = now()
+  where p.id = p_id and p.family_hash = public.rolada_check(p_family)
+$$;
+
+-- v2.1: desa també monedes i articles (la versió de 8 paràmetres es manté per a les apps antigues)
+create or replace function public.rolada_save(p_family text, p_id uuid, p_xp integer, p_wins integer, p_races integer, p_stars jsonb, p_streak jsonb, p_skin text, p_coins integer, p_items jsonb)
+returns void language sql security definer set search_path = public, extensions as $$
+  update public.rolada_players p set
+    xp = greatest(p.xp, least(p_xp, 10000000)),
+    wins = greatest(p.wins, least(p_wins, 100000)),
+    races = greatest(p.races, least(p_races, 100000)),
+    stars = coalesce(p_stars, p.stars),
+    streak = coalesce(p_streak, p.streak),
+    skin = left(coalesce(p_skin, p.skin), 20),
+    coins = greatest(0, least(coalesce(p_coins, p.coins), 10000000)),
+    items = coalesce(p_items, p.items),
     updated_at = now()
   where p.id = p_id and p.family_hash = public.rolada_check(p_family)
 $$;
@@ -116,9 +137,27 @@ language sql security definer set search_path = public, extensions as $$
   where p.family_hash = public.rolada_check(p_family)
 $$;
 
+-- v2.1: rànquing per prova (millor posició de cada regatista en un nivell)
+create or replace function public.rolada_level_board(p_family text, p_level text)
+returns table (id uuid, name text, sail text, best_pos integer, best_fleet integer, best_time real, races integer, wins integer)
+language sql security definer set search_path = public, extensions as $$
+  select p.id, p.name, p.sail, b.pos, b.fleet, b.time_s,
+    (select count(*)::int from public.rolada_results r where r.player_id = p.id and r.kind = 'level' and r.level = p_level),
+    (select count(*)::int from public.rolada_results r where r.player_id = p.id and r.kind = 'level' and r.level = p_level and r.pos = 1)
+  from public.rolada_players p
+  left join lateral (
+    select r.pos, r.fleet, r.time_s from public.rolada_results r
+    where r.player_id = p.id and r.kind = 'level' and r.level = p_level
+    order by r.pos, r.time_s limit 1
+  ) b on true
+  where p.family_hash = public.rolada_check(p_family)
+$$;
+
 revoke execute on all functions in schema public from public;
 grant execute on function public.rolada_players_list(text) to anon, authenticated;
 grant execute on function public.rolada_join(text, text, text) to anon, authenticated;
 grant execute on function public.rolada_save(text, uuid, integer, integer, integer, jsonb, jsonb, text) to anon, authenticated;
+grant execute on function public.rolada_save(text, uuid, integer, integer, integer, jsonb, jsonb, text, integer, jsonb) to anon, authenticated;
+grant execute on function public.rolada_level_board(text, text) to anon, authenticated;
 grant execute on function public.rolada_result(text, uuid, text, text, integer, integer, integer, real) to anon, authenticated;
 grant execute on function public.rolada_board(text, integer) to anon, authenticated;
