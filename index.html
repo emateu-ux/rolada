@@ -306,7 +306,10 @@ const store={get(k,d){try{const v=localStorage.getItem('rolada:'+k);return v?JSO
 // ---------- course
 const D=650,LINE=[-95,95],MARK={x:0,y:D},XB=440;
 // full course: mark 1 = MARK, wing mark 2, leeward gate (two buoys), finish line upwind of the gate
-const M2={x:-230,y:600},GATE=[{x:-135,y:90},{x:-65,y:90}],GC={x:-100,y:90},FIN={y:540,x0:-170,x1:-30};
+// downwind side to the left of the start: long reach (~410 m), run straight down to the gate, finish line beside the run lane
+const M2={x:-400,y:560},GATE=[{x:-435,y:110},{x:-365,y:110}],GC={x:-400,y:110},FIN={y:470,x0:-300,x1:-180};
+// field limits: wider to the left in the full race
+const FX0=()=>G&&G.full?-640:-XB,FX1=()=>XB;
 const finPt=b=>({x:clamp(b.x,FIN.x0+5,FIN.x1-5),y:FIN.y});
 const WIND1=[{k:'beat',name:'Cenyida',lab:'Boia',to:()=>MARK}];
 const FULL=[{k:'beat',name:'Cenyida',lab:'Boia 1',to:()=>MARK},{k:'reach',name:'Través',lab:'Boia 2',to:()=>M2},{k:'run',name:'Popa',lab:'Porta',to:b=>GATE[b.gate??0]},{k:'beat',name:'Última cenyida',lab:'Arrib.',to:finPt,fin:true}];
@@ -441,7 +444,7 @@ function decide(b,t){
   if(fetchT(b,th,k,T)!=null)return;
   const other=b.tack==='P'?'S':'P';const dO=ddFor(b,other,th,k,T);
   if(dO>=-b.m&&(k==='beat'||dO<=110)){manoeuvre(b,t);return}
-  if((b.tack==='P'&&b.x>XB-10)||(b.tack==='S'&&b.x<-XB+10)){if(k==='run')gybe(b,t);else tack(b,t);return}
+  if((b.tack==='P'&&b.x>FX1()-10)||(b.tack==='S'&&b.x<FX0()+10)){if(k==='run')gybe(b,t);else tack(b,t);return}
   if(since<(k==='run'?10:15))return;
   const st=b.st,sg=k==='run'?-1:1;
   if(st==='shifty'){const dv=sg*(th-b.mean);const headed=b.tack==='S'?dv<-b.thr:dv>b.thr;b.hd=headed?b.hd+1:0;if(b.hd>=b.del){b.hd=0;manoeuvre(b,t)}}
@@ -459,7 +462,7 @@ function simStep(){
   if(!me.done&&legK(me)==='run'&&!me.gp){me.gate=nearGate(me);if(dTo(me,GATE[me.gate])<40)me.gp=true}
   if(pendingTack&&me.tk<=0&&!me.done){pendingTack=false;manoeuvre(me,t)}
   if(t-lastDecide>=1){lastDecide=t;for(const b of G.boats)if(b.ai)decide(b,t)}
-  if(!me.done){const k=effKind(me,tgtOf(me));if(k!=='reach'&&((me.tack==='P'&&me.x>XB)||(me.tack==='S'&&me.x<-XB))){if(k==='run'){gybe(me,t);warn('Límit del camp: has trasluchat')}else{tack(me,t);warn('Límit del camp: has virat')}}}
+  if(!me.done){const k=effKind(me,tgtOf(me));if(k!=='reach'&&((me.tack==='P'&&me.x>FX1())||(me.tack==='S'&&me.x<FX0()))){if(k==='run'){gybe(me,t);warn('Límit del camp: has trasluchat')}else{tack(me,t);warn('Límit del camp: has virat')}}}
   for(const b of G.boats)stepBoat(b,t,DT);
   if(!me.done&&Math.floor(t/10)!==Math.floor((t-DT)/10)){const k=effKind(me,tgtOf(me));if(k!=='reach'){const w=wind(G.W,t,me.x,me.y);G.trace.push([t,me.tack,norm(me.h),w.d,TWA[k]])}}
   G.t+=DT;
@@ -469,14 +472,14 @@ function warn(m){if(!G)return;G.warnMsg=m;G.warnT=performance.now()+(/^(Vira|Tra
 // ---------- rendering
 const cv=$('cv'),cx=cv.getContext('2d');let VIEW=null;
 const VZ={z:1,cx:0,cy:(D-30)/2,follow:false};
-function setupCanvas(c,ctx,zoomable){const dpr=Math.min(2,window.devicePixelRatio||1);let W,H;if(zoomable){W=c.clientWidth||400;H=c.clientHeight||500;c.width=W*dpr;c.height=H*dpr}else{W=c.clientWidth||900;H=Math.round(W*(D+170)/(2*XB+40));c.width=W*dpr;c.height=H*dpr;c.style.height=H+'px'}ctx.setTransform(dpr,0,0,dpr,0,0);const xmin=-XB-20,xmax=XB+20,ymin=-100,ymax=D+70;const s0=Math.min(W/(xmax-xmin),H/(ymax-ymin));
+function setupCanvas(c,ctx,zoomable){const dpr=Math.min(2,window.devicePixelRatio||1);let W,H;if(zoomable){W=c.clientWidth||400;H=c.clientHeight||500;c.width=W*dpr;c.height=H*dpr}else{W=c.clientWidth||900;H=Math.round(W*(D+170)/(FX1()-FX0()+40));c.width=W*dpr;c.height=H*dpr;c.style.height=H+'px'}ctx.setTransform(dpr,0,0,dpr,0,0);const xmin=FX0()-20,xmax=FX1()+20,ymin=-100,ymax=D+70;const s0=Math.min(W/(xmax-xmin),H/(ymax-ymin));
   let z=1,cxw=(xmin+xmax)/2,cyw=(ymin+ymax)/2;if(zoomable){z=VZ.z;if(VZ.follow&&G){VZ.cx=G.me.x;VZ.cy=G.me.y}if(z>1.01){cxw=VZ.cx;cyw=VZ.cy}}const s=s0*z;
   return{W,H,s,z,X:x=>W/2+(x-cxw)*s,Y:y=>H/2-(y-cyw)*s,ix:px=>cxw+(px-W/2)/s,iy:py=>cyw-(py-H/2)/s,xmin,xmax,ymin,ymax}}
 function seaColor(s){const t=clamp((s-3)/9,0,1);const a=[59,138,160],b=[15,74,99];return[Math.round(lerp(a[0],b[0],t)),Math.round(lerp(a[1],b[1],t)),Math.round(lerp(a[2],b[2],t))]}
 const off=document.createElement('canvas');const NX=80,NY=72,EXT=420;off.width=NX;off.height=NY;const octx=off.getContext('2d');const img=octx.createImageData(NX,NY);
 function drawSea(ctx,V,t){if(!G.field||Math.abs(t-G.fieldT)>=0.5){G.fieldT=t;for(let j=0;j<NY;j++)for(let i=0;i<NX;i++){const x=lerp(V.xmin-EXT,V.xmax+EXT,(i+.5)/NX),y=lerp(V.ymax+EXT,V.ymin-EXT,(j+.5)/NY);const c=seaColor(wind(G.W,Math.max(0,t),x,y).s);const k=(j*NX+i)*4;img.data[k]=c[0];img.data[k+1]=c[1];img.data[k+2]=c[2];img.data[k+3]=255}octx.putImageData(img,0,0);G.field=true}
   ctx.fillStyle=css('--sea-calm');ctx.fillRect(0,0,V.W,V.H);ctx.imageSmoothingEnabled=true;ctx.drawImage(off,V.X(V.xmin-EXT),V.Y(V.ymax+EXT),(V.xmax-V.xmin+2*EXT)*V.s,(V.ymax-V.ymin+2*EXT)*V.s)}
-function newPart(rand){return{x:-XB-20+Math.random()*(2*XB+40),y:-100+Math.random()*(D+170),age:rand?Math.random()*80:0,life:60+Math.random()*60}}
+function newPart(rand){return{x:FX0()-20+Math.random()*(FX1()-FX0()+40),y:-100+Math.random()*(D+170),age:rand?Math.random()*80:0,life:60+Math.random()*60}}
 function drawParts(ctx,V,t,realDt){ctx.strokeStyle='rgba(255,255,255,.28)';ctx.lineWidth=1.2;ctx.beginPath();for(const p of G.parts){const w=wind(G.W,Math.max(0,t),p.x,p.y);const ux=-Math.sin(w.d*R),uy=-Math.cos(w.d*R);const sp=w.s*2.2*realDt;p.x+=ux*sp;p.y+=uy*sp;p.age+=realDt*30;const L=w.s*1.6;ctx.moveTo(V.X(p.x),V.Y(p.y));ctx.lineTo(V.X(p.x-ux*L),V.Y(p.y-uy*L));if(p.age>p.life||p.y<V.ymin||p.x<V.xmin||p.x>V.xmax)Object.assign(p,newPart(false),{y:V.ymax-Math.random()*60})}ctx.stroke()}
 function drawMark(ctx,V,p,lab,hi){const x=V.X(p.x),y=V.Y(p.y);if(hi){ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=1.5;ctx.setLineDash([3,3]);ctx.beginPath();ctx.arc(x,y,15,0,7);ctx.stroke();ctx.setLineDash([])}
   ctx.fillStyle=css('--buoy');ctx.beginPath();ctx.arc(x,y,7,0,7);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();if(lab){ctx.font='700 12px Chakra Petch, sans-serif';ctx.fillStyle='#fff';ctx.fillText(lab,x+10,y-9)}}
@@ -597,7 +600,7 @@ function isoLeg(starts,leg,gate,maxT){const Lg=G.legs[leg],k=Lg.k,dt=2;let pts=s
     for(const p of pts){const w=wind(G.W,t,p.x,p.y);const T=Lg.to({x:p.x,y:p.y,gate});const ek=effKind({x:p.x,y:p.y,leg,gate},T);
       const go=(tk,f,off)=>{const tmp={x:p.x,y:p.y,tack:tk};let h;if(ek==='reach')h=reachH(tmp,w.d,T,off);else{const ft=fetchT(tmp,w.d,ek,T);h=ft??courseH(tmp,w.d,ek)}
         let v=polar(w.s)*speedF(Math.abs(adiff(h,w.d)));if(f>0)v*=(ek==='run'?0.65:0.3);
-        const q={x:p.x+v*Math.sin(h*R)*dt,y:p.y+v*Math.cos(h*R)*dt,tack:tmp.tack,f:Math.max(0,f-1),p,t:t+dt,leg};if(Math.abs(q.x)>XB+10)return;nxt.push(q)};
+        const q={x:p.x+v*Math.sin(h*R)*dt,y:p.y+v*Math.cos(h*R)*dt,tack:tmp.tack,f:Math.max(0,f-1),p,t:t+dt,leg};if(q.x<FX0()-10||q.x>FX1()+10)return;nxt.push(q)};
       if(ek==='reach'){if(k==='reach'){for(const o of [-1,0,1])go(p.tack,0,o)}else go(p.tack,0,0)}
       else{go(p.tack,p.f);if(p.f===0&&fetchT({x:p.x,y:p.y,tack:p.tack},w.d,ek,T)==null)go(p.tack==='P'?'S':'P',ek==='run'?1:2)}}
     let best=null;for(const q of nxt){let d=null;if(Lg.fin){const p=q.p;if((p.y<FIN.y)!==(q.y<FIN.y)){const f=(FIN.y-p.y)/(q.y-p.y);const xx=p.x+(q.x-p.x)*f;if(xx>=FIN.x0&&xx<=FIN.x1)d=0}}else{const T=Lg.to({gate});const dd=Math.hypot(T.x-q.x,T.y-q.y);if(dd<(k==='run'?9:10))d=dd}
@@ -909,6 +912,6 @@ window.__rolada={get G(){return G},newGame,simStep,startRace,doTack,finish,ideal
 })();
 </script>
 
-<script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=af54e766').catch(()=>{}))}</script>
+<script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=8b823ffb').catch(()=>{}))}</script>
 </body>
 </html>
