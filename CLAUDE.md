@@ -26,7 +26,10 @@ Joc web (sense framework ni dependències) per entrenar tàctica de cenyida en O
 - A la popa l'ombra de vent és més llarga i forta (70 m) que a la cenyida (40 m).
 - `makeWind(kind, seed)` i `wind(W, t, x, y)` donen direcció (graus d'on ve) i força (nusos) a cada punt i moment. Tipus: `osc`, `press`, `pers`, `trans`, `fleet`, `mix`.
 - Vaixells: polar d'Optimist a `POLAR`, virada de ~4 s amb pèrdua de velocitat, aire brut en un con de 40 m a sotavent, regla babord/estribord (`rightOfWay`) i restriccions per virar (`canTack`).
-- IA: estratègies `smart`, `shifty`, `press`, `sideL`, `sideR`, `middle`, `random` a `decide()`.
+- IA: estratègies `smart`, `shifty`, `press`, `sideL`, `sideR`, `middle`, `random` a `decide()`. Cap estratègia mira el vent futur. `sens` (i `middle`, més prudent) navega només amb el que veu: rolades respecte a la mitjana, pressió al davant i no anar als extrems.
+- Referència al resum: `sensRef()` simula un bon regatista `sens` sol des de la teva sortida («sense saber el futur»), al costat de la ruta ideal, que sí que sap el vent que farà.
+- El vent no compleix sempre la previsió: a `pers` i `trans` la força, el moment i la velocitat del canvi varien i hi ha oscil·lacions a sobre. A `press` les ratxes són més petites, 60/40 per costat i es mouen de costat.
+- Comentari d'extrem al resum: probabilitat de podi per tipus de vent, treta de 240 regates simulades. Si canvies el vent o la IA, torna a mesurar-ho i actualitza la taula `N`.
 - Ruta ideal: isòcrones per tram a `isoLeg()`; `ideal()` per a una cenyida i `idealFull()` per a la regata completa (prova les dues boies de la porta).
 - Recompenses: estrelles per nivell, XP i rangs, repte del dia amb llavor = data.
 - Monedes i garatge-botiga: `ITEMS` (categories `CATS`: vaixells, esteles, banderes, celebracions) amb 5 nivells a `TIERS` (Normal, Rar, Mític, Llegendari, Ultrallegendari). `free` = de sèrie, `special` = premi que no es ven, `old` = regla de la v1 per conservar el que ja tenien. Dibuixos a `drawSkin`, `drawFlag`, `drawTrail`, `drawCelebIcon`; efectes de victòria a `playCeleb`.

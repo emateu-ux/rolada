@@ -259,7 +259,7 @@ table.res tr.me td{color:var(--me);font-weight:700}
   <section id="debrief" hidden>
     <div class="dcard">
       <canvas id="dcv" width="900" height="820" aria-label="Recorregut de la regata"></canvas>
-      <div class="legend"><span><i style="background:var(--lift)"></i>Tu, a la bordada bona</span><span><i style="background:var(--me)"></i>Tu, a l'altra bordada</span><span><i style="background:var(--ideal)"></i>Ruta ideal</span><span><i style="background:#fff"></i>Guanyador</span></div>
+      <div class="legend"><span><i style="background:var(--lift)"></i>Tu, a la bordada bona</span><span><i style="background:var(--me)"></i>Tu, a l'altra bordada</span><span><i style="background:var(--ideal)"></i>Ruta ideal (sabent el vent que farà)</span><span><i style="background:#ffd166"></i>Sense saber el futur</span><span><i style="background:#fff"></i>Guanyador</span></div>
     </div>
     <div class="dcard">
       <div class="tag" id="dLvl"></div>
@@ -307,7 +307,7 @@ const TWA={beat:45,run:155};
 const LEVELS=[
  {id:'osc',n:'Nivell 1',t:'Rolades',d:'El vent va i ve. Vira quan la brúixola et diu que t\'han baixat.',brief:'Vent del nord, uns 9 nusos. Al comitè diuen que oscil·la força. Mira la brúixola.',aids:{streaks:true,hint:true,lay:true,shadow:true}},
  {id:'press',n:'Nivell 2',t:'Ratxes',d:'Direcció estable, però amb taques de més vent. Busca l\'aigua fosca.',brief:'Vent fluix i irregular, de 5 a 10 nusos. Hi ha ratxes que baixen pel camp.',aids:{streaks:true,hint:false,lay:true,shadow:true}},
- {id:'pers',n:'Nivell 3',t:'Rolada persistent',d:'El vent gira cap a un costat i ja no torna. Cap on aniràs?',brief:'Vent de 8 a 9 nusos. La previsió diu que anirà girant durant la regata.',aids:{streaks:false,hint:false,lay:true,shadow:true}},
+ {id:'pers',n:'Nivell 3',t:'Rolada persistent',d:'El vent gira cap a un costat i ja no torna. Cap on aniràs?',brief:'Vent de 8 a 9 nusos. La previsió diu que anirà girant, però no se sap quant ni quan.',aids:{streaks:false,hint:false,lay:true,shadow:true}},
  {id:'trans',n:'Nivell 4',t:'Canvi de vent',d:'El vent de terra s\'apaga i entra la marinada per un costat.',brief:'Vent de terra fluix que s\'està morint. Ha d\'entrar la marinada, però no se sap per on.',aids:{streaks:false,hint:false,lay:true,shadow:true}},
  {id:'fleet',n:'Nivell 5',t:'Flota i aire net',d:'Flota gran i bona. Cal aire net i triar bé quan creuar.',brief:'Vent oscil·lant de 8 nusos i una flota de 15. Els bons ho llegeixen bé.',aids:{streaks:false,hint:false,lay:false,shadow:true}},
  {id:'mix',n:'Regata',t:'Regata lliure',d:'Un dia qualsevol: pot passar de tot.',brief:'Cap previsió. Mira l\'aigua i la brúixola des d\'abans de la sortida.',aids:{streaks:false,hint:false,lay:false}},
@@ -320,16 +320,17 @@ function makeWind(kind,seed){
   W.real=kind;
   if(kind==='osc'){W.osc={A:8+r()*5,P:140+r()*90,ph:r()*6.28};W.spd=8.5+r()*2}
   if(kind==='press'){W.osc.A=3;W.spd=6;W.gustSide=r()<.5?-1:1}
-  if(kind==='pers'){W.trend=(r()<.5?-1:1)*(15+r()*8);W.osc={A:3,P:110,ph:r()*6.28};W.spd=8.5}
-  if(kind==='trans'){const s=r()<.5?-1:1;W.front={s,t0:30+r()*50,v:.55+r()*.25,dNew:s*(25+r()*12),old0:6.5,old1:3.5,neu:10}}
+  // the forecast is not a promise: how much, how fast and when the shift comes varies, and the wind still oscillates on top
+  if(kind==='pers'){W.trend=(r()<.5?-1:1)*(r()<.25?5+r()*6:11+r()*11);W.tr0=r()*200;W.trD=350+r()*450;W.osc={A:4+r()*3.5,P:110+r()*100,ph:r()*6.28};W.spd=8.5}
+  if(kind==='trans'){const s=r()<.5?-1:1;W.front={s,t0:30+r()*220,v:.3+r()*.45,dNew:s*(14+r()*22),old0:6.5,old1:3.5,neu:r()<.25?7.5:10};W.osc={A:3+r()*3,P:120+r()*90,ph:r()*6.28}}
   if(kind==='fleet'){W.osc={A:6+r()*3,P:150+r()*60,ph:r()*6.28};W.spd=8;W.extraGusts=true}
-  if(kind==='press'||W.extraGusts){const n=kind==='press'?11:6;for(let i=0;i<n;i++){const side=(kind==='press'&&r()<.7)?W.gustSide:(r()<.5?-1:1);W.gusts.push({x:side*(60+r()*300),y0:r()*(D+500)-150,r:70+r()*70,a:(kind==='press'?3.5:2.5)+r()*2.5,dd:(r()-.5)*10,vd:1.4+r()*.8})}}
+  if(kind==='press'||W.extraGusts){const n=kind==='press'?15:6;for(let i=0;i<n;i++){const side=(kind==='press'&&r()<.6)?W.gustSide:(r()<.5?-1:1);W.gusts.push({vx:(r()-.5)*(kind==='press'?.9:.3),x:side*(20+r()*340),y0:r()*(D+500)-150,r:kind==='press'?55+r()*55:70+r()*70,a:(kind==='press'?3.5:2.5)+r()*2.5,dd:(r()-.5)*10,vd:1.4+r()*.8})}}
   return W}
 function wind(W,t,x,y){
-  let d=W.base+W.osc.A*Math.sin(2*Math.PI*t/W.osc.P+W.osc.ph)+W.osc2.A*Math.sin(2*Math.PI*t/W.osc2.P+W.osc2.ph)+W.trend*clamp(t/600,0,1.3)+1.5*Math.sin(x/260+W.wob+t/300);
+  let d=W.base+W.osc.A*Math.sin(2*Math.PI*t/W.osc.P+W.osc.ph)+W.osc2.A*Math.sin(2*Math.PI*t/W.osc2.P+W.osc2.ph)+W.trend*(W.trD?clamp((t-W.tr0)/W.trD,0,1.3):clamp(t/600,0,1.3))+1.5*Math.sin(x/260+W.wob+t/300);
   let s=W.spd+0.6*Math.sin(x/170+y/230+t/40+W.wob);
   if(W.front){const F=W.front;const half=XB+150;const fp=half-F.v*Math.max(0,t-F.t0);const w=1/(1+Math.exp(-(F.s*x-fp)/35));const old=lerp(F.old0,F.old1,clamp(t/600,0,1));s=lerp(old,F.neu,w)+0.4*Math.sin(x/170+y/230+t/40);d+=w*F.dNew}
-  for(const g of W.gusts){const span=D+500;const gy=((g.y0-g.vd*t+150)%span+span)%span-150;const gx=g.x-Math.sin(W.base*R)*(g.vd*t)*0.3;const q=((x-gx)**2+(y-gy)**2)/(g.r*g.r);if(q<6){const e=Math.exp(-q);s+=g.a*e;d+=g.dd*e}}
+  for(const g of W.gusts){const span=D+500;const gy=((g.y0-g.vd*t+150)%span+span)%span-150;const gx=g.x-Math.sin(W.base*R)*(g.vd*t)*0.3+(g.vx||0)*t;const q=((x-gx)**2+(y-gy)**2)/(g.r*g.r);if(q<6){const e=Math.exp(-q);s+=g.a*e;d+=g.dd*e}}
   return{d,s:Math.max(1.5,s)}}
 
 // ---------- fleet
@@ -396,8 +397,8 @@ function nearGate(b){return dTo(b,GATE[0])<=dTo(b,GATE[1])?0:1}
 function favGate(t){const th=wind(G.W,t,GC.x,GC.y).d;const pr=g=>g.x*Math.sin(th*R)+g.y*Math.cos(th*R);const p0=pr(GATE[0]),p1=pr(GATE[1]);return{g:p0>p1?0:1,diff:Math.abs(p0-p1)}}
 function endLeg(b,t){b.splits.push(t);b.leg++;if(b.leg>=G.legs.length){b.done=true;b.ft=t;return}
   const Lg=legOf(b);b.tk=2;b.gy=true;b.last=t;b.duck=0;
-  if(Lg.k==='reach')b.off=b.ai&&b.st!=='smart'?[-1,0,0,1][Math.floor(G.rr()*4)]:0;
-  if(Lg.k==='run'){if(b.ai)b.gate=b.st==='smart'?favGate(t).g:(G.rr()<.5?0:1);else if(!b.gp)b.gate=nearGate(b);b.gfix=false;
+  const sm=b.st==='smart'||b.st==='sens';if(Lg.k==='reach')b.off=b.ai&&!sm?[-1,0,0,1][Math.floor(G.rr()*4)]:0;
+  if(Lg.k==='run'){if(b.ai)b.gate=sm?favGate(t).g:(G.rr()<.5?0:1);else if(!b.gp)b.gate=nearGate(b);b.gfix=false;
     const th=wind(G.W,t,b.x,b.y).d;b.tack=adiff(th,brgTo(b,GATE[b.gate]))>0?'S':'P'}
   if(Lg.k==='beat'&&b.leg>0){if(b.me){const f=favGate(t);G.gateInfo={pick:b.gate,fav:f.g,diff:f.diff}}b.tack=b.gate===0?'S':'P'}
   if(b.me){pendingTack=false;G.uiKey=null;
@@ -409,7 +410,7 @@ function canTack(b,t){const w=wind(G.W,t,b.x,b.y),th=w.d;const hx=Math.sin(b.h*R
     if(o.tack===b.tack&&fwd>-3&&fwd<8&&side>0.5&&side<6)return'Tens un vaixell a barlovent, al costat: si vires ara hi xoques. Torna a tocar VIRA per frenar i virar per la seva popa.';
     if(newTack==='P'&&o.tack==='S'&&fwd>-3&&side>0){let m=1e9;for(let k=0;k<=12;k++){const tt=k*0.5;const bx=b.x+Math.sin(hn)*b.v*0.6*tt,by=b.y+Math.cos(hn)*b.v*0.6*tt;const ox=o.x+Math.sin(o.h*R)*o.v*tt,oy=o.y+Math.cos(o.h*R)*o.v*tt;m=Math.min(m,Math.hypot(bx-ox,by-oy))}if(m<3.5)return'Si vires ara quedes a babord davant d\'un vaixell que va a estribord: no tens dret de pas.'}}
   return null}
-function tryTack(b,t){const why=canTack(b,t);if(why){if(b.me){G.blocked++;warn(why)}b.last=t-10;return false}tack(b,t);return true}
+function tryTack(b,t){const why=b.ghost?null:canTack(b,t);if(why){if(b.me){G.blocked++;warn(why)}b.last=t-10;return false}tack(b,t);return true}
 function tack(b,t){b.tack=b.tack==='P'?'S':'P';b.tk=4;b.gy=false;b.last=t;if(b.me){G.tacks++;const w=wind(G.W,t,b.x,b.y);const h=w.d+(b.tack==='P'?45:-45);const T=tgtOf(b);const dx=T.x-b.x,dy=T.y-b.y;const z=Math.sin(h*R)*dy-Math.cos(h*R)*dx;G.laylog.push({t,leg:b.leg,over:b.tack==='P'?-z:z})}}
 function gybe(b,t){b.tack=b.tack==='P'?'S':'P';b.tk=2.5;b.gy=true;b.last=t;if(b.me)G.gybes++}
 function manoeuvre(b,t){const k=effKind(b,tgtOf(b));if(k==='run'){gybe(b,t);return true}if(k==='beat')return tryTack(b,t);return false}
@@ -421,9 +422,9 @@ function bestOff(b,t){let best=0,bs=-1;for(const o of [-1,0,1]){const tmp={x:b.x
 function decide(b,t){
   if(b.done||b.tk>0)return;const w=wind(G.W,t,b.x,b.y),th=w.d;const since=t-b.last;
   const Lg=legOf(b);
-  if(Lg.k==='run'&&!b.gfix&&dTo(b,GC)<140){b.gfix=true;const n=nearGate(b);if(b.st==='smart'){const f=favGate(t);const dd=Math.abs(dTo(b,GATE[0])-dTo(b,GATE[1]));b.gate=(f.diff>3&&dd<25+f.diff)?f.g:n}else if(b.st==='random')b.gate=G.rr()<.5?0:1;else b.gate=n}
+  if(Lg.k==='run'&&!b.gfix&&dTo(b,GC)<140){b.gfix=true;const n=nearGate(b);if(b.st==='smart'||b.st==='sens'){const f=favGate(t);const dd=Math.abs(dTo(b,GATE[0])-dTo(b,GATE[1]));b.gate=(f.diff>3&&dd<25+f.diff)?f.g:n}else if(b.st==='random')b.gate=G.rr()<.5?0:1;else b.gate=n}
   const T=Lg.to(b),k=effKind(b,T);
-  if(k==='reach'){if(Lg.k==='reach'&&b.st==='smart'&&t>=b.nextD){b.nextD=t+6;b.off=bestOff(b,t)}return}
+  if(k==='reach'){if(Lg.k==='reach'&&(b.st==='smart'||b.st==='sens')&&t>=b.nextD){b.nextD=t+6;b.off=bestOff(b,t)}return}
   if(fetchT(b,th,k,T)!=null)return;
   const other=b.tack==='P'?'S':'P';const dO=ddFor(b,other,th,k,T);
   if(dO>=-b.m&&(k==='beat'||dO<=110)){manoeuvre(b,t);return}
@@ -432,8 +433,14 @@ function decide(b,t){
   const st=b.st,sg=k==='run'?-1:1;
   if(st==='shifty'){const dv=sg*(th-b.mean);const headed=b.tack==='S'?dv<-b.thr:dv>b.thr;b.hd=headed?b.hd+1:0;if(b.hd>=b.del){b.hd=0;manoeuvre(b,t)}}
   else if(st==='press'){if(t>=b.nextD){b.nextD=t+4;const look=h=>{let s=0;for(const d of [80,170]){s+=wind(G.W,t,b.x+Math.sin(h*R)*d,b.y+Math.cos(h*R)*d).s}return s/2};const cur=look(courseH(b,th,k)),oth=look(courseH({tack:other},th,k));if(oth>cur+0.6)manoeuvre(b,t)}}
-  else if(st==='smart'){if(t>=b.nextD){b.nextD=t+3;const sim=(tk)=>{let x=b.x,y=b.y;for(let s=0;s<50;s+=5){const ww=wind(G.W,t+s,x,y);const tmp={x,y,tack:tk,gate:b.gate};const TT=Lg.to(tmp);const f=fetchT(tmp,ww.d,k,TT);const h=f??courseH(tmp,ww.d,k);const v=polar(ww.s)*speedF(Math.abs(adiff(h,ww.d)));x+=v*Math.sin(h*R)*5;y+=v*Math.cos(h*R)*5;if(dTo({x,y},TT)<10||(Lg.fin&&y>=FIN.y&&x>=FIN.x0&&x<=FIN.x1))return -999}const TT=Lg.to({x,y,gate:b.gate});const th2=wind(G.W,t+50,TT.x,TT.y).d;return dtgT({x,y},k==='run'?th2+180:th2,TT)};if(sim(other)+(k==='run'?5:7)<sim(b.tack))manoeuvre(b,t)}}
-  else if(st==='middle'){if((b.tack==='P'&&b.x>T.x+115)||(b.tack==='S'&&b.x<T.x-115))manoeuvre(b,t)}
+  else if(st==='smart'){if(t>=b.nextD){b.nextD=t+3;const sim=(tk)=>{let x=b.x,y=b.y;for(let s=0;s<50;s+=5){const ww=wind(G.W,t,x,y);const tmp={x,y,tack:tk,gate:b.gate};const TT=Lg.to(tmp);const f=fetchT(tmp,ww.d,k,TT);const h=f??courseH(tmp,ww.d,k);const v=polar(ww.s)*speedF(Math.abs(adiff(h,ww.d)));x+=v*Math.sin(h*R)*5;y+=v*Math.cos(h*R)*5;if(dTo({x,y},TT)<10||(Lg.fin&&y>=FIN.y&&x>=FIN.x0&&x<=FIN.x1))return -999}const TT=Lg.to({x,y,gate:b.gate});const th2=wind(G.W,t,TT.x,TT.y).d;return dtgT({x,y},k==='run'?th2+180:th2,TT)};if(sim(other)+(k==='run'?5:7)<sim(b.tack))manoeuvre(b,t)}}
+  else if(st==='middle'||st==='sens'){
+    // uses only what it sees now: compass vs recent mean, darker water ahead, and stays away from the corners
+    const lat=(b.x-T.x)*Math.cos(th*R)-(b.y-T.y)*Math.sin(th*R);const far=Math.max(80,0.35*dTo(b,T));
+    const out=(b.tack==='P'&&lat>far)||(b.tack==='S'&&lat<-far);
+    if(out){manoeuvre(b,t);return}
+    const thr=b.thr+(st==='middle'?2.5:0);const dv=sg*(th-b.mean);const headed=b.tack==='S'?dv<-thr:dv>thr;b.hd=headed?b.hd+1:0;if(b.hd>=b.del){b.hd=0;manoeuvre(b,t);return}
+    if(st==='sens'&&t>=b.nextD){b.nextD=t+5;const look=h=>{let q=0;for(const d of [80,160])q+=wind(G.W,t,b.x+Math.sin(h*R)*d,b.y+Math.cos(h*R)*d).s;return q/2};if(look(courseH({tack:other},th,k))>look(courseH(b,th,k))+1)manoeuvre(b,t)}}
   else if(st==='random'){if(Math.random()<1/55)manoeuvre(b,t)}
 }
 // ---------- sim loop
@@ -555,7 +562,7 @@ function syncZ(){$('zf').setAttribute('aria-pressed',VZ.follow);$('zl').textCont
   const up=e=>{pts.delete(e.pointerId);if(pts.size<2)pinch=null};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);cv.addEventListener('pointerleave',up)})();
 $('zin').onclick=()=>{const V=VIEW;if(V)zoomAt(1.5,V.W/2,V.H/2)};$('zout').onclick=()=>{const V=VIEW;if(V)zoomAt(1/1.5,V.W/2,V.H/2)};
 $('zf').onclick=()=>{VZ.follow=!VZ.follow;if(VZ.follow&&VZ.z<2.5)VZ.z=3;syncZ()};$('zall').onclick=()=>{VZ.z=1;VZ.follow=false;syncZ()};
-function startRace(){document.body.classList.remove('prestart');G.t=0;G.phase='race';G.uiKey=null;$('pre').hidden=true;$('raceCtl').hidden=false;placeStart();lastDecide=-99;acc=0}
+function startRace(){document.body.classList.remove('prestart');G.t=0;G.phase='race';G.uiKey=null;G.st0={x:G.me.x,tack:G.me.tack};$('pre').hidden=true;$('raceCtl').hidden=false;placeStart();lastDecide=-99;acc=0}
 // ---------- controls
 let pendingTack=false;
 function doTack(){const btn=$('vira');btn.classList.remove('flash');void btn.offsetWidth;btn.classList.add('flash');
@@ -575,6 +582,9 @@ function togglePause(){if(!G||G.phase!=='race')return;G.paused=!G.paused;$('paus
 $('pause').onclick=togglePause;$('quit').onclick=()=>showMenu();$('back1').onclick=()=>showMenu();$('back2').onclick=()=>showMenu();
 $('again').onclick=()=>newGame(G.lvIdx,G.seed,G.daily);$('newr').onclick=()=>newGame(G.lvIdx);
 
+// ---------- reference: a good sailor who does not know the future, sailing alone from your start
+function sensRef(sx,tk){const w=wind(G.W,0,sx,-4);const b={name:'',st:'sens',ai:true,ghost:true,sk:1,m:0.5,thr:4,del:2,x:sx,y:-4,tack:tk,h:w.d+(tk==='P'?45:-45),v:polar(w.s)*0.85,tk:0,gy:false,done:false,ft:null,dirty:0,duck:0,last:-99,trk:[],mean:w.d,hd:0,nextD:0,leg:0,gate:null,gp:false,gfix:false,off:0,splits:[],acc:{t:0,tb:0,fav:0,tws:0,dirty:0,runSh:0,off:[0,0,0],n:0}};
+  let ld=-99;for(let t=0;t<G.maxT&&!b.done;t+=DT){if(t-ld>=1){ld=t;decide(b,t)}stepBoat(b,t,DT)}return b.done?b:null}
 // ---------- ideal route (isochrones, leg by leg)
 function isoLeg(starts,leg,gate,maxT){const Lg=G.legs[leg],k=Lg.k,dt=2;let pts=starts;const t0=starts[0].t;
   const C=Lg.fin?{x:(FIN.x0+FIN.x1)/2,y:FIN.y}:Lg.to({gate});
@@ -607,11 +617,13 @@ function finish(){if(G.phase!=='race')return;G.phase='debrief';
   const me=G.me;const order=[...G.boats].sort((a,b)=>pkey(a)-pkey(b));
   const pos=order.indexOf(me)+1;const startX=me.trk.length?me.trk[0][0]:0;
   const myIdeal=G.full?idealFull(startX):ideal(startX);const starts=[LINE[0]+10,0,LINE[1]-10].map(x=>({x,r:ideal(x)}));const bestStart=starts.filter(s=>s.r).sort((a,b)=>a.r.T-b.r.T)[0];
-  showDebrief({order,pos,myIdeal,bestStart,startX});}
-function showDebrief(R0){const{order,pos,myIdeal,bestStart,startX}=R0;const me=G.me;document.body.classList.remove('playing');$('game').hidden=true;$('debrief').hidden=false;
+  const ref=G.st0?sensRef(G.st0.x,G.st0.tack):null;
+  showDebrief({order,pos,myIdeal,bestStart,startX,ref});}
+function showDebrief(R0){const{order,pos,myIdeal,bestStart,startX,ref}=R0;const me=G.me;document.body.classList.remove('playing');$('game').hidden=true;$('debrief').hidden=false;
   const L=G.L;$('dLvl').textContent=G.daily?'Repte del dia':L.n+' · '+L.t;$('dPos').textContent=me.done?(pos+'a de '+G.boats.length):'No has arribat';
   const myT=me.done?me.ft:null;const rows=[];
   rows.push(['El teu temps',myT?fmt(myT):'—']);if(myIdeal)rows.push(['Ruta ideal des de la teva sortida',fmt(myIdeal.T)+(myT?'  ·  +'+Math.max(0,Math.round(myT-myIdeal.T))+' s':'')]);
+  if(ref)rows.push(['Bon regatista sense saber el futur',fmt(ref.ft)+(myT?'  ·  '+(myT<=ref.ft?'−':'+')+Math.abs(Math.round(myT-ref.ft))+' s':'')]);
   const win=order[0];rows.push(['Guanyador',win.name+(win.done?' · '+fmt(win.ft):'')]);
   $('dTimes').innerHTML=rows.map(r=>`<span>${r[0]}</span><b>${r[1]}</b>`).join('');
   const facts=[];const A=me.acc;const fav=A.tb?Math.round(100*A.fav/A.tb):0;const winA=win.acc;const wfav=winA.tb?Math.round(100*winA.fav/winA.tb):0;
@@ -626,14 +638,18 @@ function showDebrief(R0){const{order,pos,myIdeal,bestStart,startX}=R0;const me=G
   if(G.full){facts.push({c:'',t:`Trasluchades a la popa: ${G.gybes}. La ruta ideal en feia ${myIdeal?myIdeal.gybes:'—'}.`});
     if(A.runSh>4)facts.push({c:A.runSh>25?'bad':'',t:`${Math.round(A.runSh)} segons tapat a la popa per vaixells de darrere.`});
     const ot=A.off[0]+A.off[1]+A.off[2];if(ot>5)facts.push({c:'',t:`Al través: ${Math.round(100*A.off[2]/ot)}% orsant, ${Math.round(100*A.off[1]/ot)}% rumb directe i ${Math.round(100*A.off[0]/ot)}% arribant.`});
-    const gi=G.gateInfo;if(gi){const nm=g=>'boia '+(g?'dreta':'esquerra');if(gi.diff<3)facts.push({c:'good',t:`Porta: has passat per la ${nm(gi.pick)}. Les dues estaven pràcticament igual.`});else facts.push({c:gi.pick===gi.fav?'good':'bad',t:`Porta: has passat per la ${nm(gi.pick)}. La ${nm(gi.fav)} estava ${Math.round(gi.diff)} m més a barlovent.`+(myIdeal&&myIdeal.gate!==gi.pick?` La ruta ideal passava per la ${nm(myIdeal.gate)}.`:'')})}}
+    const gi=G.gateInfo;if(gi){const nm=g=>'boia '+(g?'dreta':'esquerra');if(gi.diff<3)facts.push({c:'good',t:`Porta: has passat per la ${nm(gi.pick)}. Les dues estaven pràcticament igual.`});else facts.push({c:gi.pick===gi.fav?'good':'bad',t:gi.pick===gi.fav?`Porta: has passat per la ${nm(gi.pick)}, la que estava més a barlovent (${Math.round(gi.diff)} m).`:`Porta: has passat per la ${nm(gi.pick)}. La ${nm(gi.fav)} estava ${Math.round(gi.diff)} m més a barlovent.`+(myIdeal&&myIdeal.gate!==gi.pick?` La ruta ideal passava per la ${nm(myIdeal.gate)}.`:'')})}}
+  {// corner on the first beat, with numbers from 240 simulated races per wind type (see ROADMAP v2.2)
+    const end=me.splits.length?me.splits[0]:1e9;let mx=0;for(const p of me.trk)if(p[2]<=end&&Math.abs(p[0]-MARK.x)>Math.abs(mx))mx=p[0]-MARK.x;
+    const N={osc:G.L.id==='fleet'?8:20,press:4,pers:7,trans:4}[G.W.real];
+    if(Math.abs(mx)>=300&&N)facts.push({c:'',t:`A la cenyida has anat a l'extrem ${mx<0?'esquerre':'dret'}. Avui ${me.done&&pos<=3?'t\'ha sortit bé':'no t\'ha sortit bé'}. Amb aquest vent, qui va a l'extrem fa podi 1 de cada ${N} regates.`})}
   const l0=G.full?G.laylog.filter(x=>x.leg===0):G.laylog;const ll=l0.length?l0[l0.length-1]:null;if(ll&&(G.full?me.leg>0:me.done)){if(ll.over>15)facts.push({c:'bad',t:`L'última virada cap a la boia l'has feta uns ${Math.round(ll.over)} m per sobre de la layline: has navegat de més.`});else if(ll.over<-15)facts.push({c:'',t:`L'última virada l'has feta abans de la layline i has hagut de fer virades curtes a prop de la boia.`});else facts.push({c:'good',t:'L\'última virada cap a la boia, just a la layline.'})}
   if(bestStart){const nm=x=>x<-40?'pel pin':x>40?'pel comitè':'pel mig';facts.push({c:nm(bestStart.x)===nm(startX)?'good':'',t:`La millor sortida avui era ${nm(bestStart.x)}. Tu has sortit ${nm(startX)}.`})}
   facts.push({c:'',t:revealWind()});
   $('dFacts').innerHTML=facts.map(f=>`<li class="${f.c}">${f.t}</li>`).join('');
   $('dRes').innerHTML=order.slice(0,Math.max(5,pos)).map((b,i)=>`<tr class="${b.me?'me':''}"><td>${i+1}</td><td>${b.name}</td><td>${b.done?fmt(b.ft):'—'}</td></tr>`).join('')+(pos>5?'':'');
   if(P)renderReward(award({pos,of:G.boats.length,done:me.done,myT,idealT:myIdeal?myIdeal.T:null}));
-  renderSplits(myIdeal);drawDebrief(myIdeal,win)}
+  renderSplits(myIdeal);drawDebrief(myIdeal,win,ref)}
 function renderSplits(myIdeal){const box=$('dSplits');box.hidden=!G.full;if(!G.full)return;const me=G.me;
   const lt=(b,i)=>b.splits[i]==null?null:b.splits[i]-(i?b.splits[i-1]:0);
   $('dSplT').innerHTML='<tr><th>Tram</th><th>Tu</th><th>Millor</th><th>Ideal</th></tr>'+G.legs.map((Lg,i)=>{const all=G.boats.map(b=>lt(b,i)).filter(v=>v!=null).sort((a,b)=>a-b);const mine=lt(me,i);const best=all.length?all[0]:null;
@@ -644,10 +660,11 @@ function revealWind(){const W=G.W;const k=W.real;const side=v=>v>0?'la dreta':'l
   if(k==='press')return`Avui hi havia més ratxes per ${side(W.gustSide)} del camp.`;
   if(k==='pers')return`Avui el vent ha girat ${Math.round(Math.abs(W.trend))}° cap a ${side(W.trend)} durant la cenyida.`;
   if(k==='trans')return`Avui la marinada ha entrat per ${side(W.front.s)} i ha girat el vent ${Math.round(Math.abs(W.front.dNew))}°.`;return''}
-function drawDebrief(myIdeal,win){const c=$('dcv'),ctx=c.getContext('2d');const V=setupCanvas(c,ctx);const t=G.t;drawSea(ctx,V,t);drawCourse(ctx,V,t,false);
+function drawDebrief(myIdeal,win,ref){const c=$('dcv'),ctx=c.getContext('2d');const V=setupCanvas(c,ctx);const t=G.t;drawSea(ctx,V,t);drawCourse(ctx,V,t,false);
   for(const b of G.boats){if(b.me||b===win)continue;ctx.strokeStyle='rgba(255,255,255,.12)';ctx.lineWidth=1;ctx.beginPath();b.trk.forEach((p,i)=>i?ctx.lineTo(V.X(p[0]),V.Y(p[1])):ctx.moveTo(V.X(p[0]),V.Y(p[1])));ctx.stroke()}
   if(win&&!win.me){ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=1.5;ctx.beginPath();win.trk.forEach((p,i)=>i?ctx.lineTo(V.X(p[0]),V.Y(p[1])):ctx.moveTo(V.X(p[0]),V.Y(p[1])));ctx.stroke()}
   if(myIdeal){ctx.strokeStyle=css('--ideal');ctx.lineWidth=2.5;ctx.setLineDash([7,5]);ctx.beginPath();myIdeal.path.forEach((p,i)=>i?ctx.lineTo(V.X(p[0]),V.Y(p[1])):ctx.moveTo(V.X(p[0]),V.Y(p[1])));ctx.stroke();ctx.setLineDash([])}
+  if(ref){ctx.strokeStyle='#ffd166';ctx.lineWidth=2;ctx.setLineDash([2,4]);ctx.beginPath();ref.trk.forEach((p,i)=>i?ctx.lineTo(V.X(p[0]),V.Y(p[1])):ctx.moveTo(V.X(p[0]),V.Y(p[1])));ctx.stroke();ctx.setLineDash([])}
   const tr=G.me.trk;ctx.lineWidth=3.5;for(let i=1;i<tr.length;i++){ctx.strokeStyle=tr[i][3]?css('--lift'):css('--me');ctx.beginPath();ctx.moveTo(V.X(tr[i-1][0]),V.Y(tr[i-1][1]));ctx.lineTo(V.X(tr[i][0]),V.Y(tr[i][1]));ctx.stroke()}}
 
 // ---------- players & rewards
@@ -891,6 +908,6 @@ function showMenu(){if(!P){showWho();return}$('who').hidden=true;$('board').hidd
 [4,7,12].forEach(s=>$('sp'+s).onclick=()=>{ui.speed=s;store.set('speed',s);showMenu()});
 $('aids').onclick=()=>{ui.aids=!ui.aids;store.set('aids',ui.aids);showMenu()};
 showMenu();requestAnimationFrame(frame);
-window.__rolada={get G(){return G},newGame,simStep,startRace,doTack,finish,ideal,idealFull,setOff,setGate,ui,legK,effKind,ddFor,tgtOf,wind};
+window.__rolada={get G(){return G},newGame,simStep,startRace,doTack,finish,ideal,idealFull,sensRef,setOff,setGate,ui,legK,effKind,ddFor,tgtOf,wind};
 })();
 </script>
