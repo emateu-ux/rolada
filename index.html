@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0c1a22">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Rolada">
+<meta name="description" content="Simulador de tàctica de cenyida en Optimist.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/icon-192.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
+</head>
+<body>
+<title>Rolada</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: drone view of the race course on the left, boat instruments on the right (stacked on phones). Single sea-and-instrument look. */
+:root{
+  --ink:#0c1a22;--panel:#122733;--panel2:#183444;--line:#28495b;
+  --fg:#eef4f2;--muted:#9db3bb;
+  --me:#ff5b4a;--lift:#5fe08f;--head:#ffb547;--ideal:#c58bff;--buoy:#ff9d2e;
+  --sea-calm:#3b8aa0;--sea-wind:#0f4a63;
+  --f-disp:'Chakra Petch','Arial Narrow',sans-serif;--f-body:'Barlow',system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--ink);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.45}
+button,select{font:inherit;color:inherit}
+.app{min-height:100%;display:flex;flex-direction:column;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px 18px;gap:14px;max-width:1500px;margin:0 auto}
+header.top{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.logo{font-family:var(--f-disp);font-weight:700;font-size:34px;letter-spacing:.04em;line-height:1}
+.logo span{color:var(--me)}
+.tag{color:var(--muted);font-size:14px;letter-spacing:.08em;text-transform:uppercase}
+.btn{background:var(--me);color:#fff;border:0;border-radius:6px;padding:10px 16px;font-weight:700;letter-spacing:.04em;cursor:pointer}
+.btn.sec{background:var(--panel2);border:1px solid var(--line);color:var(--fg)}
+.btn:focus-visible,.chip:focus-visible,.lvl:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+.chip{background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:6px 12px;cursor:pointer;font-size:14px}
+.chip[aria-pressed="true"]{background:var(--fg);color:var(--ink);border-color:var(--fg)}
+.small{font-size:13px;color:var(--muted)}
+h2{font-family:var(--f-disp);font-weight:600;font-size:20px;margin:0;letter-spacing:.02em;text-wrap:balance}
+/* menu */
+#menu{display:flex;flex-direction:column;gap:16px}
+.lvls{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.lvl{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-width:0}
+.lvl:hover{border-color:var(--muted)}
+.lvl .n{font-family:var(--f-disp);color:var(--muted);font-size:13px;letter-spacing:.12em}
+.lvl .t{font-family:var(--f-disp);font-size:21px;font-weight:600}
+.lvl .d{color:var(--muted);font-size:14px}
+.lvl .best{font-family:var(--f-disp);font-size:13px;color:var(--lift)}
+.settings{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.fam{max-width:none}.fam b{font-family:var(--f-disp);font-size:17px}
+.board th{text-align:left;font-size:12px;color:var(--muted);font-weight:500;padding:4px 6px;letter-spacing:.06em;text-transform:uppercase}
+.who{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.who button{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;cursor:pointer;display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+.who b{font-family:var(--f-disp);font-size:26px}.who span{color:var(--muted);font-family:var(--f-disp)}
+input{background:var(--panel2);border:1px solid var(--line);border-radius:6px;color:var(--fg);padding:10px;font:inherit;min-width:0;flex:1}
+.pbar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.pbar .nm{font-family:var(--f-disp);font-size:22px;font-weight:700}
+.pbar .sail{font-family:var(--f-disp);color:var(--muted)}
+.xp{flex:1 1 160px;min-width:140px}.xp .bar{height:8px;background:var(--panel2);border-radius:4px;overflow:hidden;margin-top:4px}.xp .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--me),var(--buoy))}
+.xp .rk{font-family:var(--f-disp);font-size:14px}
+.stars{font-family:var(--f-disp);font-size:15px;color:#ffd166;letter-spacing:.06em}
+.st{color:#ffd166}.st.off{color:#3b5563}
+.daily{background:linear-gradient(120deg,#183444,#1f4a5e);border:1px solid #2f6a83;border-radius:12px;padding:14px 16px;text-align:left;color:var(--fg);cursor:pointer;display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.daily b{font-family:var(--f-disp);font-size:19px}.daily .small{color:#bcd3da}
+.skins{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.skin{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:6px;align-items:center;text-align:center;cursor:pointer}
+.skin canvas{width:110px;height:110px;background:var(--sea-wind);border-radius:50%}
+.skin.lock{opacity:.5;cursor:default}.skin.sel{border-color:var(--fg);box-shadow:0 0 0 2px var(--fg) inset}
+.skin b{font-family:var(--f-disp);font-size:16px}
+.rew{display:flex;flex-direction:column;gap:8px;background:var(--panel2);border-radius:10px;padding:12px}
+.rew .stars3{display:flex;gap:10px;flex-wrap:wrap}
+.rew .s3{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
+.rew .s3 .st{font-size:24px}
+.rew .s3.new .st{animation:pop .6s ease-out}
+@keyframes pop{0%{transform:scale(.2)}70%{transform:scale(1.35)}100%{transform:scale(1)}}
+.unlock{background:var(--me);color:#fff;border-radius:8px;padding:8px 12px;font-weight:700}
+.confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:20}
+.confetti i{position:absolute;top:-12px;width:8px;height:14px;border-radius:2px;animation:fall 2.4s linear forwards}
+@keyframes fall{to{transform:translateY(105vh) rotate(720deg)}}
+/* game */
+body.playing .app{height:100%;padding-block:6px 8px;gap:8px}
+body.playing header.top{display:none}
+#game{flex:1;min-height:0;display:grid;grid-template-areas:"hud" "map" "ctl";grid-template-rows:auto minmax(0,1fr) auto;gap:8px}
+.hud{grid-area:hud;display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-areas:"cmp stats" "hint hint" "trace trace";gap:4px 12px;align-items:center}
+.cmpbox{grid-area:cmp}
+.stats{grid-area:stats;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px 8px;font-variant-numeric:tabular-nums}
+.stats div{display:flex;flex-direction:column;line-height:1.1;min-width:0}
+.stats .lab,.tracebox .lab{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.stats b{font-family:var(--f-disp);font-size:20px;font-weight:600}
+.stats i{font-style:normal;font-size:10px;color:var(--muted)}
+.hint{grid-area:hint;font-size:13px;min-height:0}
+.hint:empty{display:none}
+.tracebox{grid-area:trace}
+.field{grid-area:map;position:relative;background:var(--sea-calm);border-radius:10px;overflow:hidden;min-height:0;min-width:0}
+#cv{position:absolute;inset:0;display:block;width:100%;height:100%;touch-action:none}
+.toast{position:absolute;left:10px;right:10px;top:10px;background:rgba(12,26,34,.9);border:1px solid var(--head);color:var(--fg);border-radius:8px;padding:8px 12px;font-size:14px;font-weight:600;z-index:3}
+.ctl{grid-area:ctl}
+.race{display:grid;grid-template-columns:60px 1fr 60px;gap:8px}
+.race .side{font-size:18px;padding:0}
+#vira{font-family:var(--f-disp);font-size:30px;height:74px;border-radius:12px;letter-spacing:.14em;touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+#vira.busy{opacity:.55}
+#vira.flash{animation:fl .25s ease-out}
+@keyframes fl{from{box-shadow:0 0 0 6px rgba(255,255,255,.6)}to{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
+*{-webkit-tap-highlight-color:transparent}
+#vira:active{transform:scale(.98)}
+.pre{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.pre p{margin:0}.prehead{display:flex;gap:8px;align-items:baseline}.prehead b{font-family:var(--f-disp);font-size:18px}
+.pre .brief{font-size:14px}
+body.prestart .tracebox{display:none}
+.prerow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.prerow .btn{flex:1;min-width:90px}
+@media (min-width:900px){
+  #game{grid-template-areas:"map hud" "map ctl";grid-template-columns:minmax(0,1fr) 340px;grid-template-rows:1fr auto}
+  .hud{grid-template-columns:1fr;grid-template-areas:"cmp" "stats" "hint" "trace";align-content:start;gap:10px}
+  .stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+  .stats b{font-size:26px}
+  .compass{font-size:72px}
+}
+.inst{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.inst .lab{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.compass{font-family:var(--f-disp);font-weight:700;font-size:44px;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.compass.lift{color:var(--lift)}.compass.head{color:var(--head)}
+.tackname{font-family:var(--f-disp);font-size:16px;letter-spacing:.1em}
+.row{display:flex;gap:10px}
+.row .inst{flex:1;min-width:0}
+.num{font-family:var(--f-disp);font-size:26px;font-weight:600;font-variant-numeric:tabular-nums}
+.warn{color:var(--head);font-weight:700;min-height:1.4em;font-size:14px}
+#vira{font-family:var(--f-disp);font-size:30px;padding:18px;border-radius:10px;letter-spacing:.12em}
+#vira:active{transform:scale(.98)}
+#trace{width:100%;height:54px;display:block}
+@media (min-width:900px){#trace{height:110px}}
+.ztools{position:absolute;left:10px;bottom:10px;display:flex;gap:6px;align-items:center;z-index:2}
+.zb{background:rgba(12,26,34,.82);color:var(--fg);border:1px solid var(--line);border-radius:6px;min-width:38px;height:36px;font-size:20px;font-weight:700;cursor:pointer}
+.zb.wide{font-size:13px;padding:0 10px;letter-spacing:.04em}
+.zb[aria-pressed="true"]{background:var(--fg);color:var(--ink)}
+#zl{font-family:var(--f-disp);font-size:13px;color:#fff;text-shadow:0 1px 2px #000}
+.overlay{position:absolute;inset:0 0 auto 0;display:flex;align-items:flex-start;justify-content:center;padding:18px;pointer-events:none}
+.overlay .card{pointer-events:auto}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;max-width:560px;width:100%;display:flex;flex-direction:column;gap:12px;box-shadow:0 10px 40px rgba(0,0,0,.35)}
+.card p{margin:0}
+.brief{font-size:16px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:14px}
+.kv b{font-family:var(--f-disp);font-weight:600}
+/* debrief */
+#debrief{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:14px;align-items:start}
+.dcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.big{font-family:var(--f-disp);font-size:44px;font-weight:700;line-height:1}
+.facts{display:flex;flex-direction:column;gap:10px;margin:0;padding:0;list-style:none}
+.facts li{border-left:3px solid var(--line);padding-left:10px}
+.facts li.good{border-color:var(--lift)}.facts li.bad{border-color:var(--head)}
+table.res{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+table.res td{padding:4px 6px;border-top:1px solid var(--line)}
+table.res tr.me td{color:var(--me);font-weight:700}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:18px;height:3px;vertical-align:middle;margin-right:5px;border-radius:2px}
+#dcv{display:block;width:100%;height:auto;border-radius:10px}
+@media (max-width:900px){
+  #debrief{grid-template-columns:1fr}
+}
+@media (max-width:900px){#debrief .dcard:last-child{order:-1}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="app">
+  <header class="top"><div class="logo">ROL<span>A</span>DA</div><div class="tag">Simulador de tàctica · cenyida</div></header>
+
+  <section id="who" hidden>
+    <h2>Qui navega?</h2>
+    <div class="card fam" id="famBox" hidden>
+      <b>Rànquing de família</b>
+      <span class="small" id="famState"></span>
+      <div class="row" id="famJoin" style="flex-wrap:wrap"><input id="famCode" placeholder="Codi de família" maxlength="20" aria-label="Codi de família" autocapitalize="characters"><button class="btn sec" id="famGo">Entra</button><button class="btn sec" id="famNew">Crea'n un de nou</button></div>
+    </div>
+    <div class="who" id="whoList"></div>
+    <div class="card" style="max-width:none">
+      <span class="small">Regatista nou</span>
+      <div class="row" style="flex-wrap:wrap"><input id="oName" placeholder="Nom" maxlength="16" aria-label="Nom"><input id="oSail" placeholder="Número de vela (ESP 1234)" maxlength="10" aria-label="Número de vela" autocapitalize="characters"><button class="btn" id="oGo">Endavant</button></div>
+    </div>
+    <p class="small" id="whoMsg" aria-live="polite"></p>
+  </section>
+
+  <section id="board" hidden>
+    <div class="row" style="align-items:center;justify-content:space-between"><h2>Rànquing de família</h2><button class="btn sec" id="bBack">Tornar</button></div>
+    <p class="small" id="bInfo" style="margin:0"></p>
+    <div style="overflow-x:auto"><table class="res board" id="bTable"></table></div>
+  </section>
+
+  <section id="garage" hidden>
+    <div class="row" style="align-items:center;justify-content:space-between"><h2>Garatge</h2><button class="btn sec" id="gBack">Tornar</button></div>
+    <p class="small" style="margin:0">Guanya estrelles i regates per desbloquejar vaixells nous. Només canvia com es veu: tots van igual de ràpid.</p>
+    <div class="skins" id="skins"></div>
+  </section>
+
+  <section id="menu">
+    <div class="pbar" id="pbar"></div>
+    <button class="daily" id="daily"></button>
+    <p class="small" style="max-width:68ch;margin:0">Una cenyida contra una flota de 11 a 14 Optimist. Tu decideixes quan virar; el vaixell navega sol a la cenyida. El vent canvia de direcció i de força: llegeix l'aigua i la brúixola. Al final veuràs la ruta ideal que permetia el vent d'aquella regata.</p>
+    <div class="lvls" id="lvls"></div>
+    <div class="settings">
+      <span class="small">Velocitat:</span>
+      <button class="chip" data-sp="4" id="sp4">Lenta</button><button class="chip" data-sp="7" id="sp7">Normal</button><button class="chip" data-sp="12" id="sp12">Ràpida</button>
+      <span class="small" style="margin-left:10px">Ajudes:</span>
+      <button class="chip" id="aids">Segons el nivell</button>
+    </div>
+  </section>
+
+  <section id="game" hidden>
+    <div class="hud">
+      <div class="cmpbox"><div class="compass" id="cmp">---</div><div class="tackname" id="tk">ESTRIBORD</div></div>
+      <div class="stats">
+        <div><span class="lab">Vel.</span><b id="spd">0,0</b><i>kn</i></div>
+        <div><span class="lab">Vent</span><b id="tws">0</b><i>kn</i></div>
+        <div><span class="lab">Pos.</span><b id="pos">–</b></div>
+        <div><span class="lab">Boia</span><b id="dtm">–</b><i>m</i></div>
+        <div><span class="lab">Temps</span><b id="clk">0:00</b></div>
+      </div>
+      <div class="hint" id="hint"></div>
+      <div class="tracebox"><span class="lab">Vent llegit amb la brúixola · 4 min</span><canvas id="trace" width="560" height="120" aria-label="Historial del vent llegit"></canvas></div>
+    </div>
+    <div class="field" id="field">
+      <canvas id="cv" width="400" height="500" aria-label="Camp de regates vist des de dalt"></canvas>
+      <div class="toast" id="warn" aria-live="polite" hidden></div>
+      <div class="ztools"><button class="zb" id="zin" aria-label="Apropa">+</button><button class="zb" id="zout" aria-label="Allunya">−</button><button class="zb wide" id="zf" aria-pressed="true">Segueix-me</button><button class="zb wide" id="zall">Tot</button><span id="zl"></span></div>
+    </div>
+    <div class="ctl">
+      <div class="pre" id="pre" hidden>
+        <div class="prehead"><span class="tag" id="preLvl"></span><b id="preTitle"></b></div>
+        <p class="brief" id="preBrief"></p>
+        <p class="small">Toca la línia per triar on surts. Lectures de brúixola ara: estribord <b id="readS">—</b> · babord <b id="readP">—</b></p>
+        <div class="prerow"><button class="chip" id="stS" aria-pressed="true">Estribord</button><button class="chip" id="stP" aria-pressed="false">Babord</button><button class="btn" id="go">Sortida</button><button class="btn sec" id="back1" style="flex:0 0 auto;min-width:0">Menú</button></div>
+      </div>
+      <div class="race" id="raceCtl">
+        <button class="btn sec side" id="pause" aria-label="Pausa">II</button>
+        <button class="btn" id="vira">VIRA</button>
+        <button class="btn sec side" id="quit" aria-label="Abandona">✕</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="debrief" hidden>
+    <div class="dcard">
+      <canvas id="dcv" width="900" height="820" aria-label="Recorregut de la regata"></canvas>
+      <div class="legend"><span><i style="background:var(--lift)"></i>Tu, a la bordada bona</span><span><i style="background:var(--me)"></i>Tu, a l'altra bordada</span><span><i style="background:var(--ideal)"></i>Ruta ideal</span><span><i style="background:#fff"></i>Guanyador</span></div>
+    </div>
+    <div class="dcard">
+      <div class="tag" id="dLvl"></div>
+      <div class="big" id="dPos"></div>
+      <div class="rew" id="dRew"></div>
+      <div class="kv" id="dTimes"></div>
+      <h2>Què ha passat</h2>
+      <ul class="facts" id="dFacts"></ul>
+      <table class="res" id="dRes"></table>
+      <div class="row" style="flex-wrap:wrap"><button class="btn" id="again">Mateix vent</button><button class="btn sec" id="newr">Nova regata</button><button class="btn sec" id="back2">Menú</button></div>
+    </div>
+  </section>
+</div>
+
+<script>
+(()=>{
+// ---------- helpers
+const $=id=>document.getElementById(id);
+const R=Math.PI/180,norm=a=>((a%360)+360)%360,adiff=(a,b)=>{let d=norm(a-b);return d>180?d-360:d};
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t;
+const fmt=s=>{s=Math.max(0,Math.round(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+const nf=(v,d=1)=>v.toLocaleString('ca-ES',{minimumFractionDigits:d,maximumFractionDigits:d});
+function rng(seed){return()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const store={get(k,d){try{const v=localStorage.getItem('rolada:'+k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem('rolada:'+k,JSON.stringify(v))}catch(e){}}};
+
+// ---------- course
+const D=650,LINE=[-95,95],MARK={x:0,y:D},XB=440;
+const POLAR=[[0,0],[2,1.3],[4,2.4],[6,3.0],[8,3.4],[10,3.7],[13,3.9],[18,3.9],[25,3.6]];
+function polar(kn){for(let i=1;i<POLAR.length;i++)if(kn<=POLAR[i][0]){const a=POLAR[i-1],b=POLAR[i];return lerp(a[1],b[1],(kn-a[0])/(b[0]-a[0]))*0.5144}return 3.6*0.5144}
+const reachF=twa=>1+0.15*clamp((twa-45)/45,0,1);
+
+// ---------- levels
+const LEVELS=[
+ {id:'osc',n:'Nivell 1',t:'Rolades',d:'El vent va i ve. Vira quan la brúixola et diu que t\'han baixat.',brief:'Vent del nord, uns 9 nusos. Al comitè diuen que oscil·la força. Mira la brúixola.',aids:{streaks:true,hint:true,lay:true,shadow:true}},
+ {id:'press',n:'Nivell 2',t:'Ratxes',d:'Direcció estable, però amb taques de més vent. Busca l\'aigua fosca.',brief:'Vent fluix i irregular, de 5 a 10 nusos. Hi ha ratxes que baixen pel camp.',aids:{streaks:true,hint:false,lay:true,shadow:true}},
+ {id:'pers',n:'Nivell 3',t:'Rolada persistent',d:'El vent gira cap a un costat i ja no torna. Cap on aniràs?',brief:'Vent de 8 a 9 nusos. La previsió diu que anirà girant durant la regata.',aids:{streaks:false,hint:false,lay:true,shadow:true}},
+ {id:'trans',n:'Nivell 4',t:'Canvi de vent',d:'El vent de terra s\'apaga i entra la marinada per un costat.',brief:'Vent de terra fluix que s\'està morint. Ha d\'entrar la marinada, però no se sap per on.',aids:{streaks:false,hint:false,lay:true,shadow:true}},
+ {id:'fleet',n:'Nivell 5',t:'Flota i aire net',d:'Flota gran i bona. Cal aire net i triar bé quan creuar.',brief:'Vent oscil·lant de 8 nusos i una flota de 15. Els bons ho llegeixen bé.',aids:{streaks:false,hint:false,lay:false,shadow:true}},
+ {id:'mix',n:'Regata',t:'Regata lliure',d:'Un dia qualsevol: pot passar de tot.',brief:'Cap previsió. Mira l\'aigua i la brúixola des d\'abans de la sortida.',aids:{streaks:false,hint:false,lay:false}}];
+
+// ---------- wind model
+function makeWind(kind,seed){
+  const r=rng(seed);const W={kind,base:(r()*30-15),osc:{A:2,P:180,ph:r()*6.28},osc2:{A:1.5,P:67,ph:r()*6.28},trend:0,spd:8.5,gusts:[],front:null,wob:r()*6.28};
+  if(kind==='mix'){const pick=['osc','press','pers','trans'][Math.floor(r()*4)];W.mixOf=pick;kind=pick;if(r()<.5)W.extraGusts=true}
+  W.real=kind;
+  if(kind==='osc'){W.osc={A:8+r()*5,P:140+r()*90,ph:r()*6.28};W.spd=8.5+r()*2}
+  if(kind==='press'){W.osc.A=3;W.spd=6;W.gustSide=r()<.5?-1:1}
+  if(kind==='pers'){W.trend=(r()<.5?-1:1)*(15+r()*8);W.osc={A:3,P:110,ph:r()*6.28};W.spd=8.5}
+  if(kind==='trans'){const s=r()<.5?-1:1;W.front={s,t0:30+r()*50,v:.55+r()*.25,dNew:s*(25+r()*12),old0:6.5,old1:3.5,neu:10}}
+  if(kind==='fleet'){W.osc={A:6+r()*3,P:150+r()*60,ph:r()*6.28};W.spd=8;W.extraGusts=true}
+  if(kind==='press'||W.extraGusts){const n=kind==='press'?11:6;for(let i=0;i<n;i++){const side=(kind==='press'&&r()<.7)?W.gustSide:(r()<.5?-1:1);W.gusts.push({x:side*(60+r()*300),y0:r()*(D+500)-150,r:70+r()*70,a:(kind==='press'?3.5:2.5)+r()*2.5,dd:(r()-.5)*10,vd:1.4+r()*.8})}}
+  return W}
+function wind(W,t,x,y){
+  let d=W.base+W.osc.A*Math.sin(2*Math.PI*t/W.osc.P+W.osc.ph)+W.osc2.A*Math.sin(2*Math.PI*t/W.osc2.P+W.osc2.ph)+W.trend*clamp(t/600,0,1.3)+1.5*Math.sin(x/260+W.wob+t/300);
+  let s=W.spd+0.6*Math.sin(x/170+y/230+t/40+W.wob);
+  if(W.front){const F=W.front;const half=XB+150;const fp=half-F.v*Math.max(0,t-F.t0);const w=1/(1+Math.exp(-(F.s*x-fp)/35));const old=lerp(F.old0,F.old1,clamp(t/600,0,1));s=lerp(old,F.neu,w)+0.4*Math.sin(x/170+y/230+t/40);d+=w*F.dNew}
+  for(const g of W.gusts){const span=D+500;const gy=((g.y0-g.vd*t+150)%span+span)%span-150;const gx=g.x-Math.sin(W.base*R)*(g.vd*t)*0.3;const q=((x-gx)**2+(y-gy)**2)/(g.r*g.r);if(q<6){const e=Math.exp(-q);s+=g.a*e;d+=g.dd*e}}
+  return{d,s:Math.max(1.5,s)}}
+
+// ---------- fleet
+const NATIONS=['ITA','FRA','ESP','POL','GBR','NED','GER','DEN','SWE','USA','ARG','TUR','GRE','CRO','POR','NOR','HUN','AUT'];
+function makeFleet(lv,seed){
+  const r=rng(seed*7+3);const plan=lv==='fleet'?['smart','smart','smart','smart','shifty','shifty','shifty','shifty','press','press','press','middle','middle','middle']:['smart','smart','shifty','shifty','press','press','sideL','sideR','middle','middle','random'];
+  const nat=[...NATIONS].sort(()=>r()-.5);
+  const boats=plan.map((st,i)=>({name:nat[i]+' '+(1000+Math.floor(r()*8999)),st,ai:true,sk:st==='smart'?1.0:0.975+r()*0.04,m:st==='smart'?0.5:(-5+r()*6),thr:3+r()*3,del:4+r()*8,x:lerp(LINE[0]+8,LINE[1]-8,r()),tack:r()<.65?'S':'P'}));
+  if(lv==='fleet')boats.forEach(b=>b.sk=Math.max(b.sk,0.99));
+  return boats}
+
+// ---------- game state
+let G=null;const ui={speed:store.get('speed',7),aids:store.get('aids',false)};
+function newGame(lvIdx,seed,daily){$('who').hidden=true;$('garage').hidden=true;VZ.z=2.5;VZ.follow=true;pendingTack=false;
+  const L=LEVELS[lvIdx];seed=seed??Math.floor(Math.random()*1e9);
+  const W=makeWind(L.id,seed);
+  const ai=makeFleet(L.id,seed);
+  const me={name:P?(P.sail||P.name):'TU',me:true,x:0,tack:'S',sk:1};
+  const boats=[me,...ai].map(b=>Object.assign(b,{y:-4,h:0,v:0,tk:0,done:false,ft:null,dirty:0,duck:0,last:-99,trk:[],mean:null,hd:0,nextD:0,acc:{t:0,fav:0,tws:0,dirty:0,n:0}}));
+  G={L,lvIdx,seed,daily:!!daily,skin:P?pget('skin','opti'):'opti',W,boats,me,t:-30,phase:'pre',paused:false,trace:[],laylog:[],tacks:0,ducks:0,blocked:0,warnT:0,warnMsg:'',field:null,fieldT:-99,parts:[]};
+  for(let i=0;i<240;i++)G.parts.push(newPart(true));
+  placeStart();showPre();}
+function placeStart(){for(const b of G.boats){const w=wind(G.W,0,b.x,b.y);b.h=w.d+(b.tack==='P'?45:-45);b.v=polar(w.s)*0.85*b.sk;b.mean=w.d}}
+
+// ---------- physics
+function bearing(b){return norm(Math.atan2(MARK.x-b.x,MARK.y-b.y)/R)}
+function dist(b){return Math.hypot(MARK.x-b.x,MARK.y-b.y)}
+function computeDirty(t){const bs=G.boats;for(const b of bs){b.dirty=0;if(b.done)continue;const w=wind(G.W,t,b.x,b.y);const dw={x:-Math.sin(w.d*R),y:-Math.cos(w.d*R)};
+  for(const a of bs){if(a===b||a.done)continue;const dx=b.x-a.x,dy=b.y-a.y;const al=dx*dw.x+dy*dw.y;if(al<2||al>40)continue;const lat=Math.abs(dx*dw.y-dy*dw.x);const half=4+0.2*al;if(lat<half)b.dirty=Math.max(b.dirty,0.32*(1-al/40)*(1-0.5*lat/half))}}}
+function fetchTarget(b,th){const brg=bearing(b);const cl=th+(b.tack==='P'?45:-45);const dd=adiff(brg,cl);if(b.tack==='P'&&dd>=0&&dd<=110)return brg;if(b.tack==='S'&&dd<=0&&dd>=-110)return brg;return null}
+function stepBoat(b,t,dt){
+  if(b.done)return;const w=wind(G.W,t,b.x,b.y);const tws=w.s*(1-b.dirty);const th=w.d;
+  const ft=fetchTarget(b,th);let target=ft??(th+(b.tack==='P'?45:-45));if(b.duck>0){b.duck-=dt;if(ft==null)target=th+(b.tack==='P'?75:-75)}
+  let vt;if(b.tk>0){b.tk-=dt;b.h=norm(b.h+clamp(adiff(target,b.h),-38*dt,38*dt));vt=0.3*polar(tws)}
+  else{b.h=norm(b.h+clamp(adiff(target,b.h),-25*dt,25*dt));vt=polar(tws)*reachF(Math.abs(adiff(b.h,th)))}
+  b.v+=(vt*b.sk-b.v)*Math.min(1,dt/4);
+  b.x+=b.v*Math.sin(b.h*R)*dt;b.y+=b.v*Math.cos(b.h*R)*dt;
+  b.mean=b.mean==null?th:b.mean+adiff(th,b.mean)*Math.min(1,dt/120);
+  if(b.trk.length===0||t-b.trk[b.trk.length-1][2]>=2){const fav=isFav(b,th);b.trk.push([b.x,b.y,t,fav?1:0])}
+  b.acc.t+=dt;b.acc.tws+=tws*dt;b.acc.dirty+=b.dirty>0.02?dt:0;if(isFav(b,th))b.acc.fav+=dt;
+  if(dist(b)<10){b.done=true;b.ft=t}}
+function isFav(b,th){const brg=bearing(b);return Math.abs(adiff(brg,th+(b.tack==='P'?45:-45)))<=Math.abs(adiff(brg,th+(b.tack==='P'?-45:45)))}
+function canTack(b,t){const w=wind(G.W,t,b.x,b.y),th=w.d;const hx=Math.sin(b.h*R),hy=Math.cos(b.h*R);const ws=b.tack==='S'?1:-1;
+  const newTack=b.tack==='P'?'S':'P';const hn=(th+(newTack==='P'?45:-45))*R;
+  for(const o of G.boats){if(o===b||o.done)continue;const dx=o.x-b.x,dy=o.y-b.y;if(dx*dx+dy*dy>625)continue;const fwd=dx*hx+dy*hy,side=(dx*hy-dy*hx)*ws;
+    if(o.tack===b.tack&&fwd>-3&&fwd<8&&side>0.5&&side<6)return'Tens un vaixell a barlovent, al costat: si vires ara hi xoques. Torna a tocar VIRA per frenar i virar per la seva popa.';
+    if(newTack==='P'&&o.tack==='S'&&fwd>-3&&side>0){let m=1e9;for(let k=0;k<=12;k++){const tt=k*0.5;const bx=b.x+Math.sin(hn)*b.v*0.6*tt,by=b.y+Math.cos(hn)*b.v*0.6*tt;const ox=o.x+Math.sin(o.h*R)*o.v*tt,oy=o.y+Math.cos(o.h*R)*o.v*tt;m=Math.min(m,Math.hypot(bx-ox,by-oy))}if(m<3.5)return'Si vires ara quedes a babord davant d\'un vaixell que va a estribord: no tens dret de pas.'}}
+  return null}
+function tryTack(b,t){const why=canTack(b,t);if(why){if(b.me){G.blocked++;warn(why)}b.last=t-10;return false}tack(b,t);return true}
+function tack(b,t){b.tack=b.tack==='P'?'S':'P';b.tk=4;b.last=t;if(b.me){G.tacks++;const w=wind(G.W,t,b.x,b.y);const h=w.d+(b.tack==='P'?45:-45);const dx=MARK.x-b.x,dy=MARK.y-b.y;const z=Math.sin(h*R)*dy-Math.cos(h*R)*dx;G.laylog.push({t,over:b.tack==='P'?-z:z})}}
+function dtg(b,th){const wu={x:Math.sin(th*R),y:Math.cos(th*R)},wl={x:Math.cos(th*R),y:-Math.sin(th*R)};const dx=MARK.x-b.x,dy=MARK.y-b.y;return Math.max(dx*wu.x+dy*wu.y,Math.abs(dx*wl.x+dy*wl.y))}
+// ---------- AI
+function decide(b,t){
+  if(b.done||b.tk>0)return;const w=wind(G.W,t,b.x,b.y),th=w.d;const since=t-b.last;
+  const brg=bearing(b);
+  if(fetchTarget(b,th)!=null)return;
+  if(b.tack==='S'&&adiff(brg,th+45)>=-b.m){tryTack(b,t);return}
+  if(b.tack==='P'&&adiff(brg,th-45)<=b.m){tryTack(b,t);return}
+  if((b.tack==='P'&&b.x>XB-10)||(b.tack==='S'&&b.x<-XB+10)){tack(b,t);return}
+  if(since<15)return;
+  const st=b.st;
+  if(st==='shifty'){const headed=b.tack==='S'?th<b.mean-b.thr:th>b.mean+b.thr;b.hd=headed?b.hd+1:0;if(b.hd>=b.del){b.hd=0;tryTack(b,t)}}
+  else if(st==='press'){if(t>=b.nextD){b.nextD=t+4;const look=h=>{let s=0;for(const d of [80,170]){s+=wind(G.W,t,b.x+Math.sin(h*R)*d,b.y+Math.cos(h*R)*d).s}return s/2};const cur=look(th+(b.tack==='P'?45:-45)),oth=look(th+(b.tack==='P'?-45:45));if(oth>cur+0.6)tryTack(b,t)}}
+  else if(st==='smart'){if(t>=b.nextD){b.nextD=t+3;const sim=(tk)=>{let x=b.x,y=b.y;for(let s=0;s<50;s+=5){const ww=wind(G.W,t+s,x,y);const tmp={x,y,tack:tk};const f=fetchTarget(tmp,ww.d);const h=f??(ww.d+(tk==='P'?45:-45));const v=polar(ww.s)*(f!=null?reachF(Math.abs(adiff(h,ww.d))):1);x+=v*Math.sin(h*R)*5;y+=v*Math.cos(h*R)*5;if(Math.hypot(MARK.x-x,MARK.y-y)<10)return -999}return dtg({x,y},wind(G.W,t+50,MARK.x,MARK.y).d)};const other=b.tack==='P'?'S':'P';if(sim(other)+7<sim(b.tack))tryTack(b,t)}}
+  else if(st==='middle'){if((b.tack==='P'&&b.x>115)||(b.tack==='S'&&b.x<-115))tryTack(b,t)}
+  else if(st==='random'){if(Math.random()<1/55)tryTack(b,t)}
+}
+// ---------- sim loop
+const DT=0.25;let lastDecide=-99;
+function rightOfWay(t){const bs=G.boats.filter(b=>!b.done&&b.tk<=0);for(const p of bs){if(p.tack!=='P'||p.duck>0)continue;for(const s of bs){if(s.tack!=='S')continue;const dx=s.x-p.x,dy=s.y-p.y;if(dx*dx+dy*dy>1600)continue;let m=1e9;for(let k=0;k<=12;k++){const tt=k*0.5;m=Math.min(m,Math.hypot(s.x+Math.sin(s.h*R)*s.v*tt-(p.x+Math.sin(p.h*R)*p.v*tt),s.y+Math.cos(s.h*R)*s.v*tt-(p.y+Math.cos(p.h*R)*p.v*tt)))}
+  if(m<5){p.duck=3.5;if(p.me){G.ducks++;warn('Estribord! Vas a babord i has hagut de passar per popa de '+s.name)}break}}}}
+function simStep(){
+  const t=G.t;computeDirty(t);rightOfWay(t);if(pendingTack&&G.me.tk<=0){pendingTack=false;tryTack(G.me,t)}
+  if(t-lastDecide>=1){lastDecide=t;for(const b of G.boats)if(b.ai)decide(b,t)}
+  const me=G.me;if(!me.done&&((me.tack==='P'&&me.x>XB)||(me.tack==='S'&&me.x<-XB))){tack(me,t);warn('Límit del camp: has virat')}
+  for(const b of G.boats)stepBoat(b,t,DT);
+  if(!me.done&&Math.floor(t/10)!==Math.floor((t-DT)/10)){const w=wind(G.W,t,me.x,me.y);G.trace.push([t,me.tack,norm(me.h),w.d])}
+  G.t+=DT;
+  if(me.done||G.t>1500)finish();}
+function warn(m){if(!G)return;G.warnMsg=m;G.warnT=performance.now()+(m.startsWith('Vira!')?900:2500)}
+
+// ---------- rendering
+const cv=$('cv'),cx=cv.getContext('2d');let VIEW=null;
+const VZ={z:1,cx:0,cy:(D-30)/2,follow:false};
+function setupCanvas(c,ctx,zoomable){const dpr=Math.min(2,window.devicePixelRatio||1);let W,H;if(zoomable){W=c.clientWidth||400;H=c.clientHeight||500;c.width=W*dpr;c.height=H*dpr}else{W=c.clientWidth||900;H=Math.round(W*(D+170)/(2*XB+40));c.width=W*dpr;c.height=H*dpr;c.style.height=H+'px'}ctx.setTransform(dpr,0,0,dpr,0,0);const xmin=-XB-20,xmax=XB+20,ymin=-100,ymax=D+70;const s0=Math.min(W/(xmax-xmin),H/(ymax-ymin));
+  let z=1,cxw=(xmin+xmax)/2,cyw=(ymin+ymax)/2;if(zoomable){z=VZ.z;if(VZ.follow&&G){VZ.cx=G.me.x;VZ.cy=G.me.y}if(z>1.01){cxw=VZ.cx;cyw=VZ.cy}}const s=s0*z;
+  return{W,H,s,z,X:x=>W/2+(x-cxw)*s,Y:y=>H/2-(y-cyw)*s,ix:px=>cxw+(px-W/2)/s,iy:py=>cyw-(py-H/2)/s,xmin,xmax,ymin,ymax}}
+function seaColor(s){const t=clamp((s-3)/9,0,1);const a=[59,138,160],b=[15,74,99];return[Math.round(lerp(a[0],b[0],t)),Math.round(lerp(a[1],b[1],t)),Math.round(lerp(a[2],b[2],t))]}
+const off=document.createElement('canvas');const NX=80,NY=72,EXT=420;off.width=NX;off.height=NY;const octx=off.getContext('2d');const img=octx.createImageData(NX,NY);
+function drawSea(ctx,V,t){if(!G.field||Math.abs(t-G.fieldT)>=0.5){G.fieldT=t;for(let j=0;j<NY;j++)for(let i=0;i<NX;i++){const x=lerp(V.xmin-EXT,V.xmax+EXT,(i+.5)/NX),y=lerp(V.ymax+EXT,V.ymin-EXT,(j+.5)/NY);const c=seaColor(wind(G.W,Math.max(0,t),x,y).s);const k=(j*NX+i)*4;img.data[k]=c[0];img.data[k+1]=c[1];img.data[k+2]=c[2];img.data[k+3]=255}octx.putImageData(img,0,0);G.field=true}
+  ctx.fillStyle=css('--sea-calm');ctx.fillRect(0,0,V.W,V.H);ctx.imageSmoothingEnabled=true;ctx.drawImage(off,V.X(V.xmin-EXT),V.Y(V.ymax+EXT),(V.xmax-V.xmin+2*EXT)*V.s,(V.ymax-V.ymin+2*EXT)*V.s)}
+function newPart(rand){return{x:-XB-20+Math.random()*(2*XB+40),y:-100+Math.random()*(D+170),age:rand?Math.random()*80:0,life:60+Math.random()*60}}
+function drawParts(ctx,V,t,realDt){ctx.strokeStyle='rgba(255,255,255,.28)';ctx.lineWidth=1.2;ctx.beginPath();for(const p of G.parts){const w=wind(G.W,Math.max(0,t),p.x,p.y);const ux=-Math.sin(w.d*R),uy=-Math.cos(w.d*R);const sp=w.s*2.2*realDt;p.x+=ux*sp;p.y+=uy*sp;p.age+=realDt*30;const L=w.s*1.6;ctx.moveTo(V.X(p.x),V.Y(p.y));ctx.lineTo(V.X(p.x-ux*L),V.Y(p.y-uy*L));if(p.age>p.life||p.y<V.ymin||p.x<V.xmin||p.x>V.xmax)Object.assign(p,newPart(false),{y:V.ymax-Math.random()*60})}ctx.stroke()}
+function drawCourse(ctx,V,t,lay){
+  ctx.setLineDash([6,5]);ctx.strokeStyle='rgba(255,255,255,.8)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(V.X(LINE[0]),V.Y(0));ctx.lineTo(V.X(LINE[1]),V.Y(0));ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle=css('--buoy');ctx.beginPath();ctx.arc(V.X(LINE[0]),V.Y(0),5,0,7);ctx.fill();ctx.fillStyle='#fff';ctx.fillRect(V.X(LINE[1])-4,V.Y(0)-9,8,18);
+  ctx.font='12px Barlow, sans-serif';ctx.fillStyle='#fff';ctx.fillText('Pin',V.X(LINE[0])-26,V.Y(0)+4);ctx.fillText('Comitè',V.X(LINE[1])+8,V.Y(0)+4);
+  if(lay){const w=wind(G.W,Math.max(0,t),MARK.x,MARK.y);ctx.strokeStyle='rgba(255,255,255,.35)';ctx.setLineDash([3,6]);ctx.lineWidth=1;for(const h of [w.d+45,w.d-45]){ctx.beginPath();ctx.moveTo(V.X(MARK.x),V.Y(MARK.y));ctx.lineTo(V.X(MARK.x-Math.sin(h*R)*900),V.Y(MARK.y-Math.cos(h*R)*900));ctx.stroke()}ctx.setLineDash([])}
+  ctx.fillStyle=css('--buoy');ctx.beginPath();ctx.arc(V.X(MARK.x),V.Y(MARK.y),7,0,7);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke()}
+function drawBoat(ctx,V,b,col,lab){const x=V.X(b.x),y=V.Y(b.y),a=b.h*R;ctx.save();ctx.translate(x,y);ctx.rotate(a);const k=Math.max(1,Math.min(3,(V.z||1)*0.55));ctx.scale(k,k);if(b.me&&G.skin&&G.skin!=='opti'){drawSkin(ctx,G.skin,skinCol(G.skin),b.tack);ctx.restore();if(lab){ctx.font='600 12px Barlow, sans-serif';ctx.fillStyle=col;ctx.fillText(lab,x+12,y-10)}return}ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(0,-9);ctx.quadraticCurveTo(5,-2,4,7);ctx.lineTo(-4,7);ctx.quadraticCurveTo(-5,-2,0,-9);ctx.fill();ctx.strokeStyle='rgba(0,0,0,.35)';ctx.lineWidth=1;ctx.stroke();ctx.strokeStyle='rgba(255,255,255,.95)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,-3);ctx.lineTo(b.tack==='P'?-6:6,6);ctx.stroke();ctx.restore();
+  if(lab){ctx.font='600 12px Barlow, sans-serif';ctx.fillStyle=col;ctx.fillText(lab,x+10,y-8)}}
+function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()}
+let lastFrame=performance.now(),acc=0;
+function frame(now){const realDt=Math.min(.1,(now-lastFrame)/1000);lastFrame=now;
+  if(G&&(G.phase==='race'||G.phase==='pre')&&!$('game').hidden){
+    if(G.phase==='race'&&!G.paused){acc+=realDt*ui.speed;let n=0;while(acc>=DT&&n<400&&G.phase==='race'){simStep();acc-=DT;n++}}
+    if(G.phase==='pre'&&!G.paused){G.t=Math.min(0,G.t+realDt*ui.speed*0.6);updatePre()}
+    render(realDt)}
+  requestAnimationFrame(frame)}
+function render(realDt){if(G.phase==='debrief')return;const V=setupCanvas(cv,cx,true);VIEW=V;const t=G.t;const aids=effAids();
+  drawSea(cx,V,t);if(aids.streaks)drawParts(cx,V,t,realDt);drawCourse(cx,V,t,aids.lay);
+  for(const b of G.boats){if(b.trk.length>1){cx.strokeStyle=b.me?'rgba(255,91,74,.7)':'rgba(255,255,255,.18)';cx.lineWidth=b.me?2:1;cx.beginPath();const tr=b.trk.slice(b.me?0:-30);tr.forEach((p,i)=>i?cx.lineTo(V.X(p[0]),V.Y(p[1])):cx.moveTo(V.X(p[0]),V.Y(p[1])));cx.lineTo(V.X(b.x),V.Y(b.y));cx.stroke()}}
+  if(aids.shadow&&G.phase==='race'){cx.fillStyle='rgba(5,20,30,.22)';for(const b of G.boats){if(b.done)continue;const w=wind(G.W,t,b.x,b.y);const ux=-Math.sin(w.d*R),uy=-Math.cos(w.d*R),lx=uy,ly=-ux;const L=40,hw=4+0.2*L;cx.beginPath();cx.moveTo(V.X(b.x+ux*2),V.Y(b.y+uy*2));cx.lineTo(V.X(b.x+ux*L+lx*hw),V.Y(b.y+uy*L+ly*hw));cx.lineTo(V.X(b.x+ux*L-lx*hw),V.Y(b.y+uy*L-ly*hw));cx.closePath();cx.fill()}}
+  for(const b of G.boats)if(!b.me)drawBoat(cx,V,b,b.done?'rgba(255,255,255,.45)':'#f4f1e8',null);
+  drawBoat(cx,V,G.me,css('--me'),G.me.name);
+  if(G.phase==='pre'){cx.font='700 34px Chakra Petch, sans-serif';cx.fillStyle='rgba(255,255,255,.92)';cx.textAlign='center';cx.fillText('−'+fmt(-t),V.W/2,44);cx.textAlign='left'}
+  updateHud()}
+function effAids(){return ui.aids?{streaks:true,hint:true,lay:true,shadow:true}:G.L.aids}
+
+// ---------- HUD
+const trace=$('trace'),tctx=trace.getContext('2d');
+function updateHud(){const me=G.me,t=G.t;const w=wind(G.W,Math.max(0,t),me.x,me.y);const h=Math.round(norm(me.h));$('cmp').textContent=String(h).padStart(3,'0')+'°';$('tk').textContent=me.tack==='P'?'BABORD':'ESTRIBORD';
+  const aids=effAids();const c=$('cmp');c.classList.remove('lift','head');$('hint').textContent='';
+  if(aids.hint&&G.phase==='race'&&me.mean!=null&&me.tk<=0){const dv=adiff(w.d,me.mean);const lift=me.tack==='S'?dv>2:dv<-2,head=me.tack==='S'?dv<-2:dv>2;if(lift){c.classList.add('lift');$('hint').textContent='Et puja: bordada bona'}else if(head){c.classList.add('head');$('hint').textContent='Et baixa: pensa a virar'}}
+  $('spd').textContent=nf(me.v/0.5144,1);$('tws').textContent=nf(w.s*(1-me.dirty),1);$('dtm').textContent=Math.round(dist(me));$('clk').textContent=G.phase==='pre'?'−'+fmt(-t):fmt(t);
+  $('pos').textContent=rank(me)+'/'+G.boats.length;
+  const msg=performance.now()<G.warnT?G.warnMsg:(me.dirty>0.04&&G.phase==='race'?'Aire brut: tens un vaixell al davant que et pren el vent':'');const wv=$('warn');if(wv.textContent!==msg)wv.textContent=msg;wv.hidden=!msg;$('vira').classList.toggle('busy',me.tk>0);
+  drawTrace()}
+function rank(me){const th=wind(G.W,Math.max(0,G.t),MARK.x,MARK.y).d;const key=b=>b.done?b.ft-1e6:dtg(b,th);const k=key(me);return 1+G.boats.filter(b=>b!==me&&key(b)<k).length}
+function drawTrace(){const W=trace.clientWidth||280,H=trace.clientHeight||54,dpr=Math.min(2,devicePixelRatio||1);trace.width=W*dpr;trace.height=H*dpr;tctx.setTransform(dpr,0,0,dpr,0,0);tctx.clearRect(0,0,W,H);
+  const pts=G.trace.filter(p=>p[0]>G.t-240);tctx.strokeStyle='rgba(157,179,187,.3)';tctx.lineWidth=1;tctx.beginPath();tctx.moveTo(0,H/2);tctx.lineTo(W,H/2);tctx.stroke();
+  if(!pts.length){tctx.fillStyle=css('--muted');tctx.font='13px Barlow, sans-serif';tctx.fillText('Apareixerà quan comencis a navegar',8,H/2-6);return}
+  const vals=pts.map(p=>p[1]==='S'?p[2]+45:p[2]-45);const ref=G.me.mean??vals[0];const dev=vals.map(v=>adiff(v,ref));const m=Math.max(10,...dev.map(Math.abs));
+  tctx.fillStyle=css('--muted');tctx.font='11px Chakra Petch, sans-serif';tctx.fillText('dreta',4,11);tctx.fillText('esq.',4,H-3);
+  pts.forEach((p,i)=>{const x=W*(1-(G.t-p[0])/240),y=H/2-dev[i]/m*(H/2-10);tctx.fillStyle=p[1]==='S'?'#f4f1e8':css('--buoy');tctx.beginPath();tctx.arc(x,y,3,0,7);tctx.fill()})}
+
+// ---------- pre-start
+function showPre(){document.body.classList.add('playing','prestart');$('menu').hidden=true;$('debrief').hidden=true;$('game').hidden=false;$('pre').hidden=false;$('raceCtl').hidden=true;syncZ();$('preLvl').textContent=G.daily?'Repte del dia':G.L.n;$('preTitle').textContent=G.daily?'El mateix vent per a tothom':G.L.t;$('preBrief').textContent=G.L.brief;setStartTack(G.me.tack)}
+function updatePre(){const me=G.me;const w=wind(G.W,0,me.x,me.y);const h=w.d+(G.t*0);$('readS').textContent=String(Math.round(norm(w.d-45))).padStart(3,'0')+'°';$('readP').textContent=String(Math.round(norm(w.d+45))).padStart(3,'0')+'°';me.h=w.d+(me.tack==='P'?45:-45);if(G.t>=0)startRace()}
+function setStartTack(tk){G.me.tack=tk;$('stS').setAttribute('aria-pressed',tk==='S');$('stP').setAttribute('aria-pressed',tk==='P');placeStart()}
+$('stS').onclick=()=>setStartTack('S');$('stP').onclick=()=>setStartTack('P');
+cv.addEventListener('pointerdown',e=>{if(!G||G.phase!=='pre'||!VIEW)return;const r=cv.getBoundingClientRect();const x=VIEW.ix(e.clientX-r.left);const y=VIEW.iy(e.clientY-r.top);if(Math.abs(y)<60){G.me.x=clamp(x,LINE[0]+3,LINE[1]-3);placeStart()}});
+$('go').onclick=()=>startRace();
+function zoomAt(f,px,py){const V=VIEW;if(!V)return;const wx=V.ix(px),wy=V.iy(py);const z=clamp(VZ.z*f,1,8);if(z<=1.01){VZ.z=1;VZ.follow=false;syncZ();return}
+  if(VZ.z<=1.01){VZ.cx=(V.xmin+V.xmax)/2;VZ.cy=(V.ymin+V.ymax)/2}const k=VZ.z/z;if(!VZ.follow){VZ.cx=wx-(wx-VZ.cx)*k;VZ.cy=wy-(wy-VZ.cy)*k}VZ.z=z;syncZ()}
+function syncZ(){$('zf').setAttribute('aria-pressed',VZ.follow);$('zl').textContent=VZ.z>1.01?'×'+nf(VZ.z,1):''}
+(function(){const pts=new Map();let pinch=null,moved=0;
+  cv.addEventListener('wheel',e=>{e.preventDefault();const r=cv.getBoundingClientRect();zoomAt(Math.exp(-e.deltaY*0.0015),e.clientX-r.left,e.clientY-r.top)},{passive:false});
+  cv.addEventListener('pointerdown',e=>{pts.set(e.pointerId,[e.clientX,e.clientY]);moved=0;if(pts.size===2){const[a,b]=[...pts.values()];pinch=Math.hypot(a[0]-b[0],a[1]-b[1])}});
+  cv.addEventListener('pointermove',e=>{if(!pts.has(e.pointerId))return;const p=pts.get(e.pointerId);pts.set(e.pointerId,[e.clientX,e.clientY]);const r=cv.getBoundingClientRect();
+    if(pts.size===2&&pinch){const[a,b]=[...pts.values()];const d=Math.hypot(a[0]-b[0],a[1]-b[1]);zoomAt(d/pinch,(a[0]+b[0])/2-r.left,(a[1]+b[1])/2-r.top);pinch=d}
+    else if(pts.size===1&&VZ.z>1.01&&VIEW){const dx=e.clientX-p[0],dy=e.clientY-p[1];moved+=Math.abs(dx)+Math.abs(dy);if(moved>4){VZ.follow=false;VZ.cx-=dx/VIEW.s;VZ.cy+=dy/VIEW.s;syncZ()}}});
+  const up=e=>{pts.delete(e.pointerId);if(pts.size<2)pinch=null};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);cv.addEventListener('pointerleave',up)})();
+$('zin').onclick=()=>{const V=VIEW;if(V)zoomAt(1.5,V.W/2,V.H/2)};$('zout').onclick=()=>{const V=VIEW;if(V)zoomAt(1/1.5,V.W/2,V.H/2)};
+$('zf').onclick=()=>{VZ.follow=!VZ.follow;if(VZ.follow&&VZ.z<2.5)VZ.z=3;syncZ()};$('zall').onclick=()=>{VZ.z=1;VZ.follow=false;syncZ()};
+function startRace(){document.body.classList.remove('prestart');G.t=0;G.phase='race';$('pre').hidden=true;$('raceCtl').hidden=false;placeStart();lastDecide=-99;acc=0}
+// ---------- controls
+let pendingTack=false;
+function doTack(){const btn=$('vira');btn.classList.remove('flash');void btn.offsetWidth;btn.classList.add('flash');
+  if(!G||G.phase!=='race'){warn('Encara no ha començat la regata');return}if(G.paused){warn('Estàs en pausa: toca ▶ per continuar');return}const me=G.me;if(me.done)return;
+  if(me.tk>1.2){pendingTack=true;warn('Virada guardada: es farà en acabar aquesta');return}if(me.tk>0){pendingTack=true;return}
+  const why=canTack(me,G.t);const now=performance.now();
+  if(why&&why.startsWith('Tens un vaixell a barlovent')&&G.pinAt&&now-G.pinAt<3000){G.pinAt=0;me.v*=0.45;tack(me,G.t);G.slowTacks=(G.slowTacks||0)+1;warn('Has frenat i has virat per la popa del vaixell: perds uns metres');return}
+  if(why&&why.startsWith('Tens un vaixell a barlovent'))G.pinAt=now;
+  if(tryTack(me,G.t))warn(me.tack==='P'?'Vira! Ara a babord':'Vira! Ara a estribord')}
+let lastPress=0;function press(e){const now=performance.now();if(now-lastPress<350){if(e&&e.cancelable)e.preventDefault();return}lastPress=now;if(e&&e.cancelable&&e.type!=='click')e.preventDefault();doTack()}
+const vb=$('vira');vb.addEventListener('touchstart',press,{passive:false});vb.addEventListener('pointerdown',press);vb.addEventListener('mousedown',press);vb.addEventListener('click',press);
+document.addEventListener('keydown',e=>{if($('game').hidden)return;if(e.code==='Space'||e.code==='Enter'){if(G.phase==='race'){e.preventDefault();if(!e.repeat)doTack()}}if(e.key==='p'||e.key==='P')togglePause()});
+function togglePause(){if(!G||G.phase!=='race')return;G.paused=!G.paused;$('pause').textContent=G.paused?'▶':'II'}
+$('pause').onclick=togglePause;$('quit').onclick=()=>showMenu();$('back1').onclick=()=>showMenu();$('back2').onclick=()=>showMenu();
+$('again').onclick=()=>newGame(G.lvIdx,G.seed,G.daily);$('newr').onclick=()=>newGame(G.lvIdx);
+
+// ---------- ideal route (isochrones)
+function ideal(sx,stack0,maxT=1500){const dt=2;let pts=[{x:sx,y:-4,tack:'S',f:0,p:null},{x:sx,y:-4,tack:'P',f:0,p:null}];if(stack0)pts=pts.filter(p=>p.tack===stack0);
+  for(let step=0;step*dt<maxT;step++){const t=step*dt;const nxt=[];
+    for(const p of pts){const w=wind(G.W,t,p.x,p.y);const go=(tk,f)=>{const tmp={x:p.x,y:p.y,tack:tk};const ft=fetchTarget(tmp,w.d);const h=ft??(w.d+(tk==='P'?45:-45));let v=polar(w.s)*(ft!=null?reachF(Math.abs(adiff(h,w.d))):1);if(f>0)v*=0.3;const q={x:p.x+v*Math.sin(h*R)*dt,y:p.y+v*Math.cos(h*R)*dt,tack:tk,f:Math.max(0,f-1),p,t:t+dt};if(Math.abs(q.x)>XB+10)return;nxt.push(q)};
+      go(p.tack,p.f);if(p.f===0&&fetchTarget(p,w.d)==null)go(p.tack==='P'?'S':'P',2)}
+    let best=null;for(const q of nxt){const d=Math.hypot(MARK.x-q.x,MARK.y-q.y);if(d<10&&(!best||d<best.d))best={q,d}}
+    if(best){const path=[];let q=best.q;while(q){path.push([q.x,q.y,q.tack]);q=q.p}path.reverse();let tacks=0;for(let i=1;i<path.length;i++)if(path[i][2]!==path[i-1][2])tacks++;return{T:best.q.t,path,tacks}}
+    const bins=new Map();for(const q of nxt){const a=Math.atan2(q.x-MARK.x,MARK.y-q.y)/R;const k=q.tack+Math.round(a/0.8)+'|'+(q.f>0?1:0);const d=Math.hypot(MARK.x-q.x,MARK.y-q.y);const o=bins.get(k);if(!o||d<o.d)bins.set(k,{q,d})}
+    pts=[...bins.values()].map(o=>o.q)}
+  return null}
+
+// ---------- finish & debrief
+function finish(){if(G.phase!=='race')return;G.phase='debrief';
+  const me=G.me;const order=[...G.boats].sort((a,b)=>{const th=wind(G.W,G.t,MARK.x,MARK.y).d;const ka=a.done?a.ft-1e6:dtg(a,th),kb=b.done?b.ft-1e6:dtg(b,th);return ka-kb});
+  const pos=order.indexOf(me)+1;const startX=me.trk.length?me.trk[0][0]:0;
+  const myIdeal=ideal(startX);const starts=[LINE[0]+10,0,LINE[1]-10].map(x=>({x,r:ideal(x)}));const bestStart=starts.filter(s=>s.r).sort((a,b)=>a.r.T-b.r.T)[0];
+  showDebrief({order,pos,myIdeal,bestStart,startX});}
+function showDebrief(R0){const{order,pos,myIdeal,bestStart,startX}=R0;const me=G.me;document.body.classList.remove('playing');$('game').hidden=true;$('debrief').hidden=false;
+  const L=G.L;$('dLvl').textContent=G.daily?'Repte del dia':L.n+' · '+L.t;$('dPos').textContent=me.done?(pos+'a de '+G.boats.length):'No has arribat';
+  const myT=me.done?me.ft:null;const rows=[];
+  rows.push(['El teu temps',myT?fmt(myT):'—']);if(myIdeal)rows.push(['Ruta ideal des de la teva sortida',fmt(myIdeal.T)+(myT?'  ·  +'+Math.max(0,Math.round(myT-myIdeal.T))+' s':'')]);
+  const win=order[0];rows.push(['Guanyador',win.name+(win.done?' · '+fmt(win.ft):'')]);
+  $('dTimes').innerHTML=rows.map(r=>`<span>${r[0]}</span><b>${r[1]}</b>`).join('');
+  const facts=[];const A=me.acc;const fav=A.t?Math.round(100*A.fav/A.t):0;const winA=win.acc;const wfav=winA.t?Math.round(100*winA.fav/winA.t):0;
+  facts.push({c:fav>=wfav-5?'good':'bad',t:`Has navegat el ${fav}% del temps a la bordada bona, la que apuntava més cap a la boia. El guanyador, el ${wfav}%.`});
+  const myTws=A.t?A.tws/A.t:0;const fl=G.boats.filter(b=>!b.me&&b.acc.t);const flTws=fl.reduce((s,b)=>s+b.acc.tws/b.acc.t,0)/fl.length;
+  facts.push({c:myTws>=flTws-0.1?'good':'bad',t:`Vent mitjà que has tingut: ${nf(myTws,1)} nusos. La flota: ${nf(flTws,1)}.`});
+  if(A.dirty>4)facts.push({c:A.dirty>30?'bad':'',t:`${Math.round(A.dirty)} segons en aire brut, darrere d'algun vaixell.`});
+  if(G.ducks)facts.push({c:'bad',t:`Has hagut de passar per popa de vaixells a estribord ${G.ducks} ${G.ducks>1?'vegades':'vegada'}.`});
+  if(G.slowTacks)facts.push({c:'',t:`${G.slowTacks} ${G.slowTacks>1?'vegades':'vegada'} has hagut de frenar per virar per la popa d'un vaixell que et tapava.`});
+  if(G.blocked)facts.push({c:'',t:`${G.blocked} ${G.blocked>1?'vegades':'vegada'} no has pogut virar quan volies per culpa d'un altre vaixell.`});
+  facts.push({c:'',t:`Virades: ${G.tacks}. La ruta ideal en feia ${myIdeal?myIdeal.tacks:'—'}.`});
+  const ll=G.laylog.length?G.laylog[G.laylog.length-1]:null;if(ll&&me.done){if(ll.over>15)facts.push({c:'bad',t:`L'última virada cap a la boia l'has feta uns ${Math.round(ll.over)} m per sobre de la layline: has navegat de més.`});else if(ll.over<-15)facts.push({c:'',t:`L'última virada l'has feta abans de la layline i has hagut de fer virades curtes a prop de la boia.`});else facts.push({c:'good',t:'L\'última virada cap a la boia, just a la layline.'})}
+  if(bestStart){const nm=x=>x<-40?'el pin':x>40?'el comitè':'el mig';facts.push({c:nm(bestStart.x)===nm(startX)?'good':'',t:`La millor sortida avui era per ${nm(bestStart.x)}. Tu has sortit per ${nm(startX)}.`})}
+  facts.push({c:'',t:revealWind()});
+  $('dFacts').innerHTML=facts.map(f=>`<li class="${f.c}">${f.t}</li>`).join('');
+  $('dRes').innerHTML=order.slice(0,Math.max(5,pos)).map((b,i)=>`<tr class="${b.me?'me':''}"><td>${i+1}</td><td>${b.name}</td><td>${b.done?fmt(b.ft):'—'}</td></tr>`).join('')+(pos>5?'':'');
+  if(P)renderReward(award({pos,of:G.boats.length,done:me.done,myT,idealT:myIdeal?myIdeal.T:null}));
+  drawDebrief(myIdeal,win)}
+function revealWind(){const W=G.W;const k=W.real;const side=v=>v>0?'la dreta':'l\'esquerra';
+  if(k==='osc')return`Avui el vent oscil·lava uns ${Math.round(W.osc.A)}° a cada costat, cada ${Math.round(W.osc.P/60*10)/10} minuts més o menys.`;
+  if(k==='press')return`Avui hi havia més ratxes per ${side(W.gustSide)} del camp.`;
+  if(k==='pers')return`Avui el vent ha girat ${Math.round(Math.abs(W.trend))}° cap a ${side(W.trend)} durant la cenyida.`;
+  if(k==='trans')return`Avui la marinada ha entrat per ${side(W.front.s)} i ha girat el vent ${Math.round(Math.abs(W.front.dNew))}°.`;return''}
+function drawDebrief(myIdeal,win){const c=$('dcv'),ctx=c.getContext('2d');const V=setupCanvas(c,ctx);const t=G.t;drawSea(ctx,V,t);drawCourse(ctx,V,t,false);
+  for(const b of G.boats){if(b.me||b===win)continue;ctx.strokeStyle='rgba(255,255,255,.12)';ctx.lineWidth=1;ctx.beginPath();b.trk.forEach((p,i)=>i?ctx.lineTo(V.X(p[0]),V.Y(p[1])):ctx.moveTo(V.X(p[0]),V.Y(p[1])));ctx.stroke()}
+  if(win&&!win.me){ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=1.5;ctx.beginPath();win.trk.forEach((p,i)=>i?ctx.lineTo(V.X(p[0]),V.Y(p[1])):ctx.moveTo(V.X(p[0]),V.Y(p[1])));ctx.stroke()}
+  if(myIdeal){ctx.strokeStyle=css('--ideal');ctx.lineWidth=2.5;ctx.setLineDash([7,5]);ctx.beginPath();myIdeal.path.forEach((p,i)=>i?ctx.lineTo(V.X(p[0]),V.Y(p[1])):ctx.moveTo(V.X(p[0]),V.Y(p[1])));ctx.stroke();ctx.setLineDash([])}
+  const tr=G.me.trk;ctx.lineWidth=3.5;for(let i=1;i<tr.length;i++){ctx.strokeStyle=tr[i][3]?css('--lift'):css('--me');ctx.beginPath();ctx.moveTo(V.X(tr[i-1][0]),V.Y(tr[i-1][1]));ctx.lineTo(V.X(tr[i][0]),V.Y(tr[i][1]));ctx.stroke()}}
+
+// ---------- players & rewards
+const CLOUD={url:'https://amnbtawcxxszgoxpbhkl.supabase.co',key:'sb_publishable_4JoYQ5-2Vl9AKeDp3JT_ww__tFdErF3'};
+const CLOUD_ON=/github\.io$|^localhost$|^127\.0\.0\.1$/.test(location.hostname);
+async function rpc(fn,args){const r=await fetch(CLOUD.url+'/rest/v1/rpc/'+fn,{method:'POST',headers:{apikey:CLOUD.key,'Content-Type':'application/json'},body:JSON.stringify(args)});const t=await r.text();if(!r.ok)throw new Error(t);return t?JSON.parse(t):null}
+let P=store.get('player',null);let FAM=store.get('family',null);
+const pget=(k,d)=>store.get('p:'+P.id+':'+k,d),pset=(k,v)=>store.set('p:'+P.id+':'+k,v);
+const RANKS=[[0,'Grumet'],[300,'Mariner'],[800,'Patró'],[1600,'Regatista'],[3000,'Campió'],[5000,'Llegenda'],[8000,'Mite del mar']];
+function rankOf(xp){let i=0;while(i<RANKS.length-1&&xp>=RANKS[i+1][0])i++;const lo=RANKS[i][0],hi=i<RANKS.length-1?RANKS[i+1][0]:lo+3000;return{name:RANKS[i][1],lvl:i+1,pct:Math.min(1,(xp-lo)/(hi-lo)),next:i<RANKS.length-1?RANKS[i+1][1]:null,left:hi-xp}}
+const starsOf=id=>pget('stars:'+id,[0,0,0]);
+function totalStars(){return LEVELS.reduce((a,L)=>a+starsOf(L.id).reduce((x,y)=>x+y,0),0)}
+function prog(){return{stars:totalStars(),wins:pget('wins',0),streak:pget('streak',{n:0,d:''}).n,xp:pget('xp',0)}}
+const SKINS=[
+ {id:'opti',name:'Optimist',need:'De sèrie',ok:()=>true},
+ {id:'blue',name:'Optimist blau',need:'3 estrelles',ok:p=>p.stars>=3},
+ {id:'f1',name:'Cotxe de F1',need:'Guanya una regata',ok:p=>p.wins>=1},
+ {id:'moto',name:'Moto de curses',need:'Guanya 3 regates',ok:p=>p.wins>=3},
+ {id:'shark',name:'Tauró',need:'9 estrelles',ok:p=>p.stars>=9},
+ {id:'gold',name:'Optimist daurat',need:'Repte del dia 5 dies seguits',ok:p=>p.streak>=5},
+ {id:'foil',name:'Optimist amb foils',need:'Les 18 estrelles',ok:p=>p.stars>=18}];
+function skinCol(id){return id==='blue'?'#3d7bff':id==='gold'?'#f2c14e':id==='shark'?'#9fb1ba':css('--me')}
+function drawSkin(ctx,id,col,tack){ctx.lineJoin='round';
+  if(id==='f1'){ctx.fillStyle='#111';[[-6,-7],[4,-7],[-7,6],[5,6]].forEach(([x,y])=>ctx.fillRect(x,y,3,5));ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(0,-14);ctx.lineTo(2.5,-4);ctx.lineTo(3.5,8);ctx.lineTo(-3.5,8);ctx.lineTo(-2.5,-4);ctx.closePath();ctx.fill();ctx.fillRect(-7,-13,14,2.5);ctx.fillRect(-6,9,12,3);ctx.fillStyle='#111';ctx.beginPath();ctx.arc(0,0,2.2,0,7);ctx.fill();return}
+  if(id==='moto'){ctx.fillStyle='#111';ctx.beginPath();ctx.ellipse(0,-9,1.8,3.5,0,0,7);ctx.ellipse(0,8,2,3.8,0,0,7);ctx.fill();ctx.fillStyle=col;ctx.beginPath();ctx.ellipse(0,0,3.2,8,0,0,7);ctx.fill();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(0,-1,2.6,0,7);ctx.fill();ctx.fillStyle='#111';ctx.fillRect(-1.6,-2.4,3.2,1.2);return}
+  if(id==='shark'){ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(0,-13);ctx.quadraticCurveTo(6,-2,2,9);ctx.lineTo(5,14);ctx.lineTo(0,11);ctx.lineTo(-5,14);ctx.lineTo(-2,9);ctx.quadraticCurveTo(-6,-2,0,-13);ctx.fill();ctx.fillStyle='#6d828c';ctx.beginPath();ctx.moveTo(0,-3);ctx.lineTo(2.5,3);ctx.lineTo(-2.5,3);ctx.closePath();ctx.fill();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(-2,-8,.9,0,7);ctx.arc(2,-8,.9,0,7);ctx.fill();return}
+  ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(0,-9);ctx.quadraticCurveTo(5,-2,4,7);ctx.lineTo(-4,7);ctx.quadraticCurveTo(-5,-2,0,-9);ctx.fill();ctx.strokeStyle='rgba(0,0,0,.35)';ctx.lineWidth=1;ctx.stroke();
+  if(id==='foil'){ctx.strokeStyle='rgba(255,255,255,.8)';ctx.lineWidth=1;for(const sx of [-1,1]){ctx.beginPath();ctx.moveTo(sx*5,4);ctx.lineTo(sx*12,10);ctx.stroke();ctx.beginPath();ctx.moveTo(sx*3,9);ctx.lineTo(sx*8,16);ctx.stroke()}}
+  ctx.strokeStyle='rgba(255,255,255,.95)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,-3);ctx.lineTo(tack==='P'?-6:6,6);ctx.stroke()}
+function showWho(){document.body.classList.remove('playing','prestart');['menu','game','debrief','garage','board'].forEach(i=>$(i).hidden=true);$('who').hidden=false;$('whoMsg').textContent='';
+  $('famBox').hidden=!CLOUD_ON;if(CLOUD_ON){$('famState').textContent=FAM?`Codi de família: ${FAM}. Tria qui ets o afegeix un regatista.`:'Escriu el codi de la teva família o crea\'n un. Sense codi, el progrés només es guarda en aquest mòbil.';$('famJoin').hidden=!!FAM}
+  renderWhoList()}
+async function renderWhoList(){const box=$('whoList');let list=store.get('players',[]);
+  if(CLOUD_ON&&FAM){box.innerHTML='<span class="small">Carregant…</span>';try{const cl=await rpc('rolada_players_list',{p_family:FAM});list=cl.map(p=>({id:p.id,name:p.name,sail:p.sail,cloud:true,data:p}))}catch(e){$('whoMsg').textContent='No s\'ha pogut connectar amb el rànquing. Comprova la connexió.'}}
+  box.innerHTML=list.map((p,i)=>`<button data-i="${i}"><b>${esc(p.name)}</b><span>${esc(p.sail)}</span></button>`).join('');
+  box.querySelectorAll('button').forEach(b=>b.onclick=()=>choose(list[+b.dataset.i]))}
+function esc(t){return String(t??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function choose(p){P={id:p.id,name:p.name,sail:p.sail,cloud:!!p.cloud};store.set('player',P);
+  if(p.cloud&&p.data&&p.data.xp>=pget('xp',0)){const d=p.data;pset('xp',d.xp);pset('wins',d.wins);pset('races',d.races);pset('skin',d.skin||'opti');if(d.streak&&d.streak.d)pset('streak',d.streak);Object.entries(d.stars||{}).forEach(([k,v])=>pset('stars:'+k,v))}
+  if(!p.cloud){const l=store.get('players',[]);if(!l.find(x=>x.id===p.id)){l.push({id:p.id,name:p.name,sail:p.sail});store.set('players',l)}}
+  showMenu()}
+$('oGo').onclick=async()=>{const n=$('oName').value.trim();if(!n)return;const sail=($('oSail').value.trim()||'').toUpperCase();
+  if(CLOUD_ON&&FAM){try{const r=(await rpc('rolada_join',{p_family:FAM,p_name:n,p_sail:sail}))[0];choose({id:r.id,name:r.name,sail:r.sail,cloud:true,data:r})}catch(e){$('whoMsg').textContent='No s\'ha pogut crear el regatista al rànquing.'}return}
+  choose({id:'x_'+Date.now().toString(36),name:n,sail})};
+function newCode(){const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';const r=()=>A[Math.floor(Math.random()*A.length)];return'ROL-'+r()+r()+r()+r()+'-'+r()+r()+r()+r()}
+$('famNew').onclick=()=>{FAM=newCode();store.set('family',FAM);showWho();$('whoMsg').textContent=`Codi creat: ${FAM}. Apunta'l: és el que haureu d'escriure a l'altre mòbil per jugar al mateix rànquing.`};
+$('famGo').onclick=async()=>{const c=$('famCode').value.trim().toUpperCase();if(c.length<6){$('whoMsg').textContent='El codi ha de tenir com a mínim 6 caràcters.';return}
+  try{await rpc('rolada_players_list',{p_family:c});FAM=c;store.set('family',FAM);showWho()}catch(e){$('whoMsg').textContent='No s\'ha pogut connectar. Torna-ho a provar.'}};
+function syncCloud(res){if(!CLOUD_ON||!FAM||!P||!P.cloud)return;const stars={};LEVELS.forEach(L=>stars[L.id]=starsOf(L.id));
+  rpc('rolada_save',{p_family:FAM,p_id:P.id,p_xp:pget('xp',0),p_wins:pget('wins',0),p_races:pget('races',0),p_stars:stars,p_streak:pget('streak',{}),p_skin:pget('skin','opti')}).catch(()=>{});
+  if(res)rpc('rolada_result',{p_family:FAM,p_id:P.id,p_kind:res.kind,p_level:res.level,p_day:res.day,p_pos:res.pos,p_fleet:res.fleet,p_time:res.time}).catch(()=>{})}
+async function showBoard(){['menu','who','game','debrief','garage'].forEach(i=>$(i).hidden=true);$('board').hidden=false;$('bInfo').textContent=`Codi de família: ${FAM}`;$('bTable').innerHTML='<tr><td>Carregant…</td></tr>';
+  try{const rows=await rpc('rolada_board',{p_family:FAM,p_day:today()});rows.sort((a,b)=>b.xp-a.xp);
+    $('bTable').innerHTML=`<tr><th></th><th>Regatista</th><th>Rang</th><th>XP</th><th>★</th><th>Vict.</th><th>Repte d'avui</th></tr>`+rows.map((r,i)=>{const st=Object.values(r.stars||{}).flat().reduce((a,b)=>a+(b?1:0),0);return`<tr class="${r.id===P.id?'me':''}"><td>${i+1}</td><td>${esc(r.name)} <span class="small">${esc(r.sail)}</span></td><td>${rankOf(r.xp).name}</td><td>${r.xp}</td><td>${st}</td><td>${r.wins}</td><td>${r.daily_pos?r.daily_pos+'a · '+fmt(r.daily_time):'—'}</td></tr>`}).join('')}
+  catch(e){$('bTable').innerHTML='<tr><td>No s\'ha pogut carregar el rànquing.</td></tr>'}}
+$('bBack').onclick=()=>showMenu();
+function showGarage(){['menu','who','game','debrief'].forEach(i=>$(i).hidden=true);$('garage').hidden=false;const p=prog();const cur=pget('skin','opti');
+  $('skins').innerHTML=SKINS.map(k=>{const ok=k.ok(p);return`<div class="skin ${ok?'':'lock'} ${cur===k.id?'sel':''}" data-id="${k.id}" role="button" tabindex="0"><canvas width="220" height="220"></canvas><b>${k.name}</b><span class="small">${ok?(cur===k.id?'El teu vaixell':'Toca per triar'):'🔒 '+k.need}</span></div>`}).join('');
+  $('skins').querySelectorAll('.skin').forEach(el=>{const c=el.querySelector('canvas'),g=c.getContext('2d');g.translate(110,110);g.rotate(-0.5);g.scale(6,6);drawSkin(g,el.dataset.id,skinCol(el.dataset.id),'S');
+    el.onclick=()=>{if(el.classList.contains('lock'))return;pset('skin',el.dataset.id);showGarage()}})}
+$('gBack').onclick=()=>showMenu();
+const today=()=>{const d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate()};
+function dayBefore(n){const d=new Date(Math.floor(n/10000),Math.floor(n/100)%100-1,n%100);d.setDate(d.getDate()-1);return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate()}
+let audio=null;function beep(notes){try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();let t=audio.currentTime;for(const [f,d] of notes){const o=audio.createOscillator(),g=audio.createGain();o.type='triangle';o.frequency.value=f;g.gain.setValueAtTime(.12,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g).connect(audio.destination);o.start(t);o.stop(t+d);t+=d*0.8}}catch(e){}}
+function confetti(){const box=document.createElement('div');box.className='confetti';const cols=['#ff5b4a','#ffd166','#5fe08f','#c58bff','#fff','#3d7bff'];for(let i=0;i<70;i++){const c=document.createElement('i');c.style.left=Math.random()*100+'%';c.style.background=cols[i%cols.length];c.style.animationDelay=Math.random()*0.8+'s';c.style.animationDuration=1.8+Math.random()*1.4+'s';box.appendChild(c)}document.body.appendChild(box);setTimeout(()=>box.remove(),4200)}
+function award({pos,of,done,myT,idealT}){const L=G.L;const before=prog();const rkBefore=rankOf(before.xp);
+  const got=[done&&pos<=3,done&&pos===1,done&&idealT!=null&&myT-idealT<=20];const old=G.daily?[0,0,0]:starsOf(L.id);const nw=got.map((g,i)=>g&&!old[i]);
+  if(!G.daily)pset('stars:'+L.id,old.map((o,i)=>o||got[i]?1:0));
+  let xp=done?50+Math.max(0,of-pos)*10:10;xp+=nw.filter(Boolean).length*60;if(G.daily&&done)xp+=50;
+  if(done&&pos===1)pset('wins',pget('wins',0)+1);
+  pset('xp',before.xp+xp);pset('races',pget('races',0)+1);
+  if(done&&myT){const k='best:'+(G.daily?'daily'+today():L.id);const pb=pget(k,null);if(!pb||myT<pb.t||pos<pb.pos)pset(k,{pos:Math.min(pos,pb?pb.pos:99),of,t:Math.min(myT,pb?pb.t:1e9)})}
+  if(G.daily){const st=pget('streak',{n:0,d:0});const td=today();if(st.d!==td){st.n=st.d===dayBefore(td)?st.n+1:1;st.d=td;pset('streak',st)}}
+  syncCloud(done?{kind:G.daily?'daily':'level',level:L.id,day:G.daily?today():null,pos,fleet:of,time:myT}:null);
+  const after=prog();const unlocked=SKINS.filter(k=>!k.ok(before)&&k.ok(after));const rk=rankOf(after.xp);
+  return{got,nw,xp,unlocked,rk,rankUp:rk.lvl>rkBefore.lvl,starsShow:G.daily?got:got.map((g,i)=>g||old[i])}}
+function renderReward(r){const lab=['Podi','Victòria','A menys de 20 s de la ruta ideal'];
+  $('dRew').innerHTML=`<div class="stars3">${r.starsShow.map((g,i)=>`<span class="s3 ${r.nw[i]?'new':''}"><span class="st ${g?'':'off'}">★</span>${lab[i]}</span>`).join('')}</div>
+   <div class="xp"><span class="rk">+${r.xp} XP · ${r.rk.name}${r.rk.next?` · falten ${r.rk.left} per a ${r.rk.next}`:''}</span><div class="bar"><i style="width:${Math.round(r.rk.pct*100)}%"></i></div></div>
+   ${r.rankUp?`<div class="unlock">Has pujat de rang: ara ets ${r.rk.name}!</div>`:''}${r.unlocked.map(k=>`<div class="unlock">Nou al garatge: ${k.name}!</div>`).join('')}`;
+  if(r.nw.some(Boolean)||r.unlocked.length)beep([[523,.15],[659,.15],[784,.15],[1047,.35]]);if(r.got[1])confetti()}
+function renderPbar(){const p=prog(),rk=rankOf(p.xp);$('pbar').innerHTML=`<div><div class="nm">${esc(P.name)}</div><div class="sail">${esc(P.sail)}</div></div><div class="xp"><span class="rk">${rk.name} · ${p.xp} XP</span><div class="bar"><i style="width:${Math.round(rk.pct*100)}%"></i></div></div><div class="stars">★ ${p.stars}/18 · ${p.wins} ${p.wins===1?'victòria':'victòries'}</div><button class="btn sec" id="toGarage">Garatge</button>${CLOUD_ON&&FAM&&P.cloud?'<button class="btn sec" id="toBoard">Rànquing</button>':''}<button class="chip" id="toWho">Canvia</button>`;
+  $('toGarage').onclick=showGarage;if($('toBoard'))$('toBoard').onclick=showBoard;$('toWho').onclick=showWho;
+  const st=pget('streak',{n:0,d:0});const db=pget('best:daily'+today(),null);const done=st.d===today();
+  $('daily').innerHTML=`<span><b>Repte del dia</b><br><span class="small">El mateix vent per a tothom avui. ${db?'El teu millor: '+db.pos+'a, '+fmt(db.t)+'.':'Encara no l\'has fet.'}</span></span><span class="stars">${st.n?'🔥 '+st.n+(st.n===1?' dia':' dies')+(done?'':' · no la perdis'):'Comença una ratxa'}</span>`;
+  $('daily').onclick=()=>newGame(5,today(),true)}
+
+// ---------- menu
+function showMenu(){if(!P){showWho();return}$('who').hidden=true;$('board').hidden=true;$('garage').hidden=true;renderPbar();document.body.classList.remove('playing','prestart');if(G)G.phase='menu';$('game').hidden=true;$('debrief').hidden=true;$('menu').hidden=false;
+  $('lvls').innerHTML=LEVELS.map((L,i)=>{const b=pget('best:'+L.id,null);const st=starsOf(L.id);return`<button class="lvl" data-i="${i}"><span class="n">${L.n.toUpperCase()}</span><span class="t">${L.t}</span><span class="d">${L.d}</span><span class="stars">${st.map(x=>`<span class="st ${x?'':'off'}">★</span>`).join('')}</span><span class="best">${b?'Millor: '+b.pos+'a de '+b.of+' · '+fmt(b.t):'&nbsp;'}</span></button>`}).join('');
+  $('lvls').querySelectorAll('.lvl').forEach(el=>el.onclick=()=>newGame(+el.dataset.i));
+  [4,7,12].forEach(s=>$('sp'+s).setAttribute('aria-pressed',ui.speed===s));$('aids').setAttribute('aria-pressed',ui.aids);$('aids').textContent=ui.aids?'Totes activades':'Segons el nivell'}
+[4,7,12].forEach(s=>$('sp'+s).onclick=()=>{ui.speed=s;store.set('speed',s);showMenu()});
+$('aids').onclick=()=>{ui.aids=!ui.aids;store.set('aids',ui.aids);showMenu()};
+showMenu();requestAnimationFrame(frame);
+window.__rolada={get G(){return G},newGame,simStep,startRace,doTack,finish,ideal,ui};
+})();
+</script>
+
+<script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=5523046f').catch(()=>{}))}</script>
+</body>
+</html>
