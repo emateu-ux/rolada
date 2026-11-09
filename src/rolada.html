@@ -885,7 +885,7 @@ function shopTap(it){const k=ikey(it);const C=CATS.find(c=>c.id===it.cat);
 $('gBack').onclick=()=>{cancelAnimationFrame(shopRAF);showMenu()};
 // ---------- menu
 function showMenu(){if(!P){showWho();return}$('who').hidden=true;$('board').hidden=true;$('garage').hidden=true;renderPbar();document.body.classList.remove('playing','prestart');if(G)G.phase='menu';$('game').hidden=true;$('debrief').hidden=true;$('menu').hidden=false;
-  $('lvls').innerHTML=LEVELS.map((L,i)=>{const b=pget('best:'+L.id,null);const st=starsOf(L.id);return`<button class="lvl" data-i="${i}"><span class="n">${L.n.toUpperCase()}</span><span class="t">${L.t}</span><span class="d">${L.d}</span><span class="stars">${st.map(x=>`<span class="st ${x?'':'off'}">★</span>`).join('')}</span><span class="best">${b?'Millor: '+b.pos+'a de '+b.of+' · '+fmt(b.t):'&nbsp;'}</span></button>`}).join('');
+  $('lvls').innerHTML=LEVELS.map((L,i)=>{const b=pget('best:'+L.id,null);const st=starsOf(L.id);return`<button class="lvl" data-i="${i}"><span class="n">${L.n.toUpperCase()}</span><span class="t">${L.t}</span><span class="d">${L.d}</span><span class="stars" aria-label="${st.filter(Boolean).length} de 3 estrelles">${[...st].sort((x,y)=>(y?1:0)-(x?1:0)).map(x=>`<span class="st ${x?'':'off'}">★</span>`).join('')}</span><span class="best">${b?'Millor: '+b.pos+'a de '+b.of+' · '+fmt(b.t):'&nbsp;'}</span></button>`}).join('');
   $('lvls').querySelectorAll('.lvl').forEach(el=>el.onclick=()=>newGame(+el.dataset.i));
   [4,7,12].forEach(s=>$('sp'+s).setAttribute('aria-pressed',ui.speed===s));$('aids').setAttribute('aria-pressed',ui.aids);$('aids').textContent=ui.aids?'Totes activades':'Segons el nivell'}
 [4,7,12].forEach(s=>$('sp'+s).onclick=()=>{ui.speed=s;store.set('speed',s);showMenu()});
