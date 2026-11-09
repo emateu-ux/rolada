@@ -72,6 +72,14 @@ input{background:var(--panel2);border:1px solid var(--line);border-radius:6px;co
 .rew .stars3{display:flex;gap:10px;flex-wrap:wrap}
 .rew .xp{flex:none}
 .coinwin{font-family:var(--f-disp);font-size:18px;color:#ffd166}
+#comp{display:flex;flex-direction:column;gap:12px;max-width:760px;margin:0 auto;width:100%}
+#comp h3{margin:6px 0 4px;font-family:var(--f-disp);letter-spacing:.04em}
+.cpath{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.cpath .chip{cursor:default;font-size:13px;padding:6px 10px}.cpath .chip.now{background:var(--fg);color:var(--ink)}.cpath .chip.done{color:var(--lift);border-color:var(--lift)}.cpath .chip.lock{opacity:.5}.cpath .arr{color:var(--muted)}
+.res tr.cut td{color:#ffd166;font-size:11px;letter-spacing:.12em;text-transform:uppercase;text-align:center;border-top:2px dashed #ffd166;padding:2px}
+.res tr.gap td{color:var(--muted);text-align:center;padding:0}
+.lastmsg{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:0}.lastmsg.good{border-color:var(--lift);color:var(--lift)}
+.compbtn{border-color:#ffd166}.compbtn b{color:#ffd166}
+h2.sect{font-family:var(--f-disp);font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:6px 0 -4px}
 .rew .s3{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
 .rew .s3 .st{font-size:24px}
 .rew .s3.new .st{animation:pop .6s ease-out}
@@ -208,8 +216,19 @@ table.res tr.me td{color:var(--me);font-weight:700}
     <div class="skins" id="skins"></div>
   </section>
 
+  <section id="comp" hidden>
+    <div class="row" style="align-items:center;justify-content:space-between"><h2 id="cTitle">Competició</h2><button class="btn sec" id="cBack">Menú</button></div>
+    <div class="cpath" id="cPath"></div>
+    <div id="cInfo"></div>
+    <table class="res" id="cTable"></table>
+    <div class="row"><button class="btn" id="cGo">Comença</button></div>
+    <div id="cTroph"></div>
+  </section>
+
   <section id="menu">
     <div class="pbar" id="pbar"></div>
+    <button class="daily compbtn" id="toComp"></button>
+    <h2 class="sect">Entrenament</h2>
     <button class="daily" id="daily"></button>
     <p class="small" style="max-width:68ch;margin:0">Una flota de 11 a 14 Optimist. Tu decideixes quan virar i el vaixell navega sol. Els nivells són una cenyida; la regata completa té través, popa i porta. El vent canvia de direcció i de força: llegeix l'aigua i la brúixola. Al final veuràs la ruta ideal que permetia el vent d'aquella regata.</p>
     <div class="lvls" id="lvls"></div>
@@ -344,10 +363,11 @@ function makeFleet(lv,seed){
 
 // ---------- game state
 let G=null;const ui={speed:store.get('speed',7),aids:store.get('aids',false)};
-function newGame(lvIdx,seed,daily){$('who').hidden=true;$('garage').hidden=true;VZ.z=2.5;VZ.follow=true;pendingTack=false;
-  const L=LEVELS[lvIdx];seed=seed??Math.floor(Math.random()*1e9);
+function newGame(lvIdx,seed,daily){$('who').hidden=true;$('garage').hidden=true;$('comp').hidden=true;VZ.z=2.5;VZ.follow=true;pendingTack=false;
+  const L=typeof lvIdx==='object'?lvIdx:LEVELS[lvIdx];seed=seed??Math.floor(Math.random()*1e9);
   const W=makeWind(L.wind||L.id,seed);
-  const ai=makeFleet(L.id,seed);
+  let ai;if(L.comp){const ch=compState().champ;const half=Math.max(95,(ch.fleet.length+1)*2.6);LINE[0]=-half;LINE[1]=half;const r=rng(seed*7+3);ai=ch.fleet.map(f=>({...f,ai:true,x:lerp(LINE[0]+8,LINE[1]-8,r()),tack:r()<.65?'S':'P'}))}
+  else{LINE[0]=-95;LINE[1]=95;ai=makeFleet(L.id,seed)}
   const me={name:P?(P.sail||P.name):'TU',me:true,x:0,tack:'S',sk:1};
   const boats=[me,...ai].map(b=>Object.assign(b,{y:-4,h:0,v:0,tk:0,gy:false,done:false,ft:null,dirty:0,duck:0,last:-99,trk:[],mean:null,hd:0,nextD:0,leg:0,gate:null,gp:false,gfix:false,off:0,splits:[],acc:{t:0,tb:0,fav:0,tws:0,dirty:0,runSh:0,off:[0,0,0],n:0}}));
   G={L,lvIdx,seed,daily:!!daily,full:!!L.full,legs:L.full?FULL:WIND1,maxT:L.full?3000:1500,rr:rng(seed*13+5),skin:P?equipped('boat'):'opti',trail:P?equipped('trail'):'none',flag:P?equipped('flag'):'none',tail:[],W,boats,me,t:-30,phase:'pre',paused:false,trace:[],laylog:[],tacks:0,gybes:0,ducks:0,blocked:0,warnT:0,warnMsg:'',uiKey:null,gateInfo:null,field:null,fieldT:-99,parts:[]};
@@ -508,7 +528,7 @@ function render(realDt){if(G.phase==='debrief')return;const V=setupCanvas(cv,cx,
   drawBoat(cx,V,G.me,css('--me'),G.me.name);
   if(G.phase==='pre'){cx.font='700 24px Chakra Petch, sans-serif';cx.fillStyle='rgba(255,255,255,.92)';cx.textAlign='center';cx.fillText('Tria on surts',V.W/2,40);cx.textAlign='left'}
   updateHud()}
-function effAids(){return ui.aids?{streaks:true,hint:true,lay:true,shadow:true}:G.L.aids}
+function effAids(){return ui.aids&&!G.L.comp?{streaks:true,hint:true,lay:true,shadow:true}:G.L.aids}
 
 // ---------- HUD
 const trace=$('trace'),tctx=trace.getContext('2d');
@@ -579,8 +599,14 @@ let lastPress=0;function press(e){const now=performance.now();if(now-lastPress<3
 const vb=$('vira');vb.addEventListener('touchstart',press,{passive:false});vb.addEventListener('pointerdown',press);vb.addEventListener('mousedown',press);vb.addEventListener('click',press);
 document.addEventListener('keydown',e=>{if($('game').hidden)return;if(e.code==='Space'||e.code==='Enter'){if(G.phase==='race'){e.preventDefault();if(!e.repeat)doTack()}}if(G&&G.phase==='race'&&!e.repeat){if(e.code==='ArrowUp')setOff(1);if(e.code==='ArrowDown')setOff(-1);if(e.code==='ArrowLeft')setGate(0);if(e.code==='ArrowRight')setGate(1)}if(e.key==='p'||e.key==='P')togglePause()});
 function togglePause(){if(!G||G.phase!=='race')return;G.paused=!G.paused;$('pause').textContent=G.paused?'▶':'II'}
-$('pause').onclick=togglePause;$('quit').onclick=()=>showMenu();$('back1').onclick=()=>showMenu();$('back2').onclick=()=>showMenu();
-$('again').onclick=()=>newGame(G.lvIdx,G.seed,G.daily);$('newr').onclick=()=>newGame(G.lvIdx);
+$('pause').onclick=togglePause;let quitT=0;$('quit').onclick=()=>{if(G&&G.L.comp&&G.phase==='race'){if(performance.now()-quitT>3000){quitT=performance.now();warn('Toca ✕ un altre cop per abandonar: comptarà com a retirat');return}
+    G.phase='menu';simRest();const order=[...G.boats].filter(b=>!b.me).sort((a,b)=>pkey(a)-pkey(b));order.push(G.me);compRaceDone(order);showComp();return}showMenu()};
+// after you retire, the others keep racing to the finish so their result is real
+function simRest(){const me=G.me;me.done=true;me.x=1e5;me.y=-1e5;let ld=-99;
+  while(G.t<G.maxT&&G.boats.some(b=>!b.done&&!b.me)){const t=G.t;computeDirty(t);rightOfWay(t);if(t-ld>=1){ld=t;for(const b of G.boats)if(b.ai)decide(b,t)}for(const b of G.boats)stepBoat(b,t,DT);G.t+=DT}
+  me.done=false;me.ft=null;me.ret=true}
+$('back1').onclick=()=>G&&G.L.comp?showComp():showMenu();$('back2').onclick=()=>showMenu();
+$('again').onclick=()=>newGame(G.lvIdx,G.seed,G.daily);$('newr').onclick=()=>G.L.comp?showComp():newGame(G.lvIdx);
 
 // ---------- reference: a good sailor who does not know the future, sailing alone from your start
 function sensRef(sx,tk){const w=wind(G.W,0,sx,-4);const b={name:'',st:'sens',ai:true,ghost:true,sk:1,m:0.5,thr:4,del:2,x:sx,y:-4,tack:tk,h:w.d+(tk==='P'?45:-45),v:polar(w.s)*0.85,tk:0,gy:false,done:false,ft:null,dirty:0,duck:0,last:-99,trk:[],mean:w.d,hd:0,nextD:0,leg:0,gate:null,gp:false,gfix:false,off:0,splits:[],acc:{t:0,tb:0,fav:0,tws:0,dirty:0,runSh:0,off:[0,0,0],n:0}};
@@ -647,8 +673,10 @@ function showDebrief(R0){const{order,pos,myIdeal,bestStart,startX,ref}=R0;const 
   if(bestStart){const nm=x=>x<-40?'pel pin':x>40?'pel comitè':'pel mig';facts.push({c:nm(bestStart.x)===nm(startX)?'good':'',t:`La millor sortida avui era ${nm(bestStart.x)}. Tu has sortit ${nm(startX)}.`})}
   facts.push({c:'',t:revealWind()});
   $('dFacts').innerHTML=facts.map(f=>`<li class="${f.c}">${f.t}</li>`).join('');
-  $('dRes').innerHTML=order.slice(0,Math.max(5,pos)).map((b,i)=>`<tr class="${b.me?'me':''}"><td>${i+1}</td><td>${b.name}</td><td>${b.done?fmt(b.ft):'—'}</td></tr>`).join('')+(pos>5?'':'');
-  if(P)renderReward(award({pos,of:G.boats.length,done:me.done,myT,idealT:myIdeal?myIdeal.T:null}));
+  {const idx=[...new Set([0,1,2,3,4,pos-2,pos-1,pos].filter(i=>i>=0&&i<order.length))].sort((a,b)=>a-b);let h='',pv=-1;for(const i of idx){if(i>pv+1)h+='<tr class="gap"><td colspan="3">…</td></tr>';const b=order[i];h+=`<tr class="${b.me?'me':''}"><td>${i+1}</td><td>${b.name}</td><td>${b.done?fmt(b.ft):'—'}</td></tr>`;pv=i}$('dRes').innerHTML=h}
+  const comp=!!G.L.comp;$('again').hidden=comp;$('newr').textContent=comp?'Classificació':'Nova regata';
+  if(comp){const cr=compRaceDone(order);$('dRew').innerHTML=`<div class="coinwin">+${cr.cn} 🪙 · +${cr.xp} XP</div>`+(cr.msg?`<p class="lastmsg ${cr.msg.qual?'good':''}">${compMsg(cr.msg)}</p>`:'');$('dRew').hidden=false;if(cr.msg&&cr.msg.qual)playCeleb(equipped('celeb'))}
+  else if(P)renderReward(award({pos,of:G.boats.length,done:me.done,myT,idealT:myIdeal?myIdeal.T:null}));
   renderSplits(myIdeal);drawDebrief(myIdeal,win,ref)}
 function renderSplits(myIdeal){const box=$('dSplits');box.hidden=!G.full;if(!G.full)return;const me=G.me;
   const lt=(b,i)=>b.splits[i]==null?null:b.splits[i]-(i?b.splits[i-1]:0);
@@ -687,7 +715,7 @@ async function renderWhoList(){const box=$('whoList');let list=store.get('player
   box.querySelectorAll('button').forEach(b=>b.onclick=()=>choose(list[+b.dataset.i]))}
 function esc(t){return String(t??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function choose(p){P={id:p.id,name:p.name,sail:p.sail,cloud:!!p.cloud};store.set('player',P);
-  if(p.cloud&&p.data&&p.data.xp>=pget('xp',0)){const d=p.data;pset('xp',d.xp);pset('wins',d.wins);pset('races',d.races);pset('skin',d.skin||'opti');if(d.coins!=null)pset('coins',d.coins);if(d.items&&Array.isArray(d.items.own)){pset('own',d.items.own);const eq=d.items.eq||{};CATS.forEach(c=>{if(eq[c.key])pset(c.key,eq[c.key])})}if(d.streak&&d.streak.d)pset('streak',d.streak);Object.entries(d.stars||{}).forEach(([k,v])=>pset('stars:'+k,v))}
+  if(p.cloud&&p.data&&p.data.xp>=pget('xp',0)){const d=p.data;pset('xp',d.xp);pset('wins',d.wins);pset('races',d.races);pset('skin',d.skin||'opti');if(d.coins!=null)pset('coins',d.coins);if(d.items&&d.items.comp&&compBetter(d.items.comp,pget('compBest',null)))pset('compBest',d.items.comp);if(d.items&&Array.isArray(d.items.own)){pset('own',d.items.own);const eq=d.items.eq||{};CATS.forEach(c=>{if(eq[c.key])pset(c.key,eq[c.key])})}if(d.streak&&d.streak.d)pset('streak',d.streak);Object.entries(d.stars||{}).forEach(([k,v])=>pset('stars:'+k,v))}
   if(!p.cloud){const l=store.get('players',[]);if(!l.find(x=>x.id===p.id)){l.push({id:p.id,name:p.name,sail:p.sail});store.set('players',l)}}
   showMenu()}
 $('oGo').onclick=async()=>{const n=$('oName').value.trim();if(!n)return;const sail=($('oSail').value.trim()||'').toUpperCase();
@@ -698,12 +726,15 @@ $('famNew').onclick=()=>{FAM=newCode();store.set('family',FAM);showWho();$('whoM
 $('famGo').onclick=async()=>{const c=$('famCode').value.trim().toUpperCase();if(c.length<6){$('whoMsg').textContent='El codi ha de tenir com a mínim 6 caràcters.';return}
   try{await rpc('rolada_players_list',{p_family:c});FAM=c;store.set('family',FAM);showWho()}catch(e){$('whoMsg').textContent='No s\'ha pogut connectar. Torna-ho a provar.'}};
 function syncCloud(res){if(!CLOUD_ON||!FAM||!P||!P.cloud)return;const stars={};LEVELS.forEach(L=>stars[L.id]=starsOf(L.id));
-  rpc('rolada_save',{p_family:FAM,p_id:P.id,p_xp:pget('xp',0),p_wins:pget('wins',0),p_races:pget('races',0),p_stars:stars,p_streak:pget('streak',{}),p_skin:pget('skin','opti'),p_coins:coins(),p_items:{own:owned(),eq:Object.fromEntries(CATS.map(c=>[c.key,pget(c.key,c.def)]))}}).catch(()=>{});
+  rpc('rolada_save',{p_family:FAM,p_id:P.id,p_xp:pget('xp',0),p_wins:pget('wins',0),p_races:pget('races',0),p_stars:stars,p_streak:pget('streak',{}),p_skin:pget('skin','opti'),p_coins:coins(),p_items:{own:owned(),eq:Object.fromEntries(CATS.map(c=>[c.key,pget(c.key,c.def)])),comp:pget('compBest',null),troph:pget('trophies',[]).length}}).catch(()=>{});
   if(res)rpc('rolada_result',{p_family:FAM,p_id:P.id,p_kind:res.kind,p_level:res.level,p_day:res.day,p_pos:res.pos,p_fleet:res.fleet,p_time:res.time}).catch(()=>{})}
 let boardTab='all';
-async function showBoard(){['menu','who','game','debrief','garage'].forEach(i=>$(i).hidden=true);$('board').hidden=false;$('bInfo').textContent=`Codi de família: ${FAM}`;$('bTable').innerHTML='<tr><td>Carregant…</td></tr>';
-  $('bTabs').innerHTML=`<button class="chip" data-t="all" aria-pressed="${boardTab==='all'}">General</button>`+LEVELS.map(L=>`<button class="chip" data-t="${L.id}" aria-pressed="${boardTab===L.id}">${L.t}</button>`).join('');
+async function showBoard(){['menu','who','game','debrief','garage','comp'].forEach(i=>$(i).hidden=true);$('board').hidden=false;$('bInfo').textContent=`Codi de família: ${FAM}`;$('bTable').innerHTML='<tr><td>Carregant…</td></tr>';
+  $('bTabs').innerHTML=`<button class="chip" data-t="all" aria-pressed="${boardTab==='all'}">General</button><button class="chip" data-t="comp" aria-pressed="${boardTab==='comp'}">Competició</button>`+LEVELS.map(L=>`<button class="chip" data-t="${L.id}" aria-pressed="${boardTab===L.id}">${L.t}</button>`).join('');
   $('bTabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{boardTab=b.dataset.t;showBoard()});
+  if(boardTab==='comp'){try{const rows=await rpc('rolada_players_list',{p_family:FAM});const cb=r=>r.items&&r.items.comp;rows.sort((a,b)=>compBetter(cb(a)||{season:0,stage:0,pos:99},cb(b)||{season:0,stage:0,pos:99})?-1:1);
+      $('bTable').innerHTML=`<tr><th></th><th>Regatista</th><th>Fins on ha arribat</th><th>Trofeus</th></tr>`+rows.map((r,i)=>{const c=cb(r);return`<tr class="${r.id===P.id?'me':''}"><td>${c?i+1:''}</td><td>${esc(r.name)} <span class="small">${esc(r.sail)}</span></td><td>${c?stLabel(c.season,c.stage)+' · '+c.pos+'a':'—'}</td><td>${r.items&&r.items.troph?'🏆 '+r.items.troph:'—'}</td></tr>`}).join('')}
+    catch(e){$('bTable').innerHTML='<tr><td>No s\'ha pogut carregar el rànquing.</td></tr>'}return}
   if(boardTab!=='all'){try{const rows=await rpc('rolada_level_board',{p_family:FAM,p_level:boardTab});rows.sort((a,b)=>(a.best_pos??99)-(b.best_pos??99)||(a.best_time??1e9)-(b.best_time??1e9)||b.wins-a.wins);
       $('bTable').innerHTML=`<tr><th></th><th>Regatista</th><th>Millor</th><th>Temps</th><th>Regates</th><th>Vict.</th></tr>`+rows.map((r,i)=>`<tr class="${r.id===P.id?'me':''}"><td>${r.best_pos?i+1:''}</td><td>${esc(r.name)} <span class="small">${esc(r.sail)}</span></td><td>${r.best_pos?r.best_pos+'a de '+r.best_fleet:'—'}</td><td>${r.best_time?fmt(r.best_time):'—'}</td><td>${r.races}</td><td>${r.wins}</td></tr>`).join('');}
     catch(e){$('bTable').innerHTML='<tr><td>No s\'ha pogut carregar el rànquing.</td></tr>'}return}
@@ -877,9 +908,11 @@ function fireworks(n,cols){const c=document.createElement('canvas');c.className=
   (function f(){g.clearRect(0,0,W,H);for(const p of ps){p.x+=p.vx;p.y+=p.vy;p.vy+=.05;p.vx*=.985;p.l-=.012;if(p.l>0){g.globalAlpha=p.l;g.fillStyle=p.c;g.beginPath();g.arc(p.x,p.y,2.2,0,7);g.fill()}}if(performance.now()-t0<n*450+2200)requestAnimationFrame(f);else c.remove()})()}
 // ---------- garage = shop
 let shopCat='boat',buyPending=null;
-function showGarage(){['menu','who','game','debrief','board'].forEach(i=>$(i).hidden=true);$('garage').hidden=false;owned();
-  $('gCoins').textContent=coins();$('gTabs').innerHTML=CATS.map(c=>`<button class="chip" data-c="${c.id}" aria-pressed="${c.id===shopCat}">${c.name}</button>`).join('');
+function showGarage(){['menu','who','game','debrief','board','comp'].forEach(i=>$(i).hidden=true);$('garage').hidden=false;owned();
+  $('gCoins').textContent=coins();$('gTabs').innerHTML=CATS.map(c=>`<button class="chip" data-c="${c.id}" aria-pressed="${c.id===shopCat}">${c.name}</button>`).join('')+`<button class="chip" data-c="troph" aria-pressed="${shopCat==='troph'}">Trofeus</button>`;
   $('gTabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{shopCat=b.dataset.c;buyPending=null;showGarage()});
+  if(shopCat==='troph'){const tr=pget('trophies',[]);cancelAnimationFrame(shopRAF);$('skins').innerHTML=tr.length?tr.slice().reverse().map((t,i)=>`<div class="skin" style="--tc:${['#cd7f32','#c0c0c0','#ffd23f','#7ff0ff'][t.stage]}"><span class="tier">Temporada ${t.season}</span><canvas width="220" height="220" data-st="${t.stage}" data-p="${t.pos}"></canvas><b>${STAGES[t.stage].name}</b><span class="small">${t.pos}a de ${t.n}</span></div>`).join(''):'<p class="small">Encara no tens trofeus. Classifica\'t en un campionat de la Competició.</p>';
+    $('skins').querySelectorAll('canvas').forEach(c=>drawTrophy(c.getContext('2d'),+c.dataset.st,+c.dataset.p));return}
   const cur=equipped(shopCat);const list=ITEMS.filter(i=>i.cat===shopCat).sort((a,b)=>(a.free?-1:0)-(b.free?-1:0)||TIERS.findIndex(t=>t.id===a.t)-TIERS.findIndex(t=>t.id===b.t)||(a.special?1:0)-(b.special?1:0));
   $('skins').innerHTML=list.map(it=>{const own=has(it),tr=it.free?null:TIER[it.t];const pr=priceOf(it);const k=ikey(it);
     const st=own?(cur===it.id?'<span class="eq">Equipat</span>':'<span class="small">Toca per equipar</span>'):it.special?`<span class="small">🔒 ${it.special}</span>`:(buyPending===k?(coins()>=pr?`<span class="buy go">Toca per comprar</span>`:`<span class="small">Et falten ${pr-coins()} monedes</span>`):`<span class="buy">🪙 ${pr}</span>`);
@@ -888,6 +921,9 @@ function showGarage(){['menu','who','game','debrief','board'].forEach(i=>$(i).hi
   cards.forEach(el=>{const it=list.find(i=>ikey(i)===el.dataset.k);el.onclick=e=>{if(e.target.classList.contains('play')){playCeleb(it.id);return}shopTap(it)}});
   cancelAnimationFrame(shopRAF);(function anim(){if($('garage').hidden)return;const tm=performance.now()/1000;cards.forEach(el=>{const it=list.find(i=>ikey(i)===el.dataset.k);previewItem(el.querySelector('canvas'),it,tm)});shopRAF=requestAnimationFrame(anim)})()}
 let shopRAF=0;
+function drawTrophy(g,stage,pos){const col=['#cd7f32','#c0c0c0','#ffd23f','#7ff0ff'][stage];g.clearRect(0,0,220,220);g.save();g.translate(110,104);g.fillStyle=col;
+  g.beginPath();g.moveTo(-42,-60);g.lineTo(42,-60);g.quadraticCurveTo(40,10,0,22);g.quadraticCurveTo(-40,10,-42,-60);g.fill();g.lineWidth=9;g.strokeStyle=col;g.beginPath();g.arc(-46,-30,20,Math.PI*.5,Math.PI*1.5);g.stroke();g.beginPath();g.arc(46,-30,20,-Math.PI*.5,Math.PI*.5);g.stroke();
+  g.fillRect(-8,20,16,30);g.fillRect(-34,50,68,14);g.fillStyle='rgba(255,255,255,.35)';g.fillRect(-30,-52,10,48);g.fillStyle='#0b1c26';g.font='700 30px Chakra Petch, sans-serif';g.textAlign='center';g.fillText(pos,0,-16);g.restore()}
 function previewItem(c,it,tm){const g=c.getContext('2d');g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,220,220);g.translate(110,110);
   if(it.cat==='boat'){g.rotate(-0.5);g.scale(6,6);drawSkin(g,it.id,skinCol(it.id),'S',tm);return}
   if(it.cat==='flag'){g.fillStyle='#ddd';g.fillRect(-46,-60,4,130);g.translate(-42,-58);drawFlag(g,it.id,90,58,tm);return}
@@ -900,14 +936,81 @@ function shopTap(it){const k=ikey(it);const C=CATS.find(c=>c.id===it.cat);
   const pr=priceOf(it);if(coins()<pr){showGarage();return}
   pset('coins',coins()-pr);pset('own',[...owned(),k]);pset(C.key,it.id);buyPending=null;beep([[784,.1],[1047,.25]]);syncCloud();showGarage()}
 $('gBack').onclick=()=>{cancelAnimationFrame(shopRAF);showMenu()};
+// ---------- competition: seasons of championships with qualification
+const EURN=['ESP','ITA','FRA','POL','GBR','NED','GER','DEN','SWE','TUR','GRE','CRO','POR','NOR','HUN','AUT'];
+const STAGES=[
+ {id:'cat',el:'el Campionat de Catalunya',al:'al Campionat de Catalunya',pal:'per al Campionat de Catalunya',name:'Campionat de Catalunya',short:'Catalunya',n:40,races:3,q:20,disc:0,nat:['ESP'],bonus:100,aids:{streaks:false,hint:true,lay:true,shadow:true}},
+ {id:'esp',el:"el Campionat d'Espanya",al:"al Campionat d'Espanya",pal:"per al Campionat d'Espanya",name:"Campionat d'Espanya",short:'Espanya',n:50,races:3,q:10,disc:0,nat:['ESP'],bonus:200,aids:{streaks:false,hint:false,lay:true,shadow:true}},
+ {id:'eur',el:"l'Europeu",al:"a l'Europeu",pal:"per a l'Europeu",name:'Europeu',short:'Europeu',n:50,races:4,q:5,disc:1,nat:EURN,bonus:350,aids:{streaks:false,hint:false,lay:false,shadow:true}},
+ {id:'wor',el:'el Mundial',al:'al Mundial',pal:'per al Mundial',name:'Mundial',short:'Mundial',n:60,races:4,q:0,disc:1,nat:NATIONS,bonus:600,aids:{streaks:false,hint:false,lay:false,shadow:false}}];
+const KINDS=['osc','press','pers','trans'];
+// difficulty grows with the championship and with the season
+let COMPTUNE={sk0:0.968,skD:0.0015,skMax:1.03,dSt:.75,dSe:.5,sensA:.8,sensB:.4,smartB:.25};
+const compD=(stage,season)=>stage*COMPTUNE.dSt+(season-1)*COMPTUNE.dSe;
+function compFleet(stage,season,seed){const r=rng(seed);const S=STAGES[stage];const d=compD(stage,season);
+  const pool=[['random',Math.max(0,1.5-d*.5)],['sideL',Math.max(.3,1.2-d*.3)],['sideR',Math.max(.3,1.2-d*.3)],['middle',2],['press',1.5],['shifty',2+d*.3],['smart',1+d*COMPTUNE.smartB],['sens',COMPTUNE.sensA+d*COMPTUNE.sensB]];
+  const tot=pool.reduce((a,p)=>a+p[1],0);const pick=()=>{let x=r()*tot;for(const [s,w] of pool){x-=w;if(x<=0)return s}return'sens'};
+  const used=new Set();
+  return Array.from({length:S.n-1},()=>{const st=pick();let sail;do{sail=S.nat[Math.floor(r()*S.nat.length)]+' '+(1000+Math.floor(r()*8999))}while(used.has(sail));used.add(sail);
+    return{name:sail,st,sk:Math.min(COMPTUNE.skMax,COMPTUNE.sk0+r()*0.04+COMPTUNE.skD*d),m:(st==='smart'||st==='sens')?0.5:(-5+r()*6),thr:Math.max(2,3+r()*3-d*.3),del:Math.max(2,4+r()*8-d)}})}
+function newChamp(c){const seed=Math.floor(Math.random()*1e9);const S=STAGES[c.stage];const r=rng(seed+1);
+  return{seed,fleet:compFleet(c.stage,c.season,seed),kinds:Array.from({length:S.races},()=>KINDS[Math.floor(r()*KINDS.length)]),res:[]}}
+function compState(){let c=pget('comp',null);if(!c)c={season:1,stage:0,champ:null,last:null};if(!c.champ)c.champ=newChamp(c);pset('comp',c);return c}
+function compLevel(c){const S=STAGES[c.stage],k=c.champ.res.length,kind=c.champ.kinds[k];const base=LEVELS.find(l=>l.id===kind);
+  return{id:'comp',comp:true,wind:kind,full:true,gap:40,n:S.short,t:`Regata ${k+1} de ${S.races}`,d:'',brief:base.brief,aids:S.aids,stage:c.stage,season:c.season}}
+// standings: low points, worst race discarded once all races of a championship with a discard are sailed
+function standings(c){const S=STAGES[c.stage],ch=c.champ,n=ch.fleet.length+1;const rows=[];
+  for(let i=0;i<n;i++){const pts=ch.res.map(r=>r[i]);let drop=-1;if(S.disc&&pts.length>=S.races){let w=-1;pts.forEach((p,j)=>{if(p>w){w=p;drop=j}})}
+    const total=pts.reduce((a,p,j)=>a+(j===drop?0:p),0);rows.push({i,me:i===0,name:i===0?(P?(P.sail||P.name):'TU'):ch.fleet[i-1].name,pts,drop,total})}
+  rows.sort((a,b)=>a.total-b.total||(b.pts.length?a.pts[a.pts.length-1]-b.pts[b.pts.length-1]:0)||a.i-b.i);return rows}
+const stLabel=(season,stage)=>`T${season} · ${STAGES[stage].short}`;
+function compBetter(a,b){if(!b)return true;const ka=a.season*10+a.stage,kb=b.season*10+b.stage;return ka>kb||(ka===kb&&a.pos<b.pos)}
+// called from the debrief of a competition race
+function compRaceDone(order){const c=compState();const ch=c.champ,S=STAGES[c.stage];const n=G.boats.length;
+  const pts=G.boats.map(b=>b.ret?n+1:order.indexOf(b)+1);ch.res.push(pts);c.last=null;
+  const pos=order.indexOf(G.me)+1;const mult=[1,1.5,2,3][c.stage]*(1+0.25*(c.season-1));
+  const cn=G.me.done?Math.round((10+40*(n-pos)/(n-1))*mult):0;const xp=G.me.done?30+Math.round(70*(n-pos)/(n-1)):10;
+  if(P){owned();pset('coins',pget('coins',0)+cn);pset('xp',pget('xp',0)+xp);pset('races',pget('races',0)+1);if(G.me.done&&pos===1)pset('wins',pget('wins',0)+1)}
+  let msg=null;
+  if(ch.res.length>=S.races){const st=standings(c);const fp=st.findIndex(r=>r.me)+1;const qual=S.q?fp<=S.q:true;const bonus=qual?Math.round(S.bonus*(1+.25*(c.season-1))*(fp===1?2:1)):0;
+    if(P){pset('coins',pget('coins',0)+bonus);if(qual){const tr=pget('trophies',[]);tr.push({season:c.season,stage:c.stage,pos:fp,n:st.length});pset('trophies',tr)}
+      const best={season:c.season,stage:c.stage,pos:fp};if(compBetter(best,pget('compBest',null)))pset('compBest',best)}
+    c.last={season:c.season,stage:c.stage,pos:fp,n:st.length,qual,bonus,final:st.slice(0,3).map(r=>r.name)};
+    if(c.stage===3){c.season++;c.stage=0}else if(qual)c.stage++;
+    c.champ=newChamp(c);msg=c.last}
+  pset('comp',c);if(P)syncCloud();return{cn,xp,msg}}
+function compMsg(l){const S=STAGES[l.stage];
+  if(l.stage===3)return`Has acabat ${l.pos}a de ${l.n} al Mundial.${l.pos===1?' Has guanyat el Mundial!':''} Temporada ${l.season} acabada: comença la temporada ${l.season+1}, amb rivals més forts.${l.bonus?` +${l.bonus} 🪙`:''}`;
+  if(l.qual)return`Has acabat ${l.pos}a de ${l.n} ${S.al}. T'has classificat ${STAGES[l.stage+1].pal}! +${l.bonus} 🪙`;
+  return`Has acabat ${l.pos}a de ${l.n} ${S.al}. Calia quedar entre els ${S.q} primers. Torna-ho a provar amb vents nous.`}
+function showComp(){['menu','who','game','debrief','board','garage'].forEach(i=>$(i).hidden=true);$('comp').hidden=false;document.body.classList.remove('playing','prestart');if(G)G.phase='menu';
+  const c=compState(),S=STAGES[c.stage],ch=c.champ;
+  $('cTitle').textContent=`Competició · Temporada ${c.season}`;
+  $('cPath').innerHTML=STAGES.map((s,i)=>`<span class="chip ${i<c.stage?'done':i===c.stage?'now':'lock'}">${i<c.stage?'✓ ':i===c.stage?'● ':''}${s.short}</span>`).join('<span class="arr">›</span>');
+  const st=standings(c);const me=st.findIndex(r=>r.me)+1;const k=ch.res.length;
+  let info=c.last?`<p class="lastmsg ${c.last.qual?'good':''}">${compMsg(c.last)}</p>`:'';
+  info+=`<h3>${S.name}</h3><p class="small">Flota de ${S.n}. ${S.races} regates${S.disc?', es descarta la pitjor':''}. ${S.q?`Es classifiquen els ${S.q} primers ${STAGES[c.stage+1].pal}.`:'És la final de la temporada.'} ${['Ajudes: pista de la brúixola, laylines i ombra de vent.','Ajudes: laylines i ombra de vent.','Ajuda: només l\'ombra de vent.','Sense ajudes.'][c.stage]}</p>`;
+  if(k)info+=`<p><b>${k>1?`Després de ${k} regates`:'Després de la primera regata'}: posició ${me}a de ${st.length}.</b> ${S.q?(me<=S.q?'Ara mateix et classifiques.':`Per classificar-te has de quedar entre els ${S.q} primers.`):''}</p>`;
+  $('cInfo').innerHTML=info;
+  if(k){const show=new Set();for(let i=0;i<Math.min(8,st.length);i++)show.add(i);if(S.q)for(let i=S.q-2;i<=S.q+1;i++)if(i>=0&&i<st.length)show.add(i);for(let i=me-3;i<=me+1;i++)if(i>=0&&i<st.length)show.add(i);
+    const idx=[...show].sort((a,b)=>a-b);let html=`<tr><th></th><th>Regatista</th>${ch.res.map((_,j)=>`<th>R${j+1}</th>`).join('')}<th>Total</th></tr>`;let prev=-1;
+    for(const i of idx){if(i>prev+1)html+=`<tr class="gap"><td colspan="${3+k}">…</td></tr>`;const r=st[i];
+      html+=`<tr class="${r.me?'me':''}"><td>${i+1}</td><td>${esc(r.name)}</td>${r.pts.map((p,j)=>`<td>${j===r.drop?`(${p})`:p}</td>`).join('')}<td><b>${r.total}</b></td></tr>`;
+      if(S.q&&i===S.q-1)html+=`<tr class="cut"><td colspan="${3+k}">Línia de classificació</td></tr>`;prev=i}
+    $('cTable').innerHTML=html}else $('cTable').innerHTML='';
+  $('cGo').textContent=k?`Regata ${k+1} de ${S.races}`:`Comença ${S.el}`;
+  const tr=pget('trophies',[]);$('cTroph').innerHTML=tr.length?`<h3>Vitrina</h3><p class="small">${tr.slice(-12).reverse().map(t=>`🏆 ${stLabel(t.season,t.stage)} · ${t.pos}a`).join(' &nbsp; ')}</p>`:''}
+function compGo(){const c=compState();c.last=null;pset('comp',c);newGame(compLevel(c),c.champ.seed*31+c.champ.res.length*7919+1)}
+$('cGo').onclick=compGo;$('cBack').onclick=()=>showMenu();
 // ---------- menu
-function showMenu(){if(!P){showWho();return}$('who').hidden=true;$('board').hidden=true;$('garage').hidden=true;renderPbar();document.body.classList.remove('playing','prestart');if(G)G.phase='menu';$('game').hidden=true;$('debrief').hidden=true;$('menu').hidden=false;
+function showMenu(){if(!P){showWho();return}$('who').hidden=true;$('board').hidden=true;$('garage').hidden=true;$('comp').hidden=true;
+  {const c=compState(),S=STAGES[c.stage];const cb=pget('compBest',null);$('toComp').innerHTML=`<span><b>🏆 Competició</b><br><span class="small">Temporada ${c.season} · ${S.name} · ${c.champ.res.length?'regata '+(c.champ.res.length+1)+' de '+S.races:'per començar'}${cb?' · Millor: '+stLabel(cb.season,cb.stage)+' '+cb.pos+'a':''}</span></span><span class="stars">›</span>`;$('toComp').onclick=showComp}renderPbar();document.body.classList.remove('playing','prestart');if(G)G.phase='menu';$('game').hidden=true;$('debrief').hidden=true;$('menu').hidden=false;
   $('lvls').innerHTML=LEVELS.map((L,i)=>{const b=pget('best:'+L.id,null);const st=starsOf(L.id);return`<button class="lvl" data-i="${i}"><span class="n">${L.n.toUpperCase()}</span><span class="t">${L.t}</span><span class="d">${L.d}</span><span class="stars" aria-label="${st.filter(Boolean).length} de 3 estrelles">${[...st].sort((x,y)=>(y?1:0)-(x?1:0)).map(x=>`<span class="st ${x?'':'off'}">★</span>`).join('')}</span><span class="best">${b?'Millor: '+b.pos+'a de '+b.of+' · '+fmt(b.t):'&nbsp;'}</span></button>`}).join('');
   $('lvls').querySelectorAll('.lvl').forEach(el=>el.onclick=()=>newGame(+el.dataset.i));
   [4,7,12].forEach(s=>$('sp'+s).setAttribute('aria-pressed',ui.speed===s));$('aids').setAttribute('aria-pressed',ui.aids);$('aids').textContent=ui.aids?'Totes activades':'Segons el nivell'}
 [4,7,12].forEach(s=>$('sp'+s).onclick=()=>{ui.speed=s;store.set('speed',s);showMenu()});
 $('aids').onclick=()=>{ui.aids=!ui.aids;store.set('aids',ui.aids);showMenu()};
 showMenu();requestAnimationFrame(frame);
-window.__rolada={get G(){return G},newGame,simStep,startRace,doTack,finish,ideal,idealFull,sensRef,setOff,setGate,ui,legK,effKind,ddFor,tgtOf,wind};
+window.__rolada={get G(){return G},newGame,simStep,startRace,doTack,finish,ideal,idealFull,sensRef,compState,compLevel,STAGES,COMPTUNE:()=>COMPTUNE,setTune:t=>Object.assign(COMPTUNE,t),showComp,setOff,setGate,ui,legK,effKind,ddFor,tgtOf,wind};
 })();
 </script>

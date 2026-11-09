@@ -34,6 +34,8 @@ Joc web (sense framework ni dependències) per entrenar tàctica de cenyida en O
 - Recompenses: estrelles per nivell, XP i rangs, repte del dia amb llavor = data.
 - Monedes i garatge-botiga: `ITEMS` (categories `CATS`: vaixells, esteles, banderes, celebracions) amb 5 nivells a `TIERS` (Normal, Rar, Mític, Llegendari, Ultrallegendari). `free` = de sèrie, `special` = premi que no es ven, `old` = regla de la v1 per conservar el que ja tenien. Dibuixos a `drawSkin`, `drawFlag`, `drawTrail`, `drawCelebIcon`; efectes de victòria a `playCeleb`.
 - Rànquing: general (`rolada_board`) i per prova (`rolada_level_board`). `rolada_save` té una versió de 10 paràmetres amb `p_coins` i `p_items`; la de 8 es manté per a apps antigues.
+- Competició: `STAGES` (Catalunya 40 → Espanya 50 → Europeu 50 → Mundial 60), regates de recorregut complet, puntuació baixa amb descart a l'Europeu i al Mundial, classificació per passar al següent. En acabar el Mundial comença una temporada nova amb rivals més forts (`compD`). Estat a `pget('comp')`, rivals fixos per campionat (`compFleet`), `compRaceDone` desa punts i premis. Abandonar compta com a retirat i la resta de la flota acaba la regata (`simRest`). Dificultat calibrada amb `COMPTUNE` posant un regatista `sens` al lloc del jugador; si la canvies, torna a calibrar.
+- La línia de sortida s'allarga amb la flota (`LINE` es recalcula a `newGame`).
 - Presortida: el rellotge no corre fins que es toca «Sortida»; la posició es tria tocant la línia o amb els botons (pin, mig, comitè, ±10 m).
 
 ## Full de ruta

@@ -19,14 +19,22 @@ Recorregut: sortida → cenyida → **través** → **popa** → **porta de sota
 - Rànquing de família per prova (cada nivell i la regata completa).
 - Triar on surts amb calma: el rellotge espera i hi ha botons per moure's per la línia.
 
-## v2.2 · Que no compensi sempre anar a l'extrem · Publicat (ara)
+## v2.2 · Que no compensi sempre anar a l'extrem · Publicat
 - El vent ja no compleix sempre la previsió (rolada persistent i canvi de vent amb força i moment variables, i oscil·lacions a sobre).
 - Ratxes més repartides i que es mouen de costat.
 - Al resum, a més de la ruta ideal, el temps d'un bon regatista que no sap el futur.
 - Comentari quan fas un extrem, amb dades de quantes vegades fa podi.
 - Mesura (40 regates per nivell): la ruta ideal amb una sola virada a Persistent baixa de 33 a 5, i a Canvi de vent de 20 a 1. L'extrem guanya a Persistent 10 cops en lloc de 15, i a Canvi de vent 4 en lloc d'11.
 
-## v3 · Sortida real
+## v3 · Competició · Publicat (ara)
+- Dos modes: Entrenament (el joc d'abans) i Competició.
+- Temporada: Campionat de Catalunya (40, passen 20) → Campionat d'Espanya (50, passen 10) → Europeu (50, passen 5) → Mundial (60).
+- Recorregut complet, puntuació baixa, descart a l'Europeu i al Mundial, rivals fixos durant el campionat.
+- Si no et classifiques, tornes a provar el campionat amb vents nous. En acabar el Mundial comença una temporada nova, amb més nivell.
+- Premis en monedes, trofeus al garatge i pestanya Competició al rànquing de família.
+- Calibratge (12 campionats per etapa, temporada 1, amb un bon regatista sense saber el futur al lloc del jugador): Catalunya sempre, Espanya la meitat de les vegades, Europeu 1 de cada 4, Mundial al voltant del 15è.
+
+## v4 · Sortida real
 - Compte enrere de 3 minuts accelerat; el vaixell es pot moure abans del senyal (accelerar, frenar, virar).
 - OCS si ets a sobre de la línia al senyal, amb retorn obligatori.
 - Lectura de la línia: costat afavorit segons el vent.
