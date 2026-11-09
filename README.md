@@ -1,6 +1,6 @@
 # Rolada
 
-Simulador de tàctica de cenyida en Optimist. Es juga al mòbil: tu decideixes quan virar i el vaixell navega sol. El vent rola, hi ha ratxes, aire brut i regles de pas. En acabar, la regata es compara amb la ruta ideal que permetia aquell vent.
+Simulador de tàctica en Optimist. Es juga al mòbil: tu decideixes quan virar i el vaixell navega sol. Hi ha nivells de cenyida i una regata completa amb través, popa i porta de sotavent. El vent rola, hi ha ratxes, aire brut i regles de pas. En acabar, la regata es compara amb la ruta ideal que permetia aquell vent.
 
 **Jugar:** https://emateu-ux.github.io/rolada/
 

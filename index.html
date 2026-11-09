@@ -78,6 +78,7 @@ input{background:var(--panel2);border:1px solid var(--line);border-radius:6px;co
 .skin b{font-family:var(--f-disp);font-size:16px}
 .rew{display:flex;flex-direction:column;gap:8px;background:var(--panel2);border-radius:10px;padding:12px}
 .rew .stars3{display:flex;gap:10px;flex-wrap:wrap}
+.rew .xp{flex:none}
 .rew .s3{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
 .rew .s3 .st{font-size:24px}
 .rew .s3.new .st{animation:pop .6s ease-out}
@@ -104,10 +105,20 @@ body.playing header.top{display:none}
 #cv{position:absolute;inset:0;display:block;width:100%;height:100%;touch-action:none}
 .toast{position:absolute;left:10px;right:10px;top:10px;background:rgba(12,26,34,.9);border:1px solid var(--head);color:var(--fg);border-radius:8px;padding:8px 12px;font-size:14px;font-weight:600;z-index:3}
 .ctl{grid-area:ctl}
-.race{display:grid;grid-template-columns:60px 1fr 60px;gap:8px}
+.race{display:grid;grid-template-columns:60px minmax(0,1fr) 60px;gap:8px}
 .race .side{font-size:18px;padding:0}
 #vira{font-family:var(--f-disp);font-size:30px;height:74px;border-radius:12px;letter-spacing:.14em;touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 #vira.busy{opacity:.55}
+#vira.long{font-size:23px;letter-spacing:.08em}
+.mid{display:grid;min-width:0}
+.reachbox{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+.reachbox .btn{height:74px;border-radius:12px;font-family:var(--f-disp);font-size:20px;letter-spacing:.04em;padding:0 4px;min-width:0;touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.reachbox .btn.on{background:var(--me);border-color:var(--me);color:#fff}
+.reachbox .btn.flash{animation:fl .25s ease-out}
+.gatebar{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.gatebar .chip{flex:1;height:42px;font-weight:600;touch-action:manipulation}
+.splits td.best{color:var(--ideal);font-weight:700}.splits td.good{color:var(--lift);font-weight:700}
+.splits th{text-align:left;font-size:12px;color:var(--muted);font-weight:500;padding:4px 6px;letter-spacing:.06em;text-transform:uppercase}
 #vira.flash{animation:fl .25s ease-out}
 @keyframes fl{from{box-shadow:0 0 0 6px rgba(255,255,255,.6)}to{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
 *{-webkit-tap-highlight-color:transparent}
@@ -170,7 +181,7 @@ table.res tr.me td{color:var(--me);font-weight:700}
 </style>
 
 <div class="app">
-  <header class="top"><div class="logo">ROL<span>A</span>DA</div><div class="tag">Simulador de tàctica · cenyida</div></header>
+  <header class="top"><div class="logo">ROL<span>A</span>DA</div><div class="tag">Simulador de tàctica · regata</div></header>
 
   <section id="who" hidden>
     <h2>Qui navega?</h2>
@@ -202,7 +213,7 @@ table.res tr.me td{color:var(--me);font-weight:700}
   <section id="menu">
     <div class="pbar" id="pbar"></div>
     <button class="daily" id="daily"></button>
-    <p class="small" style="max-width:68ch;margin:0">Una cenyida contra una flota de 11 a 14 Optimist. Tu decideixes quan virar; el vaixell navega sol a la cenyida. El vent canvia de direcció i de força: llegeix l'aigua i la brúixola. Al final veuràs la ruta ideal que permetia el vent d'aquella regata.</p>
+    <p class="small" style="max-width:68ch;margin:0">Una flota de 11 a 14 Optimist. Tu decideixes quan virar i el vaixell navega sol. Els nivells són una cenyida; la regata completa té través, popa i porta. El vent canvia de direcció i de força: llegeix l'aigua i la brúixola. Al final veuràs la ruta ideal que permetia el vent d'aquella regata.</p>
     <div class="lvls" id="lvls"></div>
     <div class="settings">
       <span class="small">Velocitat:</span>
@@ -219,7 +230,7 @@ table.res tr.me td{color:var(--me);font-weight:700}
         <div><span class="lab">Vel.</span><b id="spd">0,0</b><i>kn</i></div>
         <div><span class="lab">Vent</span><b id="tws">0</b><i>kn</i></div>
         <div><span class="lab">Pos.</span><b id="pos">–</b></div>
-        <div><span class="lab">Boia</span><b id="dtm">–</b><i>m</i></div>
+        <div><span class="lab" id="dtmL">Boia</span><b id="dtm">–</b><i>m</i></div>
         <div><span class="lab">Temps</span><b id="clk">0:00</b></div>
       </div>
       <div class="hint" id="hint"></div>
@@ -237,9 +248,10 @@ table.res tr.me td{color:var(--me);font-weight:700}
         <p class="small">Toca la línia per triar on surts. Lectures de brúixola ara: estribord <b id="readS">—</b> · babord <b id="readP">—</b></p>
         <div class="prerow"><button class="chip" id="stS" aria-pressed="true">Estribord</button><button class="chip" id="stP" aria-pressed="false">Babord</button><button class="btn" id="go">Sortida</button><button class="btn sec" id="back1" style="flex:0 0 auto;min-width:0">Menú</button></div>
       </div>
+      <div class="gatebar" id="gateBar" hidden><span class="small">Porta</span><button class="chip" id="gL" aria-pressed="false">◀ Boia esquerra</button><button class="chip" id="gR" aria-pressed="false">Boia dreta ▶</button></div>
       <div class="race" id="raceCtl">
         <button class="btn sec side" id="pause" aria-label="Pausa">II</button>
-        <button class="btn" id="vira">VIRA</button>
+        <div class="mid"><button class="btn" id="vira">VIRA</button><div class="reachbox" id="reachBox" hidden><button class="btn sec" id="arriba">ARRIBA</button><button class="btn sec" id="orsa">ORSA</button></div></div>
         <button class="btn sec side" id="quit" aria-label="Abandona">✕</button>
       </div>
     </div>
@@ -255,6 +267,7 @@ table.res tr.me td{color:var(--me);font-weight:700}
       <div class="big" id="dPos"></div>
       <div class="rew" id="dRew"></div>
       <div class="kv" id="dTimes"></div>
+      <div id="dSplits" hidden><h2>Temps per trams</h2><table class="res splits" id="dSplT"></table><p class="small" style="margin:6px 0 0"><b style="color:var(--ideal)">Lila</b>: el més ràpid de la flota en aquell tram. <b style="color:var(--lift)">Verd</b>: entre els 3 millors.</p></div>
       <h2>Què ha passat</h2>
       <ul class="facts" id="dFacts"></ul>
       <table class="res" id="dRes"></table>
@@ -276,9 +289,17 @@ const store={get(k,d){try{const v=localStorage.getItem('rolada:'+k);return v?JSO
 
 // ---------- course
 const D=650,LINE=[-95,95],MARK={x:0,y:D},XB=440;
+// full course: mark 1 = MARK, wing mark 2, leeward gate (two buoys), finish line upwind of the gate
+const M2={x:-230,y:600},GATE=[{x:-135,y:90},{x:-65,y:90}],GC={x:-100,y:90},FIN={y:540,x0:-170,x1:-30};
+const finPt=b=>({x:clamp(b.x,FIN.x0+5,FIN.x1-5),y:FIN.y});
+const WIND1=[{k:'beat',name:'Cenyida',lab:'Boia',to:()=>MARK}];
+const FULL=[{k:'beat',name:'Cenyida',lab:'Boia 1',to:()=>MARK},{k:'reach',name:'Través',lab:'Boia 2',to:()=>M2},{k:'run',name:'Popa',lab:'Porta',to:b=>GATE[b.gate??0]},{k:'beat',name:'Última cenyida',lab:'Arrib.',to:finPt,fin:true}];
 const POLAR=[[0,0],[2,1.3],[4,2.4],[6,3.0],[8,3.4],[10,3.7],[13,3.9],[18,3.9],[25,3.6]];
 function polar(kn){for(let i=1;i<POLAR.length;i++)if(kn<=POLAR[i][0]){const a=POLAR[i-1],b=POLAR[i];return lerp(a[1],b[1],(kn-a[0])/(b[0]-a[0]))*0.5144}return 3.6*0.5144}
-const reachF=twa=>1+0.15*clamp((twa-45)/45,0,1);
+// speed factor by true wind angle (1 = close-hauled). Best downwind VMG is around 155°, so the run is sailed in gybes.
+const SPF=[[0,1],[45,1],[90,1.15],[110,1.18],[135,1.13],[155,1.08],[180,.88]];
+function speedF(a){for(let i=1;i<SPF.length;i++)if(a<=SPF[i][0]){const p=SPF[i-1],q=SPF[i];return lerp(p[1],q[1],(a-p[0])/(q[0]-p[0]))}return .88}
+const TWA={beat:45,run:155};
 
 // ---------- levels
 const LEVELS=[
@@ -287,7 +308,8 @@ const LEVELS=[
  {id:'pers',n:'Nivell 3',t:'Rolada persistent',d:'El vent gira cap a un costat i ja no torna. Cap on aniràs?',brief:'Vent de 8 a 9 nusos. La previsió diu que anirà girant durant la regata.',aids:{streaks:false,hint:false,lay:true,shadow:true}},
  {id:'trans',n:'Nivell 4',t:'Canvi de vent',d:'El vent de terra s\'apaga i entra la marinada per un costat.',brief:'Vent de terra fluix que s\'està morint. Ha d\'entrar la marinada, però no se sap per on.',aids:{streaks:false,hint:false,lay:true,shadow:true}},
  {id:'fleet',n:'Nivell 5',t:'Flota i aire net',d:'Flota gran i bona. Cal aire net i triar bé quan creuar.',brief:'Vent oscil·lant de 8 nusos i una flota de 15. Els bons ho llegeixen bé.',aids:{streaks:false,hint:false,lay:false,shadow:true}},
- {id:'mix',n:'Regata',t:'Regata lliure',d:'Un dia qualsevol: pot passar de tot.',brief:'Cap previsió. Mira l\'aigua i la brúixola des d\'abans de la sortida.',aids:{streaks:false,hint:false,lay:false}}];
+ {id:'mix',n:'Regata',t:'Regata lliure',d:'Un dia qualsevol: pot passar de tot.',brief:'Cap previsió. Mira l\'aigua i la brúixola des d\'abans de la sortida.',aids:{streaks:false,hint:false,lay:false}},
+ {id:'full',wind:'mix',full:true,gap:40,n:'Nou',t:'Regata completa',d:'Cenyida, través, popa, porta i última cenyida fins a l\'arribada.',brief:'Recorregut sencer. Al través, orsa o arriba. A la popa, trasluchada quan calgui i vigila els de darrere. Tria bé la boia de la porta.',aids:{streaks:false,hint:true,lay:true,shadow:true}}];
 
 // ---------- wind model
 function makeWind(kind,seed){
@@ -321,71 +343,112 @@ function makeFleet(lv,seed){
 let G=null;const ui={speed:store.get('speed',7),aids:store.get('aids',false)};
 function newGame(lvIdx,seed,daily){$('who').hidden=true;$('garage').hidden=true;VZ.z=2.5;VZ.follow=true;pendingTack=false;
   const L=LEVELS[lvIdx];seed=seed??Math.floor(Math.random()*1e9);
-  const W=makeWind(L.id,seed);
+  const W=makeWind(L.wind||L.id,seed);
   const ai=makeFleet(L.id,seed);
   const me={name:P?(P.sail||P.name):'TU',me:true,x:0,tack:'S',sk:1};
-  const boats=[me,...ai].map(b=>Object.assign(b,{y:-4,h:0,v:0,tk:0,done:false,ft:null,dirty:0,duck:0,last:-99,trk:[],mean:null,hd:0,nextD:0,acc:{t:0,fav:0,tws:0,dirty:0,n:0}}));
-  G={L,lvIdx,seed,daily:!!daily,skin:P?pget('skin','opti'):'opti',W,boats,me,t:-30,phase:'pre',paused:false,trace:[],laylog:[],tacks:0,ducks:0,blocked:0,warnT:0,warnMsg:'',field:null,fieldT:-99,parts:[]};
+  const boats=[me,...ai].map(b=>Object.assign(b,{y:-4,h:0,v:0,tk:0,gy:false,done:false,ft:null,dirty:0,duck:0,last:-99,trk:[],mean:null,hd:0,nextD:0,leg:0,gate:null,gp:false,gfix:false,off:0,splits:[],acc:{t:0,tb:0,fav:0,tws:0,dirty:0,runSh:0,off:[0,0,0],n:0}}));
+  G={L,lvIdx,seed,daily:!!daily,full:!!L.full,legs:L.full?FULL:WIND1,maxT:L.full?3000:1500,rr:rng(seed*13+5),skin:P?pget('skin','opti'):'opti',W,boats,me,t:-30,phase:'pre',paused:false,trace:[],laylog:[],tacks:0,gybes:0,ducks:0,blocked:0,warnT:0,warnMsg:'',uiKey:null,gateInfo:null,field:null,fieldT:-99,parts:[]};
   for(let i=0;i<240;i++)G.parts.push(newPart(true));
   placeStart();showPre();}
 function placeStart(){for(const b of G.boats){const w=wind(G.W,0,b.x,b.y);b.h=w.d+(b.tack==='P'?45:-45);b.v=polar(w.s)*0.85*b.sk;b.mean=w.d}}
 
 // ---------- physics
-function bearing(b){return norm(Math.atan2(MARK.x-b.x,MARK.y-b.y)/R)}
-function dist(b){return Math.hypot(MARK.x-b.x,MARK.y-b.y)}
+// Legs: 'beat' (tack upwind), 'reach' (steer at the mark, luff or bear away), 'run' (gybe downwind).
+// b.tack 'S'/'P' = wind over starboard/port. Course heading = wind ∓ TWA (S: th-TWA, P: th+TWA).
+const legOf=b=>G.legs[Math.min(b.leg,G.legs.length-1)];
+const legK=b=>legOf(b).k;
+const tgtOf=b=>legOf(b).to(b);
+const brgTo=(b,T)=>norm(Math.atan2(T.x-b.x,T.y-b.y)/R);
+const dTo=(b,T)=>Math.hypot(T.x-b.x,T.y-b.y);
+function dist(b){return dTo(b,tgtOf(b))}
+// if a boat has gone past its mark (above it on a beat, below it on a run) it steers back to it directly
+function effKind(b,T){const k=legK(b);if(k==='beat'&&b.y>T.y+3)return'reach';if(k==='run'&&b.y<T.y-3)return'reach';return k}
+function courseH(b,th,k){return th+(b.tack==='P'?1:-1)*TWA[k]}
+function ddFor(b,tk,th,k,T){const sg=k==='beat'?(tk==='P'?1:-1):(tk==='P'?-1:1);return sg*adiff(brgTo(b,T),th+(tk==='P'?1:-1)*TWA[k])}
+function fetchT(b,th,k,T){const dd=ddFor(b,b.tack,th,k,T);return dd>=0&&dd<=110?brgTo(b,T):null}
+// reach steering: straight at the mark, 15° higher (off=+1, orsar) or lower (off=-1, arribar); never closer than 50° to the wind
+function reachH(b,th,T,off){const brg=brgTo(b,T);const a=adiff(th,brg);if(Math.abs(a)>10||!b.tack)b.tack=a>0?'S':'P';const sg=b.tack==='S'?1:-1;
+  const h=brg+sg*off*15*clamp(dTo(b,T)/60,0,1);const twa=clamp(sg*adiff(th,h),50,170);return th-sg*twa}
 function computeDirty(t){const bs=G.boats;for(const b of bs){b.dirty=0;if(b.done)continue;const w=wind(G.W,t,b.x,b.y);const dw={x:-Math.sin(w.d*R),y:-Math.cos(w.d*R)};
-  for(const a of bs){if(a===b||a.done)continue;const dx=b.x-a.x,dy=b.y-a.y;const al=dx*dw.x+dy*dw.y;if(al<2||al>40)continue;const lat=Math.abs(dx*dw.y-dy*dw.x);const half=4+0.2*al;if(lat<half)b.dirty=Math.max(b.dirty,0.32*(1-al/40)*(1-0.5*lat/half))}}}
-function fetchTarget(b,th){const brg=bearing(b);const cl=th+(b.tack==='P'?45:-45);const dd=adiff(brg,cl);if(b.tack==='P'&&dd>=0&&dd<=110)return brg;if(b.tack==='S'&&dd<=0&&dd>=-110)return brg;return null}
+  for(const a of bs){if(a===b||a.done)continue;const run=legK(a)==='run';const L=run?70:40,S=run?.45:.32;const dx=b.x-a.x,dy=b.y-a.y;const al=dx*dw.x+dy*dw.y;if(al<2||al>L)continue;const lat=Math.abs(dx*dw.y-dy*dw.x);const half=(run?5:4)+(run?.22:.2)*al;if(lat<half)b.dirty=Math.max(b.dirty,S*(1-al/L)*(1-0.5*lat/half))}}}
 function stepBoat(b,t,dt){
   if(b.done)return;const w=wind(G.W,t,b.x,b.y);const tws=w.s*(1-b.dirty);const th=w.d;
-  const ft=fetchTarget(b,th);let target=ft??(th+(b.tack==='P'?45:-45));if(b.duck>0){b.duck-=dt;if(ft==null)target=th+(b.tack==='P'?75:-75)}
-  let vt;if(b.tk>0){b.tk-=dt;b.h=norm(b.h+clamp(adiff(target,b.h),-38*dt,38*dt));vt=0.3*polar(tws)}
-  else{b.h=norm(b.h+clamp(adiff(target,b.h),-25*dt,25*dt));vt=polar(tws)*reachF(Math.abs(adiff(b.h,th)))}
+  const Lg=legOf(b),T=Lg.to(b),k=effKind(b,T);let target;if(b.duck>0)b.duck-=dt;
+  if(k==='reach')target=reachH(b,th,T,Lg.k==='reach'?b.off:0);
+  else{const ft=fetchT(b,th,k,T);target=ft??courseH(b,th,k);if(b.duck>0&&ft==null&&k==='beat')target=th+(b.tack==='P'?75:-75)}
+  let vt;if(b.tk>0){b.tk-=dt;b.h=norm(b.h+clamp(adiff(target,b.h),-38*dt,38*dt));vt=(b.gy?0.65:0.3)*polar(tws)}
+  else{b.h=norm(b.h+clamp(adiff(target,b.h),-25*dt,25*dt));vt=polar(tws)*speedF(Math.abs(adiff(b.h,th)))}
   b.v+=(vt*b.sk-b.v)*Math.min(1,dt/4);
-  b.x+=b.v*Math.sin(b.h*R)*dt;b.y+=b.v*Math.cos(b.h*R)*dt;
+  const px=b.x,py=b.y;b.x+=b.v*Math.sin(b.h*R)*dt;b.y+=b.v*Math.cos(b.h*R)*dt;
   b.mean=b.mean==null?th:b.mean+adiff(th,b.mean)*Math.min(1,dt/120);
-  if(b.trk.length===0||t-b.trk[b.trk.length-1][2]>=2){const fav=isFav(b,th);b.trk.push([b.x,b.y,t,fav?1:0])}
-  b.acc.t+=dt;b.acc.tws+=tws*dt;b.acc.dirty+=b.dirty>0.02?dt:0;if(isFav(b,th))b.acc.fav+=dt;
-  if(dist(b)<10){b.done=true;b.ft=t}}
-function isFav(b,th){const brg=bearing(b);return Math.abs(adiff(brg,th+(b.tack==='P'?45:-45)))<=Math.abs(adiff(brg,th+(b.tack==='P'?-45:45)))}
+  const fav=k==='reach'?true:isFav(b,th,k,T);
+  if(b.trk.length===0||t-b.trk[b.trk.length-1][2]>=2)b.trk.push([b.x,b.y,t,fav?1:0]);
+  const A=b.acc;A.t+=dt;A.tws+=tws*dt;A.dirty+=b.dirty>0.02?dt:0;if(k!=='reach'){A.tb+=dt;if(fav)A.fav+=dt}
+  if(Lg.k==='run'&&b.dirty>0.04)A.runSh+=dt;if(Lg.k==='reach')A.off[b.off+1]+=dt;
+  let end=false;
+  if(Lg.fin){if((py<FIN.y)!==(b.y<FIN.y)){const f=(FIN.y-py)/(b.y-py);const xx=px+(b.x-px)*f;if(xx>=FIN.x0&&xx<=FIN.x1)end=true}}
+  else if(dTo(b,T)<(Lg.k==='run'?9:10))end=true;
+  if(end)endLeg(b,t)}
+function nearGate(b){return dTo(b,GATE[0])<=dTo(b,GATE[1])?0:1}
+// the gate buoy further upwind is closer to the finish
+function favGate(t){const th=wind(G.W,t,GC.x,GC.y).d;const pr=g=>g.x*Math.sin(th*R)+g.y*Math.cos(th*R);const p0=pr(GATE[0]),p1=pr(GATE[1]);return{g:p0>p1?0:1,diff:Math.abs(p0-p1)}}
+function endLeg(b,t){b.splits.push(t);b.leg++;if(b.leg>=G.legs.length){b.done=true;b.ft=t;return}
+  const Lg=legOf(b);b.tk=2;b.gy=true;b.last=t;b.duck=0;
+  if(Lg.k==='reach')b.off=b.ai&&b.st!=='smart'?[-1,0,0,1][Math.floor(G.rr()*4)]:0;
+  if(Lg.k==='run'){if(b.ai)b.gate=b.st==='smart'?favGate(t).g:(G.rr()<.5?0:1);else if(!b.gp)b.gate=nearGate(b);b.gfix=false;
+    const th=wind(G.W,t,b.x,b.y).d;b.tack=adiff(th,brgTo(b,GATE[b.gate]))>0?'S':'P'}
+  if(Lg.k==='beat'&&b.leg>0){if(b.me){const f=favGate(t);G.gateInfo={pick:b.gate,fav:f.g,diff:f.diff}}b.tack=b.gate===0?'S':'P'}
+  if(b.me){pendingTack=false;G.uiKey=null;
+    warn(Lg.k==='reach'?'Boia 1! Ara través: orsa o arriba.':Lg.k==='run'?'Boia 2! Ara popa. Tria la boia de la porta.':'Porta! Última cenyida fins a l\'arribada.')}}
+function isFav(b,th,k,T){if(!k){T=tgtOf(b);k=effKind(b,T)}if(k==='reach')return true;const brg=brgTo(b,T);const o={tack:b.tack==='P'?'S':'P'};return Math.abs(adiff(brg,courseH(b,th,k)))<=Math.abs(adiff(brg,courseH(o,th,k)))}
 function canTack(b,t){const w=wind(G.W,t,b.x,b.y),th=w.d;const hx=Math.sin(b.h*R),hy=Math.cos(b.h*R);const ws=b.tack==='S'?1:-1;
   const newTack=b.tack==='P'?'S':'P';const hn=(th+(newTack==='P'?45:-45))*R;
-  for(const o of G.boats){if(o===b||o.done)continue;const dx=o.x-b.x,dy=o.y-b.y;if(dx*dx+dy*dy>625)continue;const fwd=dx*hx+dy*hy,side=(dx*hy-dy*hx)*ws;
+  for(const o of G.boats){if(o===b||o.done||legK(o)!=='beat')continue;const dx=o.x-b.x,dy=o.y-b.y;if(dx*dx+dy*dy>625)continue;const fwd=dx*hx+dy*hy,side=(dx*hy-dy*hx)*ws;
     if(o.tack===b.tack&&fwd>-3&&fwd<8&&side>0.5&&side<6)return'Tens un vaixell a barlovent, al costat: si vires ara hi xoques. Torna a tocar VIRA per frenar i virar per la seva popa.';
     if(newTack==='P'&&o.tack==='S'&&fwd>-3&&side>0){let m=1e9;for(let k=0;k<=12;k++){const tt=k*0.5;const bx=b.x+Math.sin(hn)*b.v*0.6*tt,by=b.y+Math.cos(hn)*b.v*0.6*tt;const ox=o.x+Math.sin(o.h*R)*o.v*tt,oy=o.y+Math.cos(o.h*R)*o.v*tt;m=Math.min(m,Math.hypot(bx-ox,by-oy))}if(m<3.5)return'Si vires ara quedes a babord davant d\'un vaixell que va a estribord: no tens dret de pas.'}}
   return null}
 function tryTack(b,t){const why=canTack(b,t);if(why){if(b.me){G.blocked++;warn(why)}b.last=t-10;return false}tack(b,t);return true}
-function tack(b,t){b.tack=b.tack==='P'?'S':'P';b.tk=4;b.last=t;if(b.me){G.tacks++;const w=wind(G.W,t,b.x,b.y);const h=w.d+(b.tack==='P'?45:-45);const dx=MARK.x-b.x,dy=MARK.y-b.y;const z=Math.sin(h*R)*dy-Math.cos(h*R)*dx;G.laylog.push({t,over:b.tack==='P'?-z:z})}}
-function dtg(b,th){const wu={x:Math.sin(th*R),y:Math.cos(th*R)},wl={x:Math.cos(th*R),y:-Math.sin(th*R)};const dx=MARK.x-b.x,dy=MARK.y-b.y;return Math.max(dx*wu.x+dy*wu.y,Math.abs(dx*wl.x+dy*wl.y))}
+function tack(b,t){b.tack=b.tack==='P'?'S':'P';b.tk=4;b.gy=false;b.last=t;if(b.me){G.tacks++;const w=wind(G.W,t,b.x,b.y);const h=w.d+(b.tack==='P'?45:-45);const T=tgtOf(b);const dx=T.x-b.x,dy=T.y-b.y;const z=Math.sin(h*R)*dy-Math.cos(h*R)*dx;G.laylog.push({t,leg:b.leg,over:b.tack==='P'?-z:z})}}
+function gybe(b,t){b.tack=b.tack==='P'?'S':'P';b.tk=2.5;b.gy=true;b.last=t;if(b.me)G.gybes++}
+function manoeuvre(b,t){const k=effKind(b,tgtOf(b));if(k==='run'){gybe(b,t);return true}if(k==='beat')return tryTack(b,t);return false}
+function dtgT(b,th,T){const wu={x:Math.sin(th*R),y:Math.cos(th*R)},wl={x:Math.cos(th*R),y:-Math.sin(th*R)};const dx=T.x-b.x,dy=T.y-b.y;return Math.max(dx*wu.x+dy*wu.y,Math.abs(dx*wl.x+dy*wl.y))}
+function legRem(b){const Lg=legOf(b),T=Lg.to(b);const th=wind(G.W,Math.max(0,G.t),T.x,T.y).d;return Lg.k==='beat'?dtgT(b,th,T):Lg.k==='run'?dtgT(b,th+180,T):dTo(b,T)}
+function pkey(b){return b.done?b.ft-1e7:(G.legs.length-b.leg)*1e5+legRem(b)}
 // ---------- AI
+function bestOff(b,t){let best=0,bs=-1;for(const o of [-1,0,1]){const tmp={x:b.x,y:b.y,tack:b.tack};const th=wind(G.W,t,b.x,b.y).d;const h=reachH(tmp,th,M2,o);const w=wind(G.W,t,b.x+Math.sin(h*R)*60,b.y+Math.cos(h*R)*60);let s=polar(w.s)*speedF(Math.abs(adiff(h,w.d)))*Math.cos(o*15*R);if(o===1&&b.dirty>0.05)s*=1.1;if(s>bs){bs=s;best=o}}return best}
 function decide(b,t){
   if(b.done||b.tk>0)return;const w=wind(G.W,t,b.x,b.y),th=w.d;const since=t-b.last;
-  const brg=bearing(b);
-  if(fetchTarget(b,th)!=null)return;
-  if(b.tack==='S'&&adiff(brg,th+45)>=-b.m){tryTack(b,t);return}
-  if(b.tack==='P'&&adiff(brg,th-45)<=b.m){tryTack(b,t);return}
-  if((b.tack==='P'&&b.x>XB-10)||(b.tack==='S'&&b.x<-XB+10)){tack(b,t);return}
-  if(since<15)return;
-  const st=b.st;
-  if(st==='shifty'){const headed=b.tack==='S'?th<b.mean-b.thr:th>b.mean+b.thr;b.hd=headed?b.hd+1:0;if(b.hd>=b.del){b.hd=0;tryTack(b,t)}}
-  else if(st==='press'){if(t>=b.nextD){b.nextD=t+4;const look=h=>{let s=0;for(const d of [80,170]){s+=wind(G.W,t,b.x+Math.sin(h*R)*d,b.y+Math.cos(h*R)*d).s}return s/2};const cur=look(th+(b.tack==='P'?45:-45)),oth=look(th+(b.tack==='P'?-45:45));if(oth>cur+0.6)tryTack(b,t)}}
-  else if(st==='smart'){if(t>=b.nextD){b.nextD=t+3;const sim=(tk)=>{let x=b.x,y=b.y;for(let s=0;s<50;s+=5){const ww=wind(G.W,t+s,x,y);const tmp={x,y,tack:tk};const f=fetchTarget(tmp,ww.d);const h=f??(ww.d+(tk==='P'?45:-45));const v=polar(ww.s)*(f!=null?reachF(Math.abs(adiff(h,ww.d))):1);x+=v*Math.sin(h*R)*5;y+=v*Math.cos(h*R)*5;if(Math.hypot(MARK.x-x,MARK.y-y)<10)return -999}return dtg({x,y},wind(G.W,t+50,MARK.x,MARK.y).d)};const other=b.tack==='P'?'S':'P';if(sim(other)+7<sim(b.tack))tryTack(b,t)}}
-  else if(st==='middle'){if((b.tack==='P'&&b.x>115)||(b.tack==='S'&&b.x<-115))tryTack(b,t)}
-  else if(st==='random'){if(Math.random()<1/55)tryTack(b,t)}
+  const Lg=legOf(b);
+  if(Lg.k==='run'&&!b.gfix&&dTo(b,GC)<140){b.gfix=true;const n=nearGate(b);if(b.st==='smart'){const f=favGate(t);const dd=Math.abs(dTo(b,GATE[0])-dTo(b,GATE[1]));b.gate=(f.diff>3&&dd<25+f.diff)?f.g:n}else if(b.st==='random')b.gate=G.rr()<.5?0:1;else b.gate=n}
+  const T=Lg.to(b),k=effKind(b,T);
+  if(k==='reach'){if(Lg.k==='reach'&&b.st==='smart'&&t>=b.nextD){b.nextD=t+6;b.off=bestOff(b,t)}return}
+  if(fetchT(b,th,k,T)!=null)return;
+  const other=b.tack==='P'?'S':'P';const dO=ddFor(b,other,th,k,T);
+  if(dO>=-b.m&&(k==='beat'||dO<=110)){manoeuvre(b,t);return}
+  if((b.tack==='P'&&b.x>XB-10)||(b.tack==='S'&&b.x<-XB+10)){if(k==='run')gybe(b,t);else tack(b,t);return}
+  if(since<(k==='run'?10:15))return;
+  const st=b.st,sg=k==='run'?-1:1;
+  if(st==='shifty'){const dv=sg*(th-b.mean);const headed=b.tack==='S'?dv<-b.thr:dv>b.thr;b.hd=headed?b.hd+1:0;if(b.hd>=b.del){b.hd=0;manoeuvre(b,t)}}
+  else if(st==='press'){if(t>=b.nextD){b.nextD=t+4;const look=h=>{let s=0;for(const d of [80,170]){s+=wind(G.W,t,b.x+Math.sin(h*R)*d,b.y+Math.cos(h*R)*d).s}return s/2};const cur=look(courseH(b,th,k)),oth=look(courseH({tack:other},th,k));if(oth>cur+0.6)manoeuvre(b,t)}}
+  else if(st==='smart'){if(t>=b.nextD){b.nextD=t+3;const sim=(tk)=>{let x=b.x,y=b.y;for(let s=0;s<50;s+=5){const ww=wind(G.W,t+s,x,y);const tmp={x,y,tack:tk,gate:b.gate};const TT=Lg.to(tmp);const f=fetchT(tmp,ww.d,k,TT);const h=f??courseH(tmp,ww.d,k);const v=polar(ww.s)*speedF(Math.abs(adiff(h,ww.d)));x+=v*Math.sin(h*R)*5;y+=v*Math.cos(h*R)*5;if(dTo({x,y},TT)<10||(Lg.fin&&y>=FIN.y&&x>=FIN.x0&&x<=FIN.x1))return -999}const TT=Lg.to({x,y,gate:b.gate});const th2=wind(G.W,t+50,TT.x,TT.y).d;return dtgT({x,y},k==='run'?th2+180:th2,TT)};if(sim(other)+(k==='run'?5:7)<sim(b.tack))manoeuvre(b,t)}}
+  else if(st==='middle'){if((b.tack==='P'&&b.x>T.x+115)||(b.tack==='S'&&b.x<T.x-115))manoeuvre(b,t)}
+  else if(st==='random'){if(Math.random()<1/55)manoeuvre(b,t)}
 }
 // ---------- sim loop
 const DT=0.25;let lastDecide=-99;
-function rightOfWay(t){const bs=G.boats.filter(b=>!b.done&&b.tk<=0);for(const p of bs){if(p.tack!=='P'||p.duck>0)continue;for(const s of bs){if(s.tack!=='S')continue;const dx=s.x-p.x,dy=s.y-p.y;if(dx*dx+dy*dy>1600)continue;let m=1e9;for(let k=0;k<=12;k++){const tt=k*0.5;m=Math.min(m,Math.hypot(s.x+Math.sin(s.h*R)*s.v*tt-(p.x+Math.sin(p.h*R)*p.v*tt),s.y+Math.cos(s.h*R)*s.v*tt-(p.y+Math.cos(p.h*R)*p.v*tt)))}
+function rightOfWay(t){const bs=G.boats.filter(b=>!b.done&&b.tk<=0&&legK(b)==='beat');for(const p of bs){if(p.tack!=='P'||p.duck>0)continue;for(const s of bs){if(s.tack!=='S')continue;const dx=s.x-p.x,dy=s.y-p.y;if(dx*dx+dy*dy>1600)continue;let m=1e9;for(let k=0;k<=12;k++){const tt=k*0.5;m=Math.min(m,Math.hypot(s.x+Math.sin(s.h*R)*s.v*tt-(p.x+Math.sin(p.h*R)*p.v*tt),s.y+Math.cos(s.h*R)*s.v*tt-(p.y+Math.cos(p.h*R)*p.v*tt)))}
   if(m<5){p.duck=3.5;if(p.me){G.ducks++;warn('Estribord! Vas a babord i has hagut de passar per popa de '+s.name)}break}}}}
 function simStep(){
-  const t=G.t;computeDirty(t);rightOfWay(t);if(pendingTack&&G.me.tk<=0){pendingTack=false;tryTack(G.me,t)}
+  const t=G.t;const me=G.me;computeDirty(t);rightOfWay(t);
+  if(!me.done&&legK(me)==='run'&&!me.gp){me.gate=nearGate(me);if(dTo(me,GATE[me.gate])<40)me.gp=true}
+  if(pendingTack&&me.tk<=0&&!me.done){pendingTack=false;manoeuvre(me,t)}
   if(t-lastDecide>=1){lastDecide=t;for(const b of G.boats)if(b.ai)decide(b,t)}
-  const me=G.me;if(!me.done&&((me.tack==='P'&&me.x>XB)||(me.tack==='S'&&me.x<-XB))){tack(me,t);warn('Límit del camp: has virat')}
+  if(!me.done){const k=effKind(me,tgtOf(me));if(k!=='reach'&&((me.tack==='P'&&me.x>XB)||(me.tack==='S'&&me.x<-XB))){if(k==='run'){gybe(me,t);warn('Límit del camp: has trasluchat')}else{tack(me,t);warn('Límit del camp: has virat')}}}
   for(const b of G.boats)stepBoat(b,t,DT);
-  if(!me.done&&Math.floor(t/10)!==Math.floor((t-DT)/10)){const w=wind(G.W,t,me.x,me.y);G.trace.push([t,me.tack,norm(me.h),w.d])}
+  if(!me.done&&Math.floor(t/10)!==Math.floor((t-DT)/10)){const k=effKind(me,tgtOf(me));if(k!=='reach'){const w=wind(G.W,t,me.x,me.y);G.trace.push([t,me.tack,norm(me.h),w.d,TWA[k]])}}
   G.t+=DT;
-  if(me.done||G.t>1500)finish();}
-function warn(m){if(!G)return;G.warnMsg=m;G.warnT=performance.now()+(m.startsWith('Vira!')?900:2500)}
+  if(me.done||G.t>G.maxT)finish();}
+function warn(m){if(!G)return;G.warnMsg=m;G.warnT=performance.now()+(/^(Vira|Trasluchada)!/.test(m)?900:2500)}
 
 // ---------- rendering
 const cv=$('cv'),cx=cv.getContext('2d');let VIEW=null;
@@ -399,13 +462,24 @@ function drawSea(ctx,V,t){if(!G.field||Math.abs(t-G.fieldT)>=0.5){G.fieldT=t;for
   ctx.fillStyle=css('--sea-calm');ctx.fillRect(0,0,V.W,V.H);ctx.imageSmoothingEnabled=true;ctx.drawImage(off,V.X(V.xmin-EXT),V.Y(V.ymax+EXT),(V.xmax-V.xmin+2*EXT)*V.s,(V.ymax-V.ymin+2*EXT)*V.s)}
 function newPart(rand){return{x:-XB-20+Math.random()*(2*XB+40),y:-100+Math.random()*(D+170),age:rand?Math.random()*80:0,life:60+Math.random()*60}}
 function drawParts(ctx,V,t,realDt){ctx.strokeStyle='rgba(255,255,255,.28)';ctx.lineWidth=1.2;ctx.beginPath();for(const p of G.parts){const w=wind(G.W,Math.max(0,t),p.x,p.y);const ux=-Math.sin(w.d*R),uy=-Math.cos(w.d*R);const sp=w.s*2.2*realDt;p.x+=ux*sp;p.y+=uy*sp;p.age+=realDt*30;const L=w.s*1.6;ctx.moveTo(V.X(p.x),V.Y(p.y));ctx.lineTo(V.X(p.x-ux*L),V.Y(p.y-uy*L));if(p.age>p.life||p.y<V.ymin||p.x<V.xmin||p.x>V.xmax)Object.assign(p,newPart(false),{y:V.ymax-Math.random()*60})}ctx.stroke()}
-function drawCourse(ctx,V,t,lay){
+function drawMark(ctx,V,p,lab,hi){const x=V.X(p.x),y=V.Y(p.y);if(hi){ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=1.5;ctx.setLineDash([3,3]);ctx.beginPath();ctx.arc(x,y,15,0,7);ctx.stroke();ctx.setLineDash([])}
+  ctx.fillStyle=css('--buoy');ctx.beginPath();ctx.arc(x,y,7,0,7);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();if(lab){ctx.font='700 12px Chakra Petch, sans-serif';ctx.fillStyle='#fff';ctx.fillText(lab,x+10,y-9)}}
+function layFrom(ctx,V,T,hs){ctx.strokeStyle='rgba(255,255,255,.35)';ctx.setLineDash([3,6]);ctx.lineWidth=1;for(const h of hs){ctx.beginPath();ctx.moveTo(V.X(T.x),V.Y(T.y));ctx.lineTo(V.X(T.x-Math.sin(h*R)*900),V.Y(T.y-Math.cos(h*R)*900));ctx.stroke()}ctx.setLineDash([])}
+function drawCourse(ctx,V,t,lay){const me=G.me,racing=G.phase==='race'||G.phase==='pre';const leg=racing?Math.min(me.leg,G.legs.length-1):-1;
   ctx.setLineDash([6,5]);ctx.strokeStyle='rgba(255,255,255,.8)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(V.X(LINE[0]),V.Y(0));ctx.lineTo(V.X(LINE[1]),V.Y(0));ctx.stroke();ctx.setLineDash([]);
   ctx.fillStyle=css('--buoy');ctx.beginPath();ctx.arc(V.X(LINE[0]),V.Y(0),5,0,7);ctx.fill();ctx.fillStyle='#fff';ctx.fillRect(V.X(LINE[1])-4,V.Y(0)-9,8,18);
   ctx.font='12px Barlow, sans-serif';ctx.fillStyle='#fff';ctx.fillText('Pin',V.X(LINE[0])-26,V.Y(0)+4);ctx.fillText('Comitè',V.X(LINE[1])+8,V.Y(0)+4);
-  if(lay){const w=wind(G.W,Math.max(0,t),MARK.x,MARK.y);ctx.strokeStyle='rgba(255,255,255,.35)';ctx.setLineDash([3,6]);ctx.lineWidth=1;for(const h of [w.d+45,w.d-45]){ctx.beginPath();ctx.moveTo(V.X(MARK.x),V.Y(MARK.y));ctx.lineTo(V.X(MARK.x-Math.sin(h*R)*900),V.Y(MARK.y-Math.cos(h*R)*900));ctx.stroke()}ctx.setLineDash([])}
-  ctx.fillStyle=css('--buoy');ctx.beginPath();ctx.arc(V.X(MARK.x),V.Y(MARK.y),7,0,7);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke()}
-function drawBoat(ctx,V,b,col,lab){const x=V.X(b.x),y=V.Y(b.y),a=b.h*R;ctx.save();ctx.translate(x,y);ctx.rotate(a);const k=Math.max(1,Math.min(3,(V.z||1)*0.55));ctx.scale(k,k);if(b.me&&G.skin&&G.skin!=='opti'){drawSkin(ctx,G.skin,skinCol(G.skin),b.tack);ctx.restore();if(lab){ctx.font='600 12px Barlow, sans-serif';ctx.fillStyle=col;ctx.fillText(lab,x+12,y-10)}return}ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(0,-9);ctx.quadraticCurveTo(5,-2,4,7);ctx.lineTo(-4,7);ctx.quadraticCurveTo(-5,-2,0,-9);ctx.fill();ctx.strokeStyle='rgba(0,0,0,.35)';ctx.lineWidth=1;ctx.stroke();ctx.strokeStyle='rgba(255,255,255,.95)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,-3);ctx.lineTo(b.tack==='P'?-6:6,6);ctx.stroke();ctx.restore();
+  const tw=T=>wind(G.W,Math.max(0,t),T.x,T.y).d;
+  if(lay&&leg>=0){const k=G.legs[leg].k;const T=tgtOf(me);const th=tw(T);
+    if(G.legs[leg].fin){layFrom(ctx,V,{x:FIN.x0,y:FIN.y},[th+45]);layFrom(ctx,V,{x:FIN.x1,y:FIN.y},[th-45])}
+    else if(k==='beat')layFrom(ctx,V,T,[th+45,th-45]);else if(k==='run')layFrom(ctx,V,T,[th+155,th-155])}
+  if(!G.full){drawMark(ctx,V,MARK,null,false);return}
+  const fa=leg===3?1:.4;ctx.globalAlpha=fa;ctx.lineWidth=2.5;ctx.setLineDash([8,6]);ctx.strokeStyle='#fff';ctx.beginPath();ctx.moveTo(V.X(FIN.x0),V.Y(FIN.y));ctx.lineTo(V.X(FIN.x1),V.Y(FIN.y));ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='#3d7bff';for(const x of [FIN.x0,FIN.x1])ctx.fillRect(V.X(x)-4,V.Y(FIN.y)-8,8,16);ctx.font='12px Barlow, sans-serif';ctx.fillStyle='#fff';ctx.fillText('Arribada',V.X(FIN.x1)+8,V.Y(FIN.y)+4);ctx.globalAlpha=1;
+  drawMark(ctx,V,MARK,'1',leg===0);drawMark(ctx,V,M2,'2',leg===1);
+  GATE.forEach((g,i)=>drawMark(ctx,V,g,i?'3d':'3e',leg===2&&me.gate===i))}
+function sailPt(b){const th=wind(G.W,Math.max(0,G.t),b.x,b.y).d;const twa=Math.abs(adiff(b.h,th));const ang=clamp(20+(twa-45)*0.6,20,85)*R;const sd=b.tack==='S'?-1:1;return[sd*Math.sin(ang)*9,-3+Math.cos(ang)*9]}
+function drawBoat(ctx,V,b,col,lab){const x=V.X(b.x),y=V.Y(b.y),a=b.h*R;const sp=sailPt(b);ctx.save();ctx.translate(x,y);ctx.rotate(a);const k=Math.max(1,Math.min(3,(V.z||1)*0.55));ctx.scale(k,k);if(b.me&&G.skin&&G.skin!=='opti'){drawSkin(ctx,G.skin,skinCol(G.skin),sp);ctx.restore();if(lab){ctx.font='600 12px Barlow, sans-serif';ctx.fillStyle=col;ctx.fillText(lab,x+12,y-10)}return}ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(0,-9);ctx.quadraticCurveTo(5,-2,4,7);ctx.lineTo(-4,7);ctx.quadraticCurveTo(-5,-2,0,-9);ctx.fill();ctx.strokeStyle='rgba(0,0,0,.35)';ctx.lineWidth=1;ctx.stroke();ctx.strokeStyle='rgba(255,255,255,.95)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,-3);ctx.lineTo(sp[0],sp[1]);ctx.stroke();ctx.restore();
   if(lab){ctx.font='600 12px Barlow, sans-serif';ctx.fillStyle=col;ctx.fillText(lab,x+10,y-8)}}
 function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()}
 let lastFrame=performance.now(),acc=0;
@@ -418,7 +492,7 @@ function frame(now){const realDt=Math.min(.1,(now-lastFrame)/1000);lastFrame=now
 function render(realDt){if(G.phase==='debrief')return;const V=setupCanvas(cv,cx,true);VIEW=V;const t=G.t;const aids=effAids();
   drawSea(cx,V,t);if(aids.streaks)drawParts(cx,V,t,realDt);drawCourse(cx,V,t,aids.lay);
   for(const b of G.boats){if(b.trk.length>1){cx.strokeStyle=b.me?'rgba(255,91,74,.7)':'rgba(255,255,255,.18)';cx.lineWidth=b.me?2:1;cx.beginPath();const tr=b.trk.slice(b.me?0:-30);tr.forEach((p,i)=>i?cx.lineTo(V.X(p[0]),V.Y(p[1])):cx.moveTo(V.X(p[0]),V.Y(p[1])));cx.lineTo(V.X(b.x),V.Y(b.y));cx.stroke()}}
-  if(aids.shadow&&G.phase==='race'){cx.fillStyle='rgba(5,20,30,.22)';for(const b of G.boats){if(b.done)continue;const w=wind(G.W,t,b.x,b.y);const ux=-Math.sin(w.d*R),uy=-Math.cos(w.d*R),lx=uy,ly=-ux;const L=40,hw=4+0.2*L;cx.beginPath();cx.moveTo(V.X(b.x+ux*2),V.Y(b.y+uy*2));cx.lineTo(V.X(b.x+ux*L+lx*hw),V.Y(b.y+uy*L+ly*hw));cx.lineTo(V.X(b.x+ux*L-lx*hw),V.Y(b.y+uy*L-ly*hw));cx.closePath();cx.fill()}}
+  if(aids.shadow&&G.phase==='race'){cx.fillStyle='rgba(5,20,30,.22)';for(const b of G.boats){if(b.done)continue;const w=wind(G.W,t,b.x,b.y);const ux=-Math.sin(w.d*R),uy=-Math.cos(w.d*R),lx=uy,ly=-ux;const run=legK(b)==='run';const L=run?70:40,hw=run?5+0.22*L:4+0.2*L;cx.beginPath();cx.moveTo(V.X(b.x+ux*2),V.Y(b.y+uy*2));cx.lineTo(V.X(b.x+ux*L+lx*hw),V.Y(b.y+uy*L+ly*hw));cx.lineTo(V.X(b.x+ux*L-lx*hw),V.Y(b.y+uy*L-ly*hw));cx.closePath();cx.fill()}}
   for(const b of G.boats)if(!b.me)drawBoat(cx,V,b,b.done?'rgba(255,255,255,.45)':'#f4f1e8',null);
   drawBoat(cx,V,G.me,css('--me'),G.me.name);
   if(G.phase==='pre'){cx.font='700 34px Chakra Petch, sans-serif';cx.fillStyle='rgba(255,255,255,.92)';cx.textAlign='center';cx.fillText('−'+fmt(-t),V.W/2,44);cx.textAlign='left'}
@@ -428,22 +502,36 @@ function effAids(){return ui.aids?{streaks:true,hint:true,lay:true,shadow:true}:
 // ---------- HUD
 const trace=$('trace'),tctx=trace.getContext('2d');
 function updateHud(){const me=G.me,t=G.t;const w=wind(G.W,Math.max(0,t),me.x,me.y);const h=Math.round(norm(me.h));$('cmp').textContent=String(h).padStart(3,'0')+'°';$('tk').textContent=me.tack==='P'?'BABORD':'ESTRIBORD';
-  const aids=effAids();const c=$('cmp');c.classList.remove('lift','head');$('hint').textContent='';
-  if(aids.hint&&G.phase==='race'&&me.mean!=null&&me.tk<=0){const dv=adiff(w.d,me.mean);const lift=me.tack==='S'?dv>2:dv<-2,head=me.tack==='S'?dv<-2:dv>2;if(lift){c.classList.add('lift');$('hint').textContent='Et puja: bordada bona'}else if(head){c.classList.add('head');$('hint').textContent='Et baixa: pensa a virar'}}
-  $('spd').textContent=nf(me.v/0.5144,1);$('tws').textContent=nf(w.s*(1-me.dirty),1);$('dtm').textContent=Math.round(dist(me));$('clk').textContent=G.phase==='pre'?'−'+fmt(-t):fmt(t);
+  const aids=effAids();const c=$('cmp');c.classList.remove('lift','head');let ht='';const lk=legK(me),ek=G.phase==='race'?effKind(me,tgtOf(me)):'beat';
+  if(aids.hint&&G.phase==='race'&&me.mean!=null&&me.tk<=0&&ek!=='reach'){const dv=adiff(w.d,me.mean)*(ek==='run'?-1:1);const lift=me.tack==='S'?dv>2:dv<-2,head=me.tack==='S'?dv<-2:dv>2;
+    if(lift){c.classList.add('lift');ht=ek==='run'?'Bona bordada cap a la porta':'Et puja: bordada bona'}else if(head){c.classList.add('head');ht=ek==='run'?'Et desvia: pensa a trasluchar':'Et baixa: pensa a virar'}}
+  if(G.full&&G.phase==='race'&&!me.done){const parts=[(me.leg+1)+'/4 · '+legOf(me).name];if(lk==='reach')parts.push(['Rumb baix','Rumb directe','Rumb alt'][me.off+1]);if(ek==='reach'&&lk!=='reach')parts.push('Torna cap a la boia');if(ht)parts.push(ht);ht=parts.join(' · ')}
+  if($('hint').textContent!==ht)$('hint').textContent=ht;syncLegUI();
+  $('spd').textContent=nf(me.v/0.5144,1);$('tws').textContent=nf(w.s*(1-me.dirty),1);$('dtm').textContent=Math.round(dist(me));$('dtmL').textContent=legOf(me).lab;$('clk').textContent=G.phase==='pre'?'−'+fmt(-t):fmt(t);
   $('pos').textContent=rank(me)+'/'+G.boats.length;
-  const msg=performance.now()<G.warnT?G.warnMsg:(me.dirty>0.04&&G.phase==='race'?'Aire brut: tens un vaixell al davant que et pren el vent':'');const wv=$('warn');if(wv.textContent!==msg)wv.textContent=msg;wv.hidden=!msg;$('vira').classList.toggle('busy',me.tk>0);
+  const msg=performance.now()<G.warnT?G.warnMsg:(me.dirty>0.04&&G.phase==='race'?(lk==='run'?'Ombra de vent: un vaixell de darrere et tapa':'Aire brut: tens un vaixell al davant que et pren el vent'):'');const wv=$('warn');if(wv.textContent!==msg)wv.textContent=msg;wv.hidden=!msg;$('vira').classList.toggle('busy',me.tk>0);
   drawTrace()}
-function rank(me){const th=wind(G.W,Math.max(0,G.t),MARK.x,MARK.y).d;const key=b=>b.done?b.ft-1e6:dtg(b,th);const k=key(me);return 1+G.boats.filter(b=>b!==me&&key(b)<k).length}
+function rank(me){const k=pkey(me);return 1+G.boats.filter(b=>b!==me&&pkey(b)<k).length}
 function drawTrace(){const W=trace.clientWidth||280,H=trace.clientHeight||54,dpr=Math.min(2,devicePixelRatio||1);trace.width=W*dpr;trace.height=H*dpr;tctx.setTransform(dpr,0,0,dpr,0,0);tctx.clearRect(0,0,W,H);
   const pts=G.trace.filter(p=>p[0]>G.t-240);tctx.strokeStyle='rgba(157,179,187,.3)';tctx.lineWidth=1;tctx.beginPath();tctx.moveTo(0,H/2);tctx.lineTo(W,H/2);tctx.stroke();
   if(!pts.length){tctx.fillStyle=css('--muted');tctx.font='13px Barlow, sans-serif';tctx.fillText('Apareixerà quan comencis a navegar',8,H/2-6);return}
-  const vals=pts.map(p=>p[1]==='S'?p[2]+45:p[2]-45);const ref=G.me.mean??vals[0];const dev=vals.map(v=>adiff(v,ref));const m=Math.max(10,...dev.map(Math.abs));
+  const vals=pts.map(p=>p[1]==='S'?p[2]+(p[4]||45):p[2]-(p[4]||45));const ref=G.me.mean??vals[0];const dev=vals.map(v=>adiff(v,ref));const m=Math.max(10,...dev.map(Math.abs));
   tctx.fillStyle=css('--muted');tctx.font='11px Chakra Petch, sans-serif';tctx.fillText('dreta',4,11);tctx.fillText('esq.',4,H-3);
   pts.forEach((p,i)=>{const x=W*(1-(G.t-p[0])/240),y=H/2-dev[i]/m*(H/2-10);tctx.fillStyle=p[1]==='S'?'#f4f1e8':css('--buoy');tctx.beginPath();tctx.arc(x,y,3,0,7);tctx.fill()})}
 
+function syncLegUI(){const me=G.me;const lk=G.phase==='race'?legK(me):'beat';const key=lk+'|'+me.off+'|'+me.gate+'|'+G.phase;if(G.uiKey===key)return;G.uiKey=key;
+  const vb=$('vira');vb.hidden=lk==='reach';$('reachBox').hidden=lk!=='reach';$('gateBar').hidden=lk!=='run';
+  const lab=lk==='run'?'TRASLUCHA':'VIRA';if(vb.textContent!==lab)vb.textContent=lab;vb.classList.toggle('long',lk==='run');
+  $('orsa').classList.toggle('on',me.off===1);$('arriba').classList.toggle('on',me.off===-1);$('orsa').setAttribute('aria-pressed',me.off===1);$('arriba').setAttribute('aria-pressed',me.off===-1);
+  $('gL').setAttribute('aria-pressed',lk==='run'&&me.gate===0);$('gR').setAttribute('aria-pressed',lk==='run'&&me.gate===1)}
+function setOff(d){const el=$(d>0?'orsa':'arriba');el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash');
+  if(!G||G.phase!=='race')return;if(G.paused){warn('Estàs en pausa: toca ▶ per continuar');return}const me=G.me;if(me.done||legK(me)!=='reach')return;
+  me.off=clamp(me.off+d,-1,1);warn(['Arribes: vas per sota del rumb','Rumb directe a la boia','Orses: vas per sobre del rumb'][me.off+1])}
+function setGate(g){if(!G||G.phase!=='race'||G.me.done||legK(G.me)!=='run')return;G.me.gate=g;G.me.gp=true;warn('Vas a la boia '+(g?'dreta':'esquerra')+' de la porta')}
+function bindTap(el,fn){let last=0;const h=e=>{const now=performance.now();if(now-last<350){if(e.cancelable)e.preventDefault();return}last=now;if(e.cancelable&&e.type!=='click')e.preventDefault();fn()};el.addEventListener('touchstart',h,{passive:false});['pointerdown','mousedown','click'].forEach(ev=>el.addEventListener(ev,h))}
+bindTap($('orsa'),()=>setOff(1));bindTap($('arriba'),()=>setOff(-1));bindTap($('gL'),()=>setGate(0));bindTap($('gR'),()=>setGate(1));
 // ---------- pre-start
-function showPre(){document.body.classList.add('playing','prestart');$('menu').hidden=true;$('debrief').hidden=true;$('game').hidden=false;$('pre').hidden=false;$('raceCtl').hidden=true;syncZ();$('preLvl').textContent=G.daily?'Repte del dia':G.L.n;$('preTitle').textContent=G.daily?'El mateix vent per a tothom':G.L.t;$('preBrief').textContent=G.L.brief;setStartTack(G.me.tack)}
+function showPre(){document.body.classList.add('playing','prestart');$('menu').hidden=true;$('debrief').hidden=true;$('game').hidden=false;$('pre').hidden=false;$('raceCtl').hidden=true;$('gateBar').hidden=true;G.uiKey=null;syncZ();$('preLvl').textContent=G.daily?'Repte del dia':G.L.n;$('preTitle').textContent=G.daily?'El mateix vent per a tothom':G.L.t;$('preBrief').textContent=G.L.brief;setStartTack(G.me.tack)}
 function updatePre(){const me=G.me;const w=wind(G.W,0,me.x,me.y);const h=w.d+(G.t*0);$('readS').textContent=String(Math.round(norm(w.d-45))).padStart(3,'0')+'°';$('readP').textContent=String(Math.round(norm(w.d+45))).padStart(3,'0')+'°';me.h=w.d+(me.tack==='P'?45:-45);if(G.t>=0)startRace()}
 function setStartTack(tk){G.me.tack=tk;$('stS').setAttribute('aria-pressed',tk==='S');$('stP').setAttribute('aria-pressed',tk==='P');placeStart()}
 $('stS').onclick=()=>setStartTack('S');$('stP').onclick=()=>setStartTack('P');
@@ -461,39 +549,58 @@ function syncZ(){$('zf').setAttribute('aria-pressed',VZ.follow);$('zl').textCont
   const up=e=>{pts.delete(e.pointerId);if(pts.size<2)pinch=null};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);cv.addEventListener('pointerleave',up)})();
 $('zin').onclick=()=>{const V=VIEW;if(V)zoomAt(1.5,V.W/2,V.H/2)};$('zout').onclick=()=>{const V=VIEW;if(V)zoomAt(1/1.5,V.W/2,V.H/2)};
 $('zf').onclick=()=>{VZ.follow=!VZ.follow;if(VZ.follow&&VZ.z<2.5)VZ.z=3;syncZ()};$('zall').onclick=()=>{VZ.z=1;VZ.follow=false;syncZ()};
-function startRace(){document.body.classList.remove('prestart');G.t=0;G.phase='race';$('pre').hidden=true;$('raceCtl').hidden=false;placeStart();lastDecide=-99;acc=0}
+function startRace(){document.body.classList.remove('prestart');G.t=0;G.phase='race';G.uiKey=null;$('pre').hidden=true;$('raceCtl').hidden=false;placeStart();lastDecide=-99;acc=0}
 // ---------- controls
 let pendingTack=false;
 function doTack(){const btn=$('vira');btn.classList.remove('flash');void btn.offsetWidth;btn.classList.add('flash');
   if(!G||G.phase!=='race'){warn('Encara no ha començat la regata');return}if(G.paused){warn('Estàs en pausa: toca ▶ per continuar');return}const me=G.me;if(me.done)return;
-  if(me.tk>1.2){pendingTack=true;warn('Virada guardada: es farà en acabar aquesta');return}if(me.tk>0){pendingTack=true;return}
+  const lk=legK(me),ek=effKind(me,tgtOf(me));if(lk==='reach'){warn('Al través no es vira: orsa o arriba');return}
+  if(ek==='reach'){warn('T\'has passat la boia: el vaixell hi torna sol');return}const run=ek==='run';
+  if(me.tk>1.2){pendingTack=true;warn(run?'Trasluchada guardada: es farà en acabar aquesta maniobra':'Virada guardada: es farà en acabar aquesta');return}if(me.tk>0){pendingTack=true;return}
+  if(run){gybe(me,G.t);warn(me.tack==='P'?'Trasluchada! Ara a babord':'Trasluchada! Ara a estribord');return}
   const why=canTack(me,G.t);const now=performance.now();
   if(why&&why.startsWith('Tens un vaixell a barlovent')&&G.pinAt&&now-G.pinAt<3000){G.pinAt=0;me.v*=0.45;tack(me,G.t);G.slowTacks=(G.slowTacks||0)+1;warn('Has frenat i has virat per la popa del vaixell: perds uns metres');return}
   if(why&&why.startsWith('Tens un vaixell a barlovent'))G.pinAt=now;
   if(tryTack(me,G.t))warn(me.tack==='P'?'Vira! Ara a babord':'Vira! Ara a estribord')}
 let lastPress=0;function press(e){const now=performance.now();if(now-lastPress<350){if(e&&e.cancelable)e.preventDefault();return}lastPress=now;if(e&&e.cancelable&&e.type!=='click')e.preventDefault();doTack()}
 const vb=$('vira');vb.addEventListener('touchstart',press,{passive:false});vb.addEventListener('pointerdown',press);vb.addEventListener('mousedown',press);vb.addEventListener('click',press);
-document.addEventListener('keydown',e=>{if($('game').hidden)return;if(e.code==='Space'||e.code==='Enter'){if(G.phase==='race'){e.preventDefault();if(!e.repeat)doTack()}}if(e.key==='p'||e.key==='P')togglePause()});
+document.addEventListener('keydown',e=>{if($('game').hidden)return;if(e.code==='Space'||e.code==='Enter'){if(G.phase==='race'){e.preventDefault();if(!e.repeat)doTack()}}if(G&&G.phase==='race'&&!e.repeat){if(e.code==='ArrowUp')setOff(1);if(e.code==='ArrowDown')setOff(-1);if(e.code==='ArrowLeft')setGate(0);if(e.code==='ArrowRight')setGate(1)}if(e.key==='p'||e.key==='P')togglePause()});
 function togglePause(){if(!G||G.phase!=='race')return;G.paused=!G.paused;$('pause').textContent=G.paused?'▶':'II'}
 $('pause').onclick=togglePause;$('quit').onclick=()=>showMenu();$('back1').onclick=()=>showMenu();$('back2').onclick=()=>showMenu();
 $('again').onclick=()=>newGame(G.lvIdx,G.seed,G.daily);$('newr').onclick=()=>newGame(G.lvIdx);
 
-// ---------- ideal route (isochrones)
-function ideal(sx,stack0,maxT=1500){const dt=2;let pts=[{x:sx,y:-4,tack:'S',f:0,p:null},{x:sx,y:-4,tack:'P',f:0,p:null}];if(stack0)pts=pts.filter(p=>p.tack===stack0);
-  for(let step=0;step*dt<maxT;step++){const t=step*dt;const nxt=[];
-    for(const p of pts){const w=wind(G.W,t,p.x,p.y);const go=(tk,f)=>{const tmp={x:p.x,y:p.y,tack:tk};const ft=fetchTarget(tmp,w.d);const h=ft??(w.d+(tk==='P'?45:-45));let v=polar(w.s)*(ft!=null?reachF(Math.abs(adiff(h,w.d))):1);if(f>0)v*=0.3;const q={x:p.x+v*Math.sin(h*R)*dt,y:p.y+v*Math.cos(h*R)*dt,tack:tk,f:Math.max(0,f-1),p,t:t+dt};if(Math.abs(q.x)>XB+10)return;nxt.push(q)};
-      go(p.tack,p.f);if(p.f===0&&fetchTarget(p,w.d)==null)go(p.tack==='P'?'S':'P',2)}
-    let best=null;for(const q of nxt){const d=Math.hypot(MARK.x-q.x,MARK.y-q.y);if(d<10&&(!best||d<best.d))best={q,d}}
-    if(best){const path=[];let q=best.q;while(q){path.push([q.x,q.y,q.tack]);q=q.p}path.reverse();let tacks=0;for(let i=1;i<path.length;i++)if(path[i][2]!==path[i-1][2])tacks++;return{T:best.q.t,path,tacks}}
-    const bins=new Map();for(const q of nxt){const a=Math.atan2(q.x-MARK.x,MARK.y-q.y)/R;const k=q.tack+Math.round(a/0.8)+'|'+(q.f>0?1:0);const d=Math.hypot(MARK.x-q.x,MARK.y-q.y);const o=bins.get(k);if(!o||d<o.d)bins.set(k,{q,d})}
+// ---------- ideal route (isochrones, leg by leg)
+function isoLeg(starts,leg,gate,maxT){const Lg=G.legs[leg],k=Lg.k,dt=2;let pts=starts;const t0=starts[0].t;
+  const C=Lg.fin?{x:(FIN.x0+FIN.x1)/2,y:FIN.y}:Lg.to({gate});
+  const dRem=q=>Lg.fin?(q.x>=FIN.x0&&q.x<=FIN.x1?Math.abs(FIN.y-q.y):Math.hypot(q.x-clamp(q.x,FIN.x0,FIN.x1),q.y-FIN.y)):Math.hypot(C.x-q.x,C.y-q.y);
+  for(let step=0;t0+step*dt<maxT;step++){const t=t0+step*dt;const nxt=[];
+    for(const p of pts){const w=wind(G.W,t,p.x,p.y);const T=Lg.to({x:p.x,y:p.y,gate});const ek=effKind({x:p.x,y:p.y,leg,gate},T);
+      const go=(tk,f,off)=>{const tmp={x:p.x,y:p.y,tack:tk};let h;if(ek==='reach')h=reachH(tmp,w.d,T,off);else{const ft=fetchT(tmp,w.d,ek,T);h=ft??courseH(tmp,w.d,ek)}
+        let v=polar(w.s)*speedF(Math.abs(adiff(h,w.d)));if(f>0)v*=(ek==='run'?0.65:0.3);
+        const q={x:p.x+v*Math.sin(h*R)*dt,y:p.y+v*Math.cos(h*R)*dt,tack:tmp.tack,f:Math.max(0,f-1),p,t:t+dt,leg};if(Math.abs(q.x)>XB+10)return;nxt.push(q)};
+      if(ek==='reach'){if(k==='reach'){for(const o of [-1,0,1])go(p.tack,0,o)}else go(p.tack,0,0)}
+      else{go(p.tack,p.f);if(p.f===0&&fetchT({x:p.x,y:p.y,tack:p.tack},w.d,ek,T)==null)go(p.tack==='P'?'S':'P',ek==='run'?1:2)}}
+    let best=null;for(const q of nxt){let d=null;if(Lg.fin){const p=q.p;if((p.y<FIN.y)!==(q.y<FIN.y)){const f=(FIN.y-p.y)/(q.y-p.y);const xx=p.x+(q.x-p.x)*f;if(xx>=FIN.x0&&xx<=FIN.x1)d=0}}else{const T=Lg.to({gate});const dd=Math.hypot(T.x-q.x,T.y-q.y);if(dd<(k==='run'?9:10))d=dd}
+      if(d!=null&&(!best||d<best.d))best={q,d}}
+    if(best)return best.q;
+    const bins=new Map();for(const q of nxt){const a=Math.atan2(q.x-C.x,C.y-q.y)/R;const key=q.tack+Math.round(a/0.8)+'|'+(q.f>0?1:0);const d=dRem(q);const o=bins.get(key);if(!o||d<o.d)bins.set(key,{q,d})}
     pts=[...bins.values()].map(o=>o.q)}
   return null}
+function pathOf(q){const path=[];while(q){path.push([q.x,q.y,q.tack,q.leg||0]);q=q.p}path.reverse();let tacks=0,gybes=0;for(let i=1;i<path.length;i++)if(path[i][2]!==path[i-1][2]&&path[i][3]===path[i-1][3]){const k=G.legs[path[i][3]].k;if(k==='beat')tacks++;else if(k==='run')gybes++}return{path,tacks,gybes}}
+const st0=sx=>[{x:sx,y:-4,tack:'S',f:0,p:null,t:0,leg:0},{x:sx,y:-4,tack:'P',f:0,p:null,t:0,leg:0}];
+// first beat only (single-leg levels, and the start comparison of the full race)
+function ideal(sx,stack0,maxT=1500){let s=st0(sx);if(stack0)s=s.filter(p=>p.tack===stack0);const q=isoLeg(s,0,null,maxT);if(!q)return null;return{T:q.t,legT:[q.t],...pathOf(q)}}
+function idealFull(sx,maxT=3000){const q0=isoLeg(st0(sx),0,null,maxT);if(!q0)return null;
+  const q1=isoLeg([{x:q0.x,y:q0.y,tack:'S',f:0,p:q0,t:q0.t,leg:1}],1,null,maxT);if(!q1)return null;let best=null;
+  for(const g of [0,1]){const q2=isoLeg(['S','P'].map(tk=>({x:q1.x,y:q1.y,tack:tk,f:0,p:q1,t:q1.t,leg:2})),2,g,maxT);if(!q2)continue;
+    const q3=isoLeg([{x:q2.x,y:q2.y,tack:g===0?'S':'P',f:0,p:q2,t:q2.t,leg:3}],3,g,maxT);if(q3&&(!best||q3.t<best.q3.t))best={q2,q3,g}}
+  if(!best)return null;return{T:best.q3.t,gate:best.g,legT:[q0.t,q1.t-q0.t,best.q2.t-q1.t,best.q3.t-best.q2.t],...pathOf(best.q3)}}
 
 // ---------- finish & debrief
 function finish(){if(G.phase!=='race')return;G.phase='debrief';
-  const me=G.me;const order=[...G.boats].sort((a,b)=>{const th=wind(G.W,G.t,MARK.x,MARK.y).d;const ka=a.done?a.ft-1e6:dtg(a,th),kb=b.done?b.ft-1e6:dtg(b,th);return ka-kb});
+  const me=G.me;const order=[...G.boats].sort((a,b)=>pkey(a)-pkey(b));
   const pos=order.indexOf(me)+1;const startX=me.trk.length?me.trk[0][0]:0;
-  const myIdeal=ideal(startX);const starts=[LINE[0]+10,0,LINE[1]-10].map(x=>({x,r:ideal(x)}));const bestStart=starts.filter(s=>s.r).sort((a,b)=>a.r.T-b.r.T)[0];
+  const myIdeal=G.full?idealFull(startX):ideal(startX);const starts=[LINE[0]+10,0,LINE[1]-10].map(x=>({x,r:ideal(x)}));const bestStart=starts.filter(s=>s.r).sort((a,b)=>a.r.T-b.r.T)[0];
   showDebrief({order,pos,myIdeal,bestStart,startX});}
 function showDebrief(R0){const{order,pos,myIdeal,bestStart,startX}=R0;const me=G.me;document.body.classList.remove('playing');$('game').hidden=true;$('debrief').hidden=false;
   const L=G.L;$('dLvl').textContent=G.daily?'Repte del dia':L.n+' · '+L.t;$('dPos').textContent=me.done?(pos+'a de '+G.boats.length):'No has arribat';
@@ -501,8 +608,8 @@ function showDebrief(R0){const{order,pos,myIdeal,bestStart,startX}=R0;const me=G
   rows.push(['El teu temps',myT?fmt(myT):'—']);if(myIdeal)rows.push(['Ruta ideal des de la teva sortida',fmt(myIdeal.T)+(myT?'  ·  +'+Math.max(0,Math.round(myT-myIdeal.T))+' s':'')]);
   const win=order[0];rows.push(['Guanyador',win.name+(win.done?' · '+fmt(win.ft):'')]);
   $('dTimes').innerHTML=rows.map(r=>`<span>${r[0]}</span><b>${r[1]}</b>`).join('');
-  const facts=[];const A=me.acc;const fav=A.t?Math.round(100*A.fav/A.t):0;const winA=win.acc;const wfav=winA.t?Math.round(100*winA.fav/winA.t):0;
-  facts.push({c:fav>=wfav-5?'good':'bad',t:`Has navegat el ${fav}% del temps a la bordada bona, la que apuntava més cap a la boia. El guanyador, el ${wfav}%.`});
+  const facts=[];const A=me.acc;const fav=A.tb?Math.round(100*A.fav/A.tb):0;const winA=win.acc;const wfav=winA.tb?Math.round(100*winA.fav/winA.tb):0;
+  facts.push({c:fav>=wfav-5?'good':'bad',t:G.full?`A les cenyides i a la popa has anat el ${fav}% del temps per la bordada bona, la que apuntava més cap a la boia. El guanyador, el ${wfav}%.`:`Has navegat el ${fav}% del temps a la bordada bona, la que apuntava més cap a la boia. El guanyador, el ${wfav}%.`});
   const myTws=A.t?A.tws/A.t:0;const fl=G.boats.filter(b=>!b.me&&b.acc.t);const flTws=fl.reduce((s,b)=>s+b.acc.tws/b.acc.t,0)/fl.length;
   facts.push({c:myTws>=flTws-0.1?'good':'bad',t:`Vent mitjà que has tingut: ${nf(myTws,1)} nusos. La flota: ${nf(flTws,1)}.`});
   if(A.dirty>4)facts.push({c:A.dirty>30?'bad':'',t:`${Math.round(A.dirty)} segons en aire brut, darrere d'algun vaixell.`});
@@ -510,15 +617,24 @@ function showDebrief(R0){const{order,pos,myIdeal,bestStart,startX}=R0;const me=G
   if(G.slowTacks)facts.push({c:'',t:`${G.slowTacks} ${G.slowTacks>1?'vegades':'vegada'} has hagut de frenar per virar per la popa d'un vaixell que et tapava.`});
   if(G.blocked)facts.push({c:'',t:`${G.blocked} ${G.blocked>1?'vegades':'vegada'} no has pogut virar quan volies per culpa d'un altre vaixell.`});
   facts.push({c:'',t:`Virades: ${G.tacks}. La ruta ideal en feia ${myIdeal?myIdeal.tacks:'—'}.`});
-  const ll=G.laylog.length?G.laylog[G.laylog.length-1]:null;if(ll&&me.done){if(ll.over>15)facts.push({c:'bad',t:`L'última virada cap a la boia l'has feta uns ${Math.round(ll.over)} m per sobre de la layline: has navegat de més.`});else if(ll.over<-15)facts.push({c:'',t:`L'última virada l'has feta abans de la layline i has hagut de fer virades curtes a prop de la boia.`});else facts.push({c:'good',t:'L\'última virada cap a la boia, just a la layline.'})}
-  if(bestStart){const nm=x=>x<-40?'el pin':x>40?'el comitè':'el mig';facts.push({c:nm(bestStart.x)===nm(startX)?'good':'',t:`La millor sortida avui era per ${nm(bestStart.x)}. Tu has sortit per ${nm(startX)}.`})}
+  if(G.full){facts.push({c:'',t:`Trasluchades a la popa: ${G.gybes}. La ruta ideal en feia ${myIdeal?myIdeal.gybes:'—'}.`});
+    if(A.runSh>4)facts.push({c:A.runSh>25?'bad':'',t:`${Math.round(A.runSh)} segons tapat a la popa per vaixells de darrere.`});
+    const ot=A.off[0]+A.off[1]+A.off[2];if(ot>5)facts.push({c:'',t:`Al través: ${Math.round(100*A.off[2]/ot)}% orsant, ${Math.round(100*A.off[1]/ot)}% rumb directe i ${Math.round(100*A.off[0]/ot)}% arribant.`});
+    const gi=G.gateInfo;if(gi){const nm=g=>'boia '+(g?'dreta':'esquerra');if(gi.diff<3)facts.push({c:'good',t:`Porta: has passat per la ${nm(gi.pick)}. Les dues estaven pràcticament igual.`});else facts.push({c:gi.pick===gi.fav?'good':'bad',t:`Porta: has passat per la ${nm(gi.pick)}. La ${nm(gi.fav)} estava ${Math.round(gi.diff)} m més a barlovent.`+(myIdeal&&myIdeal.gate!==gi.pick?` La ruta ideal passava per la ${nm(myIdeal.gate)}.`:'')})}}
+  const l0=G.full?G.laylog.filter(x=>x.leg===0):G.laylog;const ll=l0.length?l0[l0.length-1]:null;if(ll&&(G.full?me.leg>0:me.done)){if(ll.over>15)facts.push({c:'bad',t:`L'última virada cap a la boia l'has feta uns ${Math.round(ll.over)} m per sobre de la layline: has navegat de més.`});else if(ll.over<-15)facts.push({c:'',t:`L'última virada l'has feta abans de la layline i has hagut de fer virades curtes a prop de la boia.`});else facts.push({c:'good',t:'L\'última virada cap a la boia, just a la layline.'})}
+  if(bestStart){const nm=x=>x<-40?'pel pin':x>40?'pel comitè':'pel mig';facts.push({c:nm(bestStart.x)===nm(startX)?'good':'',t:`La millor sortida avui era ${nm(bestStart.x)}. Tu has sortit ${nm(startX)}.`})}
   facts.push({c:'',t:revealWind()});
   $('dFacts').innerHTML=facts.map(f=>`<li class="${f.c}">${f.t}</li>`).join('');
   $('dRes').innerHTML=order.slice(0,Math.max(5,pos)).map((b,i)=>`<tr class="${b.me?'me':''}"><td>${i+1}</td><td>${b.name}</td><td>${b.done?fmt(b.ft):'—'}</td></tr>`).join('')+(pos>5?'':'');
   if(P)renderReward(award({pos,of:G.boats.length,done:me.done,myT,idealT:myIdeal?myIdeal.T:null}));
-  drawDebrief(myIdeal,win)}
+  renderSplits(myIdeal);drawDebrief(myIdeal,win)}
+function renderSplits(myIdeal){const box=$('dSplits');box.hidden=!G.full;if(!G.full)return;const me=G.me;
+  const lt=(b,i)=>b.splits[i]==null?null:b.splits[i]-(i?b.splits[i-1]:0);
+  $('dSplT').innerHTML='<tr><th>Tram</th><th>Tu</th><th>Millor</th><th>Ideal</th></tr>'+G.legs.map((Lg,i)=>{const all=G.boats.map(b=>lt(b,i)).filter(v=>v!=null).sort((a,b)=>a-b);const mine=lt(me,i);const best=all.length?all[0]:null;
+    const rk=mine==null?null:1+all.filter(v=>v<mine).length;const cls=mine==null?'':(rk===1?'best':rk<=3?'good':'');
+    return`<tr><td>${Lg.name}</td><td class="${cls}">${mine==null?'—':fmt(mine)+` <span class="small">${rk}a</span>`}</td><td class="best">${best==null?'—':fmt(best)}</td><td>${myIdeal&&myIdeal.legT[i]!=null?fmt(myIdeal.legT[i]):'—'}</td></tr>`}).join('')}
 function revealWind(){const W=G.W;const k=W.real;const side=v=>v>0?'la dreta':'l\'esquerra';
-  if(k==='osc')return`Avui el vent oscil·lava uns ${Math.round(W.osc.A)}° a cada costat, cada ${Math.round(W.osc.P/60*10)/10} minuts més o menys.`;
+  if(k==='osc')return`Avui el vent oscil·lava uns ${Math.round(W.osc.A)}° a cada costat, cada ${nf(W.osc.P/60,1)} minuts més o menys.`;
   if(k==='press')return`Avui hi havia més ratxes per ${side(W.gustSide)} del camp.`;
   if(k==='pers')return`Avui el vent ha girat ${Math.round(Math.abs(W.trend))}° cap a ${side(W.trend)} durant la cenyida.`;
   if(k==='trans')return`Avui la marinada ha entrat per ${side(W.front.s)} i ha girat el vent ${Math.round(Math.abs(W.front.dNew))}°.`;return''}
@@ -546,7 +662,7 @@ const SKINS=[
  {id:'moto',name:'Moto de curses',need:'Guanya 3 regates',ok:p=>p.wins>=3},
  {id:'shark',name:'Tauró',need:'9 estrelles',ok:p=>p.stars>=9},
  {id:'gold',name:'Optimist daurat',need:'Repte del dia 5 dies seguits',ok:p=>p.streak>=5},
- {id:'foil',name:'Optimist amb foils',need:'Les 18 estrelles',ok:p=>p.stars>=18}];
+ {id:'foil',name:'Optimist amb foils',need:'18 estrelles',ok:p=>p.stars>=18}];
 function skinCol(id){return id==='blue'?'#3d7bff':id==='gold'?'#f2c14e':id==='shark'?'#9fb1ba':css('--me')}
 function drawSkin(ctx,id,col,tack){ctx.lineJoin='round';
   if(id==='f1'){ctx.fillStyle='#111';[[-6,-7],[4,-7],[-7,6],[5,6]].forEach(([x,y])=>ctx.fillRect(x,y,3,5));ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(0,-14);ctx.lineTo(2.5,-4);ctx.lineTo(3.5,8);ctx.lineTo(-3.5,8);ctx.lineTo(-2.5,-4);ctx.closePath();ctx.fill();ctx.fillRect(-7,-13,14,2.5);ctx.fillRect(-6,9,12,3);ctx.fillStyle='#111';ctx.beginPath();ctx.arc(0,0,2.2,0,7);ctx.fill();return}
@@ -554,7 +670,7 @@ function drawSkin(ctx,id,col,tack){ctx.lineJoin='round';
   if(id==='shark'){ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(0,-13);ctx.quadraticCurveTo(6,-2,2,9);ctx.lineTo(5,14);ctx.lineTo(0,11);ctx.lineTo(-5,14);ctx.lineTo(-2,9);ctx.quadraticCurveTo(-6,-2,0,-13);ctx.fill();ctx.fillStyle='#6d828c';ctx.beginPath();ctx.moveTo(0,-3);ctx.lineTo(2.5,3);ctx.lineTo(-2.5,3);ctx.closePath();ctx.fill();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(-2,-8,.9,0,7);ctx.arc(2,-8,.9,0,7);ctx.fill();return}
   ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(0,-9);ctx.quadraticCurveTo(5,-2,4,7);ctx.lineTo(-4,7);ctx.quadraticCurveTo(-5,-2,0,-9);ctx.fill();ctx.strokeStyle='rgba(0,0,0,.35)';ctx.lineWidth=1;ctx.stroke();
   if(id==='foil'){ctx.strokeStyle='rgba(255,255,255,.8)';ctx.lineWidth=1;for(const sx of [-1,1]){ctx.beginPath();ctx.moveTo(sx*5,4);ctx.lineTo(sx*12,10);ctx.stroke();ctx.beginPath();ctx.moveTo(sx*3,9);ctx.lineTo(sx*8,16);ctx.stroke()}}
-  ctx.strokeStyle='rgba(255,255,255,.95)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,-3);ctx.lineTo(tack==='P'?-6:6,6);ctx.stroke()}
+  const e=Array.isArray(tack)?tack:[tack==='P'?6:-6,6];ctx.strokeStyle='rgba(255,255,255,.95)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,-3);ctx.lineTo(e[0],e[1]);ctx.stroke()}
 function showWho(){document.body.classList.remove('playing','prestart');['menu','game','debrief','garage','board'].forEach(i=>$(i).hidden=true);$('who').hidden=false;$('whoMsg').textContent='';
   $('famBox').hidden=!CLOUD_ON;if(CLOUD_ON){$('famState').textContent=FAM?`Codi de família: ${FAM}. Tria qui ets o afegeix un regatista.`:'Escriu el codi de la teva família o crea\'n un. Sense codi, el progrés només es guarda en aquest mòbil.';$('famJoin').hidden=!!FAM}
   renderWhoList()}
@@ -592,7 +708,7 @@ function dayBefore(n){const d=new Date(Math.floor(n/10000),Math.floor(n/100)%100
 let audio=null;function beep(notes){try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();let t=audio.currentTime;for(const [f,d] of notes){const o=audio.createOscillator(),g=audio.createGain();o.type='triangle';o.frequency.value=f;g.gain.setValueAtTime(.12,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g).connect(audio.destination);o.start(t);o.stop(t+d);t+=d*0.8}}catch(e){}}
 function confetti(){const box=document.createElement('div');box.className='confetti';const cols=['#ff5b4a','#ffd166','#5fe08f','#c58bff','#fff','#3d7bff'];for(let i=0;i<70;i++){const c=document.createElement('i');c.style.left=Math.random()*100+'%';c.style.background=cols[i%cols.length];c.style.animationDelay=Math.random()*0.8+'s';c.style.animationDuration=1.8+Math.random()*1.4+'s';box.appendChild(c)}document.body.appendChild(box);setTimeout(()=>box.remove(),4200)}
 function award({pos,of,done,myT,idealT}){const L=G.L;const before=prog();const rkBefore=rankOf(before.xp);
-  const got=[done&&pos<=3,done&&pos===1,done&&idealT!=null&&myT-idealT<=20];const old=G.daily?[0,0,0]:starsOf(L.id);const nw=got.map((g,i)=>g&&!old[i]);
+  const got=[done&&pos<=3,done&&pos===1,done&&idealT!=null&&myT-idealT<=(L.gap||20)];const old=G.daily?[0,0,0]:starsOf(L.id);const nw=got.map((g,i)=>g&&!old[i]);
   if(!G.daily)pset('stars:'+L.id,old.map((o,i)=>o||got[i]?1:0));
   let xp=done?50+Math.max(0,of-pos)*10:10;xp+=nw.filter(Boolean).length*60;if(G.daily&&done)xp+=50;
   if(done&&pos===1)pset('wins',pget('wins',0)+1);
@@ -602,12 +718,12 @@ function award({pos,of,done,myT,idealT}){const L=G.L;const before=prog();const r
   syncCloud(done?{kind:G.daily?'daily':'level',level:L.id,day:G.daily?today():null,pos,fleet:of,time:myT}:null);
   const after=prog();const unlocked=SKINS.filter(k=>!k.ok(before)&&k.ok(after));const rk=rankOf(after.xp);
   return{got,nw,xp,unlocked,rk,rankUp:rk.lvl>rkBefore.lvl,starsShow:G.daily?got:got.map((g,i)=>g||old[i])}}
-function renderReward(r){const lab=['Podi','Victòria','A menys de 20 s de la ruta ideal'];
+function renderReward(r){const lab=['Podi','Victòria',`A menys de ${G.L.gap||20} s de la ruta ideal`];
   $('dRew').innerHTML=`<div class="stars3">${r.starsShow.map((g,i)=>`<span class="s3 ${r.nw[i]?'new':''}"><span class="st ${g?'':'off'}">★</span>${lab[i]}</span>`).join('')}</div>
    <div class="xp"><span class="rk">+${r.xp} XP · ${r.rk.name}${r.rk.next?` · falten ${r.rk.left} per a ${r.rk.next}`:''}</span><div class="bar"><i style="width:${Math.round(r.rk.pct*100)}%"></i></div></div>
    ${r.rankUp?`<div class="unlock">Has pujat de rang: ara ets ${r.rk.name}!</div>`:''}${r.unlocked.map(k=>`<div class="unlock">Nou al garatge: ${k.name}!</div>`).join('')}`;
   if(r.nw.some(Boolean)||r.unlocked.length)beep([[523,.15],[659,.15],[784,.15],[1047,.35]]);if(r.got[1])confetti()}
-function renderPbar(){const p=prog(),rk=rankOf(p.xp);$('pbar').innerHTML=`<div><div class="nm">${esc(P.name)}</div><div class="sail">${esc(P.sail)}</div></div><div class="xp"><span class="rk">${rk.name} · ${p.xp} XP</span><div class="bar"><i style="width:${Math.round(rk.pct*100)}%"></i></div></div><div class="stars">★ ${p.stars}/18 · ${p.wins} ${p.wins===1?'victòria':'victòries'}</div><button class="btn sec" id="toGarage">Garatge</button>${CLOUD_ON&&FAM&&P.cloud?'<button class="btn sec" id="toBoard">Rànquing</button>':''}<button class="chip" id="toWho">Canvia</button>`;
+function renderPbar(){const p=prog(),rk=rankOf(p.xp);$('pbar').innerHTML=`<div><div class="nm">${esc(P.name)}</div><div class="sail">${esc(P.sail)}</div></div><div class="xp"><span class="rk">${rk.name} · ${p.xp} XP</span><div class="bar"><i style="width:${Math.round(rk.pct*100)}%"></i></div></div><div class="stars">★ ${p.stars}/${LEVELS.length*3} · ${p.wins} ${p.wins===1?'victòria':'victòries'}</div><button class="btn sec" id="toGarage">Garatge</button>${CLOUD_ON&&FAM&&P.cloud?'<button class="btn sec" id="toBoard">Rànquing</button>':''}<button class="chip" id="toWho">Canvia</button>`;
   $('toGarage').onclick=showGarage;if($('toBoard'))$('toBoard').onclick=showBoard;$('toWho').onclick=showWho;
   const st=pget('streak',{n:0,d:0});const db=pget('best:daily'+today(),null);const done=st.d===today();
   $('daily').innerHTML=`<span><b>Repte del dia</b><br><span class="small">El mateix vent per a tothom avui. ${db?'El teu millor: '+db.pos+'a, '+fmt(db.t)+'.':'Encara no l\'has fet.'}</span></span><span class="stars">${st.n?'🔥 '+st.n+(st.n===1?' dia':' dies')+(done?'':' · no la perdis'):'Comença una ratxa'}</span>`;
@@ -621,10 +737,10 @@ function showMenu(){if(!P){showWho();return}$('who').hidden=true;$('board').hidd
 [4,7,12].forEach(s=>$('sp'+s).onclick=()=>{ui.speed=s;store.set('speed',s);showMenu()});
 $('aids').onclick=()=>{ui.aids=!ui.aids;store.set('aids',ui.aids);showMenu()};
 showMenu();requestAnimationFrame(frame);
-window.__rolada={get G(){return G},newGame,simStep,startRace,doTack,finish,ideal,ui};
+window.__rolada={get G(){return G},newGame,simStep,startRace,doTack,finish,ideal,idealFull,setOff,setGate,ui,legK,effKind,ddFor,tgtOf,wind};
 })();
 </script>
 
-<script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=5523046f').catch(()=>{}))}</script>
+<script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=2d885254').catch(()=>{}))}</script>
 </body>
 </html>

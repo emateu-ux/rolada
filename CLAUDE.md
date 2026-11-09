@@ -21,10 +21,13 @@ Joc web (sense framework ni dependències) per entrenar tàctica de cenyida en O
 ## Model del joc (resum)
 
 - Coordenades en metres: x cap a la dreta, y cap a barlovent. Línia de sortida a y=0, boia a `MARK`.
+- Trams: `G.legs` és `WIND1` (nivells: una cenyida) o `FULL` (regata completa: `beat` a `MARK`, `reach` a `M2`, `run` a la porta `GATE[b.gate]`, `beat` fins a la línia `FIN`). Cada vaixell porta `leg`, `gate`, `off` (orsar +1 / arribar −1) i `splits`.
+- Rumb per tram: `courseH` (cenyida 45°, popa 155° amb trasluchades), `fetchT` (pot anar directe a la boia), `reachH` (través), `effKind` (si s'ha passat la boia, hi torna sol). Velocitat segons l'angle amb `speedF`.
+- A la popa l'ombra de vent és més llarga i forta (70 m) que a la cenyida (40 m).
 - `makeWind(kind, seed)` i `wind(W, t, x, y)` donen direcció (graus d'on ve) i força (nusos) a cada punt i moment. Tipus: `osc`, `press`, `pers`, `trans`, `fleet`, `mix`.
 - Vaixells: polar d'Optimist a `POLAR`, virada de ~4 s amb pèrdua de velocitat, aire brut en un con de 40 m a sotavent, regla babord/estribord (`rightOfWay`) i restriccions per virar (`canTack`).
 - IA: estratègies `smart`, `shifty`, `press`, `sideL`, `sideR`, `middle`, `random` a `decide()`.
-- Ruta ideal: mètode d'isòcrones a `ideal()`.
+- Ruta ideal: isòcrones per tram a `isoLeg()`; `ideal()` per a una cenyida i `idealFull()` per a la regata completa (prova les dues boies de la porta).
 - Recompenses: estrelles per nivell, XP i rangs, garatge de vaixells (`SKINS`), repte del dia amb llavor = data.
 
 ## Full de ruta
