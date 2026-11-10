@@ -96,6 +96,7 @@ input{background:var(--panel2);border:1px solid var(--line);border-radius:6px;co
 .res tr.gap td{color:var(--muted);text-align:center;padding:0}
 .lastmsg{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:0}.lastmsg.good{border-color:var(--lift);color:var(--lift)}
 .compbtn{border-color:#ffd166}.compbtn b{color:#ffd166}
+.venue{margin-bottom:10px}.venue .vh{margin:4px 0 6px}.venue .vh b{font-family:var(--f-disp);font-size:18px}.vdays{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.vday{padding:10px 10px 8px;min-height:0}.vday .t{font-size:16px;line-height:1.15}.vday .d{display:none}.vday .best{font-size:11px}.vday .n{font-size:11px}
 h2.sect{font-family:var(--f-disp);font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:6px 0 -4px}
 .rew .s3{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
 .rew .s3 .st{font-size:24px}
@@ -223,6 +224,7 @@ table.res tr.me td{color:var(--me);font-weight:700}
     <div class="row" style="align-items:center;justify-content:space-between"><h2>Rànquing de família</h2><button class="btn sec" id="bBack">Tornar</button></div>
     <p class="small" id="bInfo" style="margin:0"></p>
     <div class="settings" id="bTabs"></div>
+    <div class="settings" id="bLg"></div>
     <div style="overflow-x:auto"><table class="res board" id="bTable"></table></div>
   </section>
 
@@ -245,6 +247,8 @@ table.res tr.me td{color:var(--me);font-weight:700}
   <section id="menu">
     <div class="pbar" id="pbar"></div>
     <button class="daily compbtn" id="toComp"></button>
+    <h2 class="sect">Seus</h2>
+    <div id="venues"></div>
     <h2 class="sect">Entrenament</h2>
     <button class="daily" id="daily"></button>
     <p class="small" style="max-width:68ch;margin:0">Una flota de 11 a 14 Optimist. Tu decideixes quan virar i el vaixell navega sol. Els nivells són una cenyida; la regata completa té través, popa i porta. El vent canvia de direcció i de força: llegeix l'aigua i la brúixola. Al final veuràs la ruta ideal que permetia el vent d'aquella regata.</p>
@@ -350,8 +354,30 @@ const LEVELS=[
  {id:'mix',n:'Regata',t:'Regata lliure',d:'Un dia qualsevol: pot passar de tot.',brief:'Cap previsió. Mira l\'aigua i la brúixola des d\'abans de la sortida.',aids:{streaks:false,hint:false,lay:false}},
  {id:'full',wind:'mix',full:true,gap:40,n:'Nou',t:'Regata completa',d:'Cenyida, través, popa, porta i última cenyida fins a l\'arribada.',brief:'Recorregut sencer. Al través, orsa o arriba. A la popa, trasluchada quan calgui i vigila els de darrere. Tria bé la boia de la porta.',aids:{streaks:false,hint:true,lay:true,shadow:true}}];
 
+// ---------- venues: the typical winds of the places where they race (first version, to be reviewed with the sailors)
+// side: +1 = right side of the course looking upwind, -1 = left side
+const VAIDS={streaks:false,hint:false,lay:true,shadow:true};
+const VENUES=[
+ {id:'garda',name:'Garda',sub:'Riva i Torbole',days:[
+  {id:'g_ora',t:'Ora',d:'Vent del sud de la tarda, fort i regular.',brief:'Ora de tarda, de 13 a 18 nusos i bastant regular. A prop dels penya-segats bufa més fort.',shore:{side:1,name:'Penya-segats'},wind:{k:'osc',spd:[13,18],osc:{A:[3,5],P:[180,260]},grad:{side:1,kn:3}}},
+  {id:'g_oraIn',t:"L'Ora que entra",d:'Primer bufa al mig del llac i després arriba a les vores.',brief:"L'Ora comença a entrar. Al principi bufa més al mig del llac; a poc a poc arriba a les vores.",shore:{side:1,name:'Penya-segats'},wind:{k:'osc',spd:[8,11],osc:{A:[4,6],P:[150,220]},grad:{mid:1,kn:4,fill:900},build:5}},
+  {id:'g_peler',t:'Pelèr',d:'Vent del nord del matí, a ratxes i que va baixant.',brief:'Pelèr de matí, del nord. Rolades i ratxes que baixen de la muntanya, i més vent a prop dels penya-segats. Va baixant.',shore:{side:-1,name:'Penya-segats'},wind:{k:'osc',spd:[11,15],osc:{A:[7,10],P:[100,160]},gusts:{n:7,a:[2.5,4],dd:10},grad:{side:-1,kn:2.5},build:-4}}]},
+ {id:'sr',name:'Saint-Raphaël',sub:"Badia de Fréjus i l'Esterel",days:[
+  {id:'sr_breeze',t:'Brisa tèrmica',d:'Brisa de mar que va pujant i gira a poc a poc.',brief:"Brisa tèrmica de tarda, de 9 a 14 nusos. Va pujant i sovint gira a poc a poc cap a la dreta.",wind:{k:'pers',spd:[9,12],trend:[5,12],trendSign:1,build:3}},
+  {id:'sr_mistral',t:'Mistral',d:'Vent de terra, fort i a ratxes, amb rolades grans.',brief:"Mistral: vent de terra, fort i a ratxes. Les ratxes arriben amb rolades grans: mira l'aigua i la brúixola.",wind:{k:'osc',spd:[15,19],osc:{A:[9,13],P:[70,120]},gusts:{n:9,a:[4,6],dd:15}}},
+  {id:'sr_switch',t:'Canvi de vent',d:"El vent del matí s'apaga i n'entra un altre.",brief:"El vent de nord-est del matí s'apaga i entra el de ponent. Qui l'agafa primer guanya molt.",wind:{k:'trans',front:{old0:7,old1:3,neu:[10,13],dNew:[25,45],t0:[60,240]}}}]},
+ {id:'palma',name:'Palma',sub:'Badia de Palma',days:[
+  {id:'p_embat',t:'Embat',d:'Brisa de mar regular que va pujant.',brief:"Embat: brisa de mar regular, de 11 a 16 nusos, que va pujant. Amb tanta flota, l'aire net i la sortida decideixen molt.",wind:{k:'osc',spd:[11,14],osc:{A:[3,5],P:[200,300]},build:3}},
+  {id:'p_patchy',t:'Embat a clapes',d:"Amb l'aigua calenta, entra a clapes.",brief:"Amb l'aigua molt calenta, l'embat entra a clapes: hi ha zones amb molt més vent que d'altres.",wind:{k:'press',spd:[7,10],gusts:{n:16,a:[3.5,6],dd:8}}},
+  {id:'p_xaloc',t:'Xaloc del matí',d:"Com més enfora, més gira a l'esquerra.",brief:"Xaloc de matí, fluix. Com més t'allunyes de la costa, més gira el vent a l'esquerra.",shore:{side:-1,name:'Costa'},wind:{k:'osc',spd:[7,10],osc:{A:[4,6],P:[150,220]},bend:{side:1,deg:-10}}}]},
+ {id:'bcn',name:'Barcelona i Maresme',sub:'Costa central',days:[
+  {id:'b_garbi',t:'Garbí',d:'Tèrmic de tarda del sud-oest, que va pujant.',brief:"Garbí: tèrmic de tarda, de 9 a 15 nusos. Entra cap a la una i va pujant.",shore:{side:-1,name:'Costa'},wind:{k:'osc',spd:[9,12],osc:{A:[4,6],P:[160,240]},build:4}},
+  {id:'b_llevant',t:'Llevant',d:'Vent de mar inestable, amb onada.',brief:"Llevant: vent de mar inestable i amb onada. Cada virada costa més: tria bé quan.",wind:{k:'osc',spd:[8,12],osc:{A:[6,9],P:[90,150]},osc2:{A:[3,4],P:[45,70]},chop:1.5}},
+  {id:'b_terral',t:'Terral',d:'Mestral o tramuntana: vent de terra a ratxes.',brief:"Terral: vent de terra (mestral o tramuntana) a ratxes. Les ratxes baixen de terra amb rolades.",wind:{k:'osc',spd:[11,15],osc:{A:[8,11],P:[80,130]},gusts:{n:8,a:[3,5],dd:12}}}]}];
+const VLEVELS=VENUES.flatMap(v=>v.days.map(d=>({...d,venue:v.id,n:v.name,full:true,gap:40,aids:VAIDS})));
 // ---------- wind model
 function makeWind(kind,seed){
+  let spec=null;if(typeof kind==='object'){spec=kind;kind=spec.k}
   const r=rng(seed);const W={kind,base:(r()*30-15),osc:{A:2,P:180,ph:r()*6.28},osc2:{A:1.5,P:67,ph:r()*6.28},trend:0,spd:8.5,gusts:[],front:null,wob:r()*6.28};
   if(kind==='mix'){const pick=['osc','press','pers','trans'][Math.floor(r()*4)];W.mixOf=pick;kind=pick;if(r()<.5)W.extraGusts=true}
   W.real=kind;
@@ -362,10 +388,22 @@ function makeWind(kind,seed){
   if(kind==='trans'){const s=r()<.5?-1:1;W.front={s,t0:30+r()*220,v:.3+r()*.45,dNew:s*(14+r()*22),old0:6.5,old1:3.5,neu:r()<.25?7.5:10};W.osc={A:3+r()*3,P:120+r()*90,ph:r()*6.28}}
   if(kind==='fleet'){W.osc={A:6+r()*3,P:150+r()*60,ph:r()*6.28};W.spd=8;W.extraGusts=true}
   if(kind==='press'||W.extraGusts){const n=kind==='press'?15:6;for(let i=0;i<n;i++){const side=(kind==='press'&&r()<.6)?W.gustSide:(r()<.5?-1:1);W.gusts.push({vx:(r()-.5)*(kind==='press'?.9:.3),x:side*(20+r()*340),y0:r()*(D+500)-150,r:kind==='press'?55+r()*55:70+r()*70,a:(kind==='press'?3.5:2.5)+r()*2.5,dd:(r()-.5)*10,vd:1.4+r()*.8})}}
+  if(spec)applySpec(W,spec,r);
   return W}
+const rr2=(r,a)=>Array.isArray(a)?a[0]+r()*(a[1]-a[0]):a;
+function applySpec(W,S,r){W.venue=true;
+  if(S.spd)W.spd=rr2(r,S.spd);
+  if(S.osc)W.osc={A:rr2(r,S.osc.A),P:rr2(r,S.osc.P),ph:r()*6.28};
+  if(S.osc2)W.osc2={A:rr2(r,S.osc2.A),P:rr2(r,S.osc2.P),ph:r()*6.28};
+  if(S.trend){W.trend=(S.trendSign||(r()<.5?-1:1))*rr2(r,S.trend);W.tr0=r()*150;W.trD=500+r()*400}
+  if(S.front){const F=S.front,sd=r()<.5?-1:1;W.front={s:sd,t0:rr2(r,F.t0),v:.3+r()*.4,dNew:sd*rr2(r,F.dNew),old0:F.old0,old1:F.old1,neu:rr2(r,F.neu)}}
+  if(S.gusts){const G0=S.gusts;W.gusts=[];for(let i=0;i<G0.n;i++){const side=r()<.5?-1:1;W.gusts.push({vx:(r()-.5)*.6,x:side*(20+r()*400)-150,y0:r()*(D+500)-150,r:55+r()*60,a:rr2(r,G0.a),dd:(r()-.5)*2*G0.dd,vd:1.4+r()*.9})}}
+  W.grad=S.grad||null;W.build=S.build||0;W.bend=S.bend||null;W.chop=S.chop||1}
 function wind(W,t,x,y){
   let d=W.base+W.osc.A*Math.sin(2*Math.PI*t/W.osc.P+W.osc.ph)+W.osc2.A*Math.sin(2*Math.PI*t/W.osc2.P+W.osc2.ph)+W.trend*(W.trD?clamp((t-W.tr0)/W.trD,0,1.3):clamp(t/600,0,1.3))+1.5*Math.sin(x/260+W.wob+t/300);
   let s=W.spd+0.6*Math.sin(x/170+y/230+t/40+W.wob);
+  if(W.venue){if(W.grad){const g=W.grad;s+=g.mid?g.kn*(0.5-clamp(Math.abs(x+150)/350,0,1))*clamp(1-t/(g.fill||900),0,1):g.kn*clamp(g.side*(x+150)/450,-0.4,1)}
+    if(W.build)s+=W.build*clamp(t/1200,0,1.2);if(W.bend)d+=W.bend.deg*clamp(W.bend.side*(x+150)/500,0,1)}
   if(W.front){const F=W.front;const half=XB+150;const fp=half-F.v*Math.max(0,t-F.t0);const w=1/(1+Math.exp(-(F.s*x-fp)/35));const old=lerp(F.old0,F.old1,clamp(t/600,0,1));s=lerp(old,F.neu,w)+0.4*Math.sin(x/170+y/230+t/40);d+=w*F.dNew}
   for(const g of W.gusts){const span=D+500;const gy=((g.y0-g.vd*t+150)%span+span)%span-150;const gx=g.x-Math.sin(W.base*R)*(g.vd*t)*0.3+(g.vx||0)*t;const q=((x-gx)**2+(y-gy)**2)/(g.r*g.r);if(q<6){const e=Math.exp(-q);s+=g.a*e;d+=g.dd*e}}
   return{d,s:Math.max(1.5,s)}}
@@ -419,7 +457,7 @@ function stepBoat(b,t,dt){
   const Lg=legOf(b),T=Lg.to(b),k=effKind(b,T);let target;if(b.duck>0)b.duck-=dt;
   if(k==='reach')target=reachH(b,th,T,Lg.k==='reach'?b.off:0);
   else{const ft=fetchT(b,th,k,T);target=ft??courseH(b,th,k);if(b.duck>0&&ft==null&&k==='beat')target=th+(b.tack==='P'?75:-75)}
-  let vt;if(b.tk>0){b.tk-=dt;b.h=norm(b.h+clamp(adiff(target,b.h),-38*dt,38*dt));vt=(b.gy?0.65:0.3)*polar(tws)}
+  let vt;if(b.tk>0){b.tk-=dt;b.h=norm(b.h+clamp(adiff(target,b.h),-38*dt,38*dt));vt=(b.gy?0.65:0.3/(G.W.chop||1))*polar(tws)}
   else{b.h=norm(b.h+clamp(adiff(target,b.h),-25*dt,25*dt));vt=polar(tws)*speedF(Math.abs(adiff(b.h,th)))}
   b.v+=(vt*b.sk-b.v)*Math.min(1,dt/4);
   const px=b.x,py=b.y;b.x+=b.v*Math.sin(b.h*R)*dt;b.y+=b.v*Math.cos(b.h*R)*dt;
@@ -502,7 +540,7 @@ function warn(m){if(!G)return;G.warnMsg=m;G.warnT=performance.now()+(/^(Vira|Tra
 // ---------- rendering
 const cv=$('cv'),cx=cv.getContext('2d');let VIEW=null;
 const VZ={z:1,cx:0,cy:(D-30)/2,follow:false};
-function setupCanvas(c,ctx,zoomable){const dpr=Math.min(2,window.devicePixelRatio||1);let W,H;if(zoomable){W=c.clientWidth||400;H=c.clientHeight||500;c.width=W*dpr;c.height=H*dpr}else{W=c.clientWidth||900;H=Math.round(W*(D+170)/(FX1()-FX0()+40));c.width=W*dpr;c.height=H*dpr;c.style.height=H+'px'}ctx.setTransform(dpr,0,0,dpr,0,0);const xmin=FX0()-20,xmax=FX1()+20,ymin=-100,ymax=D+70;const s0=Math.min(W/(xmax-xmin),H/(ymax-ymin));
+function setupCanvas(c,ctx,zoomable){const dpr=Math.min(2,window.devicePixelRatio||1);let W,H;if(zoomable){W=c.clientWidth||400;H=c.clientHeight||500;c.width=W*dpr;c.height=H*dpr}else{W=c.clientWidth||900;H=Math.round(W*(D+170)/(FX1()-FX0()+40));c.width=W*dpr;c.height=H*dpr;c.style.height=H+'px'}ctx.setTransform(dpr,0,0,dpr,0,0);const shs=G&&G.L.shore?G.L.shore.side:0;const xmin=FX0()-20-(shs<0?90:0),xmax=FX1()+20+(shs>0?90:0),ymin=-100,ymax=D+70;const s0=Math.min(W/(xmax-xmin),H/(ymax-ymin));
   let z=1,cxw=(xmin+xmax)/2,cyw=(ymin+ymax)/2;if(zoomable){z=VZ.z;if(VZ.follow&&G){VZ.cx=G.me.x;VZ.cy=G.me.y}if(z>1.01){cxw=VZ.cx;cyw=VZ.cy}}const s=s0*z;
   return{W,H,s,z,X:x=>W/2+(x-cxw)*s,Y:y=>H/2-(y-cyw)*s,ix:px=>cxw+(px-W/2)/s,iy:py=>cyw-(py-H/2)/s,xmin,xmax,ymin,ymax}}
 function seaColor(s){const t=clamp((s-3)/9,0,1);const a=[59,138,160],b=[15,74,99];return[Math.round(lerp(a[0],b[0],t)),Math.round(lerp(a[1],b[1],t)),Math.round(lerp(a[2],b[2],t))]}
@@ -514,7 +552,10 @@ function drawParts(ctx,V,t,realDt){ctx.strokeStyle='rgba(255,255,255,.28)';ctx.l
 function drawMark(ctx,V,p,lab,hi){const x=V.X(p.x),y=V.Y(p.y);if(hi){ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=1.5;ctx.setLineDash([3,3]);ctx.beginPath();ctx.arc(x,y,15,0,7);ctx.stroke();ctx.setLineDash([])}
   ctx.fillStyle=css('--buoy');ctx.beginPath();ctx.arc(x,y,7,0,7);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();if(lab){ctx.font='700 12px Chakra Petch, sans-serif';ctx.fillStyle='#fff';ctx.fillText(lab,x+10,y-9)}}
 function layFrom(ctx,V,T,hs){ctx.strokeStyle='rgba(255,255,255,.35)';ctx.setLineDash([3,6]);ctx.lineWidth=1;for(const h of hs){ctx.beginPath();ctx.moveTo(V.X(T.x),V.Y(T.y));ctx.lineTo(V.X(T.x-Math.sin(h*R)*900),V.Y(T.y-Math.cos(h*R)*900));ctx.stroke()}ctx.setLineDash([])}
-function drawCourse(ctx,V,t,lay){const me=G.me,racing=G.phase==='race'||G.phase==='pre';const leg=racing?Math.min(me.leg,G.legs.length-1):-1;
+function drawShore(ctx,V){const sh=G.L.shore;if(!sh)return;const x0=sh.side>0?FX1()+40:FX0()-40;const X=V.X(x0);ctx.fillStyle='#2f3d33';ctx.beginPath();
+  const far=sh.side>0?V.W+400:-400;const y0=-600,y1=D+900;ctx.moveTo(far,V.Y(y0));for(let y=y0;y<=y1;y+=25)ctx.lineTo(X+sh.side*(4*Math.sin(y/37)+2.5*Math.sin(y/13)),V.Y(y));ctx.lineTo(far,V.Y(y1));ctx.closePath();ctx.fill();
+  ctx.save();ctx.translate(clamp(X+sh.side*14,12,V.W-12),V.H/2);ctx.rotate(sh.side>0?Math.PI/2:-Math.PI/2);ctx.fillStyle='rgba(255,255,255,.7)';ctx.font='600 13px Barlow, sans-serif';ctx.textAlign='center';ctx.fillText(sh.name,0,0);ctx.restore()}
+function drawCourse(ctx,V,t,lay){drawShore(ctx,V);const me=G.me,racing=G.phase==='race'||G.phase==='pre';const leg=racing?Math.min(me.leg,G.legs.length-1):-1;
   ctx.setLineDash([6,5]);ctx.strokeStyle='rgba(255,255,255,.8)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(V.X(LINE[0]),V.Y(0));ctx.lineTo(V.X(LINE[1]),V.Y(0));ctx.stroke();ctx.setLineDash([]);
   ctx.fillStyle=css('--buoy');ctx.beginPath();ctx.arc(V.X(LINE[0]),V.Y(0),5,0,7);ctx.fill();ctx.fillStyle='#fff';ctx.fillRect(V.X(LINE[1])-4,V.Y(0)-9,8,18);
   ctx.font='12px Barlow, sans-serif';ctx.fillStyle='#fff';ctx.fillText('Pin',V.X(LINE[0])-26,V.Y(0)+4);ctx.fillText('Comitè',V.X(LINE[1])+8,V.Y(0)+4);
@@ -638,7 +679,7 @@ function isoLeg(starts,leg,gate,maxT){const Lg=G.legs[leg],k=Lg.k,dt=2;let pts=s
   for(let step=0;t0+step*dt<maxT;step++){const t=t0+step*dt;const nxt=[];
     for(const p of pts){const w=wind(G.W,t,p.x,p.y);const T=Lg.to({x:p.x,y:p.y,gate});const ek=effKind({x:p.x,y:p.y,leg,gate},T);
       const go=(tk,f,off)=>{const tmp={x:p.x,y:p.y,tack:tk};let h;if(ek==='reach')h=reachH(tmp,w.d,T,off);else{const ft=fetchT(tmp,w.d,ek,T);h=ft??courseH(tmp,w.d,ek)}
-        let v=polar(w.s)*speedF(Math.abs(adiff(h,w.d)));if(f>0)v*=(ek==='run'?0.65:0.3);
+        let v=polar(w.s)*speedF(Math.abs(adiff(h,w.d)));if(f>0)v*=(ek==='run'?0.65:0.3/(G.W.chop||1));
         const q={x:p.x+v*Math.sin(h*R)*dt,y:p.y+v*Math.cos(h*R)*dt,tack:tmp.tack,f:Math.max(0,f-1),p,t:t+dt,leg};if(q.x<FX0()-10||q.x>FX1()+10)return;nxt.push(q)};
       if(ek==='reach'){if(k==='reach'){for(const o of [-1,0,1])go(p.tack,0,o)}else go(p.tack,0,0)}
       else{go(p.tack,p.f);if(p.f===0&&fetchT({x:p.x,y:p.y,tack:p.tack},w.d,ek,T)==null)go(p.tack==='P'?'S':'P',ek==='run'?1:2)}}
@@ -687,7 +728,7 @@ function showDebrief(R0){const{order,pos,myIdeal,bestStart,startX,ref}=R0;const 
     const gi=G.gateInfo;if(gi){const nm=g=>'boia '+(g?'dreta':'esquerra');if(gi.diff<3)facts.push({c:'good',t:`Porta: has passat per la ${nm(gi.pick)}. Les dues estaven pràcticament igual.`});else facts.push({c:gi.pick===gi.fav?'good':'bad',t:gi.pick===gi.fav?`Porta: has passat per la ${nm(gi.pick)}, la que estava més a barlovent (${Math.round(gi.diff)} m).`:`Porta: has passat per la ${nm(gi.pick)}. La ${nm(gi.fav)} estava ${Math.round(gi.diff)} m més a barlovent.`+(myIdeal&&myIdeal.gate!==gi.pick?` La ruta ideal passava per la ${nm(myIdeal.gate)}.`:'')})}}
   {// corner on the first beat, with numbers from 240 simulated races per wind type (see ROADMAP v2.2)
     const end=me.splits.length?me.splits[0]:1e9;let mx=0;for(const p of me.trk)if(p[2]<=end&&Math.abs(p[0]-MARK.x)>Math.abs(mx))mx=p[0]-MARK.x;
-    const N={osc:G.L.id==='fleet'?8:20,press:4,pers:7,trans:4}[G.W.real];
+    const N=G.L.venue?null:{osc:G.L.id==='fleet'?8:20,press:4,pers:7,trans:4}[G.W.real];
     if(Math.abs(mx)>=300&&N)facts.push({c:'',t:`A la cenyida has anat a l'extrem ${mx<0?'esquerre':'dret'}. Avui ${me.done&&pos<=3?'t\'ha sortit bé':'no t\'ha sortit bé'}. Amb aquest vent, qui va a l'extrem fa podi 1 de cada ${N} regates.`})}
   const l0=G.full?G.laylog.filter(x=>x.leg===0):G.laylog;const ll=l0.length?l0[l0.length-1]:null;if(ll&&(G.full?me.leg>0:me.done)){if(ll.over>15)facts.push({c:'bad',t:`L'última virada cap a la boia l'has feta uns ${Math.round(ll.over)} m per sobre de la layline: has navegat de més.`});else if(ll.over<-15)facts.push({c:'',t:`L'última virada l'has feta abans de la layline i has hagut de fer virades curtes a prop de la boia.`});else facts.push({c:'good',t:'L\'última virada cap a la boia, just a la layline.'})}
   if(bestStart){const nm=x=>x<-40?'pel pin':x>40?'pel comitè':'pel mig';facts.push({c:nm(bestStart.x)===nm(startX)?'good':'',t:`La millor sortida avui era ${nm(bestStart.x)}. Tu has sortit ${nm(startX)}.`})}
@@ -730,7 +771,7 @@ const tierOf=id=>Math.min(LEAGUES.length-1,pget('tier:'+id,0));
 const lkey=(id,t)=>id+(t?'@'+t:'');
 function tierLevel(L,t){const a={...L.aids};if(t>=1){a.hint=false;a.streaks=false}if(t>=2)a.lay=false;if(t>=3)a.shadow=false;
   return{...L,tier:t,key:lkey(L.id,t),gap:Math.round((L.gap||20)*[1,.8,.65,.5,.4][t]),aids:a}}
-const allLevels=()=>LEVELS;
+const allLevels=()=>LEVELS.concat(VLEVELS);
 function totalStars(){return allLevels().reduce((a,L)=>{const t=tierOf(L.id);return a+3*t+starsOf(lkey(L.id,t)).reduce((x,y)=>x+y,0)},0)}
 function prog(){return{stars:totalStars(),wins:pget('wins',0),streak:pget('streak',{n:0,d:''}).n,xp:pget('xp',0)}}
 function showWho(){document.body.classList.remove('playing','prestart');['menu','game','debrief','garage','board'].forEach(i=>$(i).hidden=true);$('who').hidden=false;$('whoMsg').textContent='';
@@ -755,14 +796,16 @@ $('famGo').onclick=async()=>{const c=$('famCode').value.trim().toUpperCase();if(
 function syncCloud(res){if(!CLOUD_ON||!FAM||!P||!P.cloud)return;const stars={};LEVELS.forEach(L=>stars[L.id]=starsOf(L.id));
   rpc('rolada_save',{p_family:FAM,p_id:P.id,p_xp:pget('xp',0),p_wins:pget('wins',0),p_races:pget('races',0),p_stars:stars,p_streak:pget('streak',{}),p_skin:pget('skin','opti'),p_coins:coins(),p_items:{own:owned(),eq:Object.fromEntries(CATS.map(c=>[c.key,pget(c.key,c.def)])),comp:pget('compBest',null),troph:pget('trophies',[]).length}}).catch(()=>{});
   if(res)rpc('rolada_result',{p_family:FAM,p_id:P.id,p_kind:res.kind,p_level:res.level,p_day:res.day,p_pos:res.pos,p_fleet:res.fleet,p_time:res.time}).catch(()=>{})}
-let boardTab='all';
+let boardTab='all',boardTier=null;
 async function showBoard(){['menu','who','game','debrief','garage','comp'].forEach(i=>$(i).hidden=true);$('board').hidden=false;$('bInfo').textContent=`Codi de família: ${FAM}`;$('bTable').innerHTML='<tr><td>Carregant…</td></tr>';
-  $('bTabs').innerHTML=`<button class="chip" data-t="all" aria-pressed="${boardTab==='all'}">General</button><button class="chip" data-t="comp" aria-pressed="${boardTab==='comp'}">Competició</button>`+LEVELS.map(L=>`<button class="chip" data-t="${L.id}" aria-pressed="${boardTab===L.id}">${L.t}</button>`).join('');
-  $('bTabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{boardTab=b.dataset.t;showBoard()});
+  $('bTabs').innerHTML=`<button class="chip" data-t="all" aria-pressed="${boardTab==='all'}">General</button><button class="chip" data-t="comp" aria-pressed="${boardTab==='comp'}">Competició</button>`+allLevels().map(L=>`<button class="chip" data-t="${L.id}" aria-pressed="${boardTab===L.id}">${L.venue?L.n+' · ':''}${L.t}</button>`).join('');
+  $('bTabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{boardTab=b.dataset.t;boardTier=null;showBoard()});$('bLg').innerHTML='';
   if(boardTab==='comp'){try{const rows=await rpc('rolada_players_list',{p_family:FAM});const cb=r=>r.items&&r.items.comp;rows.sort((a,b)=>compBetter(cb(a)||{season:0,stage:0,pos:99},cb(b)||{season:0,stage:0,pos:99})?-1:1);
       $('bTable').innerHTML=`<tr><th></th><th>Regatista</th><th>Fins on ha arribat</th><th>Trofeus</th></tr>`+rows.map((r,i)=>{const c=cb(r);return`<tr class="${r.id===P.id?'me':''}"><td>${c?i+1:''}</td><td>${esc(r.name)} <span class="small">${esc(r.sail)}</span></td><td>${c?stLabel(c.season,c.stage)+' · '+c.pos+'a':'—'}</td><td>${r.items&&r.items.troph?'🏆 '+r.items.troph:'—'}</td></tr>`}).join('')}
     catch(e){$('bTable').innerHTML='<tr><td>No s\'ha pogut carregar el rànquing.</td></tr>'}return}
-  if(boardTab!=='all'){try{const rows=await rpc('rolada_level_board',{p_family:FAM,p_level:boardTab});rows.sort((a,b)=>(a.best_pos??99)-(b.best_pos??99)||(a.best_time??1e9)-(b.best_time??1e9)||b.wins-a.wins);
+  if(boardTab!=='all'){const bt=boardTier??tierOf(boardTab);$('bLg').innerHTML='<span class="small">Lliga:</span>'+LEAGUES.map((g,i)=>`<button class="chip" data-lg="${i}" aria-pressed="${i===bt}">${g.name}</button>`).join('');
+    $('bLg').querySelectorAll('button').forEach(b=>b.onclick=()=>{boardTier=+b.dataset.lg;showBoard()});
+    try{const rows=await rpc('rolada_level_board',{p_family:FAM,p_level:lkey(boardTab,bt)});rows.sort((a,b)=>(a.best_pos??99)-(b.best_pos??99)||(a.best_time??1e9)-(b.best_time??1e9)||b.wins-a.wins);
       $('bTable').innerHTML=`<tr><th></th><th>Regatista</th><th>Millor</th><th>Temps</th><th>Regates</th><th>Vict.</th></tr>`+rows.map((r,i)=>`<tr class="${r.id===P.id?'me':''}"><td>${r.best_pos?i+1:''}</td><td>${esc(r.name)} <span class="small">${esc(r.sail)}</span></td><td>${r.best_pos?r.best_pos+'a de '+r.best_fleet:'—'}</td><td>${r.best_time?fmt(r.best_time):'—'}</td><td>${r.races}</td><td>${r.wins}</td></tr>`).join('');}
     catch(e){$('bTable').innerHTML='<tr><td>No s\'ha pogut carregar el rànquing.</td></tr>'}return}
   try{const rows=await rpc('rolada_board',{p_family:FAM,p_day:today()});rows.sort((a,b)=>b.xp-a.xp);
@@ -1034,6 +1077,9 @@ function showMenu(){if(!P){showWho();return}$('who').hidden=true;$('board').hidd
   {const c=compState(),S=STAGES[c.stage];const cb=pget('compBest',null);$('toComp').innerHTML=`<span><b>🏆 Competició</b><br><span class="small">Temporada ${c.season} · ${S.name} · ${c.champ.res.length?'regata '+(c.champ.res.length+1)+' de '+S.races:'per començar'}${cb?' · Millor: '+stLabel(cb.season,cb.stage)+' '+cb.pos+'a':''}</span></span><span class="stars">›</span>`;$('toComp').onclick=showComp}renderPbar();document.body.classList.remove('playing','prestart');if(G)G.phase='menu';$('game').hidden=true;$('debrief').hidden=true;$('menu').hidden=false;
   $('lvls').innerHTML=LEVELS.map((L,i)=>{const b=pget('best:'+L.id,null);const t=tierOf(L.id);const st=starsOf(lkey(L.id,t));const lg=LEAGUES[t];return`<button class="lvl" data-i="${i}"><span class="n">${L.n.toUpperCase()} · <b style="color:${lg.col}">${lg.name.toUpperCase()}</b></span><span class="t">${L.t}</span><span class="d">${L.d}</span><span class="stars" aria-label="${st.filter(Boolean).length} de 3 estrelles">${[...st].sort((x,y)=>(y?1:0)-(x?1:0)).map(x=>`<span class="st ${x?'':'off'}">★</span>`).join('')}</span><span class="best">${b?'Millor: '+b.pos+'a de '+b.of+' · '+fmt(b.t):'&nbsp;'}</span></button>`}).join('');
   $('lvls').querySelectorAll('.lvl').forEach(el=>el.onclick=()=>newGame(+el.dataset.i));
+  $('venues').innerHTML=VENUES.map(v=>`<div class="venue"><div class="vh"><b>${v.name}</b> <span class="small">${v.sub}</span></div><div class="vdays">${v.days.map(d=>{const L=VLEVELS.find(x=>x.id===d.id);const t=tierOf(L.id);const st=starsOf(lkey(L.id,t));const lg=LEAGUES[t];const b=pget('best:'+L.id,null);
+    return`<button class="lvl vday" data-v="${L.id}"><span class="n"><b style="color:${lg.col}">${lg.name.toUpperCase()}</b></span><span class="t">${L.t}</span><span class="d">${L.d}</span><span class="stars">${[...st].sort((x,y)=>(y?1:0)-(x?1:0)).map(x=>`<span class="st ${x?'':'off'}">★</span>`).join('')}</span><span class="best">${b?'Millor: '+b.pos+'a de '+b.of+' · '+fmt(b.t):'&nbsp;'}</span></button>`}).join('')}</div></div>`).join('');
+  $('venues').querySelectorAll('.vday').forEach(el=>el.onclick=()=>newGame(VLEVELS.find(x=>x.id===el.dataset.v)));
   [4,7,12].forEach(s=>$('sp'+s).setAttribute('aria-pressed',ui.speed===s));$('aids').setAttribute('aria-pressed',ui.aids);$('aids').textContent=ui.aids?'Totes activades':'Segons el nivell'}
 [4,7,12].forEach(s=>$('sp'+s).onclick=()=>{ui.speed=s;store.set('speed',s);showMenu()});
 $('aids').onclick=()=>{ui.aids=!ui.aids;store.set('aids',ui.aids);showMenu()};
@@ -1042,6 +1088,6 @@ window.__rolada={get G(){return G},newGame,simStep,startRace,doTack,finish,ideal
 })();
 </script>
 
-<script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=46ac9358').catch(()=>{}))}</script>
+<script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=ac268fbe').catch(()=>{}))}</script>
 </body>
 </html>
