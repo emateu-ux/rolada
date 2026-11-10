@@ -80,6 +80,7 @@ input{background:var(--panel2);border:1px solid var(--line);border-radius:6px;co
 .lastmsg{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:0}.lastmsg.good{border-color:var(--lift);color:var(--lift)}
 .compbtn{border-color:#ffd166}.compbtn b{color:#ffd166}
 .venue{margin-bottom:10px}.venue .vh{margin:4px 0 6px}.venue .vh b{font-family:var(--f-disp);font-size:18px}.vdays{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.vday{padding:10px 10px 8px;min-height:0}.vday .t{font-size:16px;line-height:1.15}.vday .d{display:none}.vday .best{font-size:11px}.vday .n{font-size:11px}
+.chals{display:grid;gap:6px}.chal .t{font-size:17px}.chal .d{font-size:13px}#dChal{display:flex;flex-direction:column;gap:8px;margin-top:8px}
 h2.sect{font-family:var(--f-disp);font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:6px 0 -4px}
 .rew .s3{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
 .rew .s3 .st{font-size:24px}
@@ -230,6 +231,7 @@ table.res tr.me td{color:var(--me);font-weight:700}
   <section id="menu">
     <div class="pbar" id="pbar"></div>
     <button class="daily compbtn" id="toComp"></button>
+    <div id="chal" hidden></div>
     <h2 class="sect">Seus</h2>
     <div id="venues"></div>
     <h2 class="sect">Entrenament</h2>
@@ -288,6 +290,7 @@ table.res tr.me td{color:var(--me);font-weight:700}
       <div class="tag" id="dLvl"></div>
       <div class="big" id="dPos"></div>
       <div class="rew" id="dRew"></div>
+      <div id="dChal" hidden></div>
       <div class="kv" id="dTimes"></div>
       <div id="dSplits" hidden><h2>Temps per trams</h2><table class="res splits" id="dSplT"></table><p class="small" style="margin:6px 0 0"><b style="color:var(--ideal)">Lila</b>: el més ràpid de la flota en aquell tram. <b style="color:var(--lift)">Verd</b>: entre els 3 millors.</p></div>
       <h2>Què ha passat</h2>
@@ -569,6 +572,7 @@ function render(realDt){if(G.phase==='debrief')return;const V=setupCanvas(cv,cx,
   for(const b of G.boats)if(!b.me)drawBoat(cx,V,b,b.done?'rgba(255,255,255,.45)':'#f4f1e8',null);
   {const me=G.me;if(G.phase==='race'&&!me.done&&(!G.tail.length||G.t-G.tail[G.tail.length-1][2]>=1)){G.tail.push([me.x,me.y,G.t]);if(G.tail.length>40)G.tail.shift()}
    const pts=[...G.tail,[me.x,me.y,G.t]];const k=Math.max(1,Math.min(3,(V.z||1)*0.55));const tm=performance.now()/1000;if(G.skin==='lava')drawTrail(cx,V,pts.slice(-14),'smoke',k,tm);drawTrail(cx,V,pts,G.trail,k,tm)}
+  if(G.ghost)drawGhost(cx,V);
   drawBoat(cx,V,G.me,css('--me'),G.me.name);
   if(G.phase==='pre'){cx.font='700 24px Chakra Petch, sans-serif';cx.fillStyle='rgba(255,255,255,.92)';cx.textAlign='center';cx.fillText('Tria on surts',V.W/2,40);cx.textAlign='left'}
   updateHud()}
@@ -721,7 +725,7 @@ function showDebrief(R0){const{order,pos,myIdeal,bestStart,startX,ref}=R0;const 
   const comp=!!G.L.comp;$('again').hidden=comp;$('newr').textContent=comp?'Classificació':'Nova regata';
   if(comp){const cr=compRaceDone(order);$('dRew').innerHTML=`<div class="coinwin">+${cr.cn} 🪙 · +${cr.xp} XP</div>`+(cr.msg?`<p class="lastmsg ${cr.msg.qual?'good':''}">${compMsg(cr.msg)}</p>`:'');$('dRew').hidden=false;if(cr.msg&&cr.msg.qual)playCeleb(equipped('celeb'))}
   else if(P)renderReward(award({pos,of:G.boats.length,done:me.done,myT,idealT:myIdeal?myIdeal.T:null}));
-  renderSplits(myIdeal);drawDebrief(myIdeal,win,ref)}
+  renderSplits(myIdeal);drawDebrief(myIdeal,win,ref);showChallengeDebrief(myT)}
 function renderSplits(myIdeal){const box=$('dSplits');box.hidden=!G.full;if(!G.full)return;const me=G.me;
   const lt=(b,i)=>b.splits[i]==null?null:b.splits[i]-(i?b.splits[i-1]:0);
   $('dSplT').innerHTML='<tr><th>Tram</th><th>Tu</th><th>Millor</th><th>Ideal</th></tr>'+G.legs.map((Lg,i)=>{const all=G.boats.map(b=>lt(b,i)).filter(v=>v!=null).sort((a,b)=>a-b);const mine=lt(me,i);const best=all.length?all[0]:null;
@@ -1055,6 +1059,49 @@ function showComp(){['menu','who','game','debrief','board','garage'].forEach(i=>
   const tr=pget('trophies',[]);$('cTroph').innerHTML=tr.length?`<h3>Vitrina</h3><p class="small">${tr.slice(-12).reverse().map(t=>`🏆 ${stLabel(t.season,t.stage)} · ${t.pos}a`).join(' &nbsp; ')}</p>`:''}
 function compGo(){const c=compState();c.last=null;pset('comp',c);newGame(compLevel(c),c.champ.seed*31+c.champ.res.length*7919+1)}
 $('cGo').onclick=compGo;$('cBack').onclick=()=>showMenu();
+// ---------- challenges between family members: same wind, with the other's boat as a ghost
+const CHAL_ON=false; // posar a true quan s'hagi executat l'esquema v4 a Supabase
+let CH={ok:null,list:[],t:0};
+function levelFromKey(k){const [id,t]=String(k).split('@');const L=allLevels().find(x=>x.id===id);return L?tierLevel(L,+(t||0)):null}
+const levelName=L=>(L.venue?L.n+' · ':'')+L.t+(L.tier?' · '+LEAGUES[L.tier].name:'');
+const cloudReady=()=>CHAL_ON&&CLOUD_ON&&FAM&&P&&P.cloud;
+async function loadChallenges(force){if(!cloudReady()){CH.ok=false;return}if(!force&&performance.now()-CH.t<30000&&CH.ok!=null)return;
+  try{CH.list=await rpc('rolada_challenges',{p_family:FAM});CH.ok=true}catch(e){CH.ok=false;CH.list=[]}CH.t=performance.now()}
+function renderChallenges(){const box=$('chal');if(!CH.ok){box.hidden=true;return}
+  const mine=CH.list.filter(c=>c.player_id!==P.id).slice(0,6);const sent=CH.list.filter(c=>c.player_id===P.id).slice(0,3);
+  if(!mine.length&&!sent.length){box.hidden=false;box.innerHTML='<h2 class="sect">Reptes</h2><p class="small">Encara no hi ha reptes. En acabar una regata, toca «Envia-la com a repte».</p>';return}
+  const row=(c,own)=>{const L=levelFromKey(c.level);if(!L)return'';const tries=(c.tries||[]).filter(x=>x.player_id!==c.player_id);const me=tries.find(x=>x.player_id===P.id);
+    const others=tries.filter(x=>x.player_id!==P.id).map(x=>`${esc(x.name)} ${fmt(x.best)}`).join(', ');
+    return`<button class="lvl chal" data-c="${c.id}"><span class="n">${own?'El teu repte':'Repte de '+esc(c.name)}</span><span class="t">${levelName(L)}</span><span class="d">${own?'El teu temps':'Temps a batre'}: <b>${fmt(c.time_s)}</b>${me?` · el teu millor: ${fmt(me.best)} ${me.best<c.time_s?'✓':''}`:''}${own&&others?` · ${others}`:''}</span></button>`};
+  box.hidden=false;box.innerHTML='<h2 class="sect">Reptes</h2><div class="chals">'+mine.map(c=>row(c,false)).join('')+sent.map(c=>row(c,true)).join('')+'</div>';
+  box.querySelectorAll('.chal').forEach(el=>el.onclick=()=>playChallenge(+el.dataset.c))}
+async function playChallenge(cid){const c=CH.list.find(x=>x.id===cid);if(!c)return;const L=levelFromKey(c.level);if(!L)return;
+  let g;try{const r=await rpc('rolada_challenge_get',{p_family:FAM,p_cid:cid});g=r&&r[0]}catch(e){g=null}if(!g){alertMsg('No s\'ha pogut carregar el repte.');return}
+  newGame(L,Number(c.seed));G.ghost={cid,name:c.player_id===P.id?'Tu (abans)':c.name,time:c.time_s,trk:g.track,splits:g.splits||[]}}
+function alertMsg(m){const el=$('chal');if(el){const p=document.createElement('p');p.className='small';p.textContent=m;el.appendChild(p);setTimeout(()=>p.remove(),4000)}}
+// ghost position at time t (track points [t,x,y])
+function ghostAt(t){const T=G.ghost.trk;if(!T||!T.length)return null;if(t<=T[0][0])return{x:T[0][1],y:T[0][2],h:0,done:false};
+  let lo=0,hi=T.length-1;if(t>=T[hi][0])return{x:T[hi][1],y:T[hi][2],h:0,done:true};while(hi-lo>1){const m=(lo+hi)>>1;if(T[m][0]<=t)lo=m;else hi=m}
+  const a=T[lo],b=T[hi],f=(t-a[0])/(b[0]-a[0]||1);return{x:a[1]+(b[1]-a[1])*f,y:a[2]+(b[2]-a[2])*f,h:norm(Math.atan2(b[1]-a[1],b[2]-a[2])/R),done:false}}
+function drawGhost(ctx,V){if(!G.ghost||G.phase==='pre')return;const p=ghostAt(Math.max(0,G.t));if(!p)return;const x=V.X(p.x),y=V.Y(p.y);const k=Math.max(1,Math.min(3,(V.z||1)*0.55));
+  ctx.save();ctx.globalAlpha=.55;ctx.translate(x,y);ctx.rotate(p.h*R);ctx.scale(k,k);ctx.fillStyle='#e8f6ff';ctx.beginPath();ctx.moveTo(0,-9);ctx.quadraticCurveTo(5,-2,4,7);ctx.lineTo(-4,7);ctx.quadraticCurveTo(-5,-2,0,-9);ctx.fill();ctx.restore();
+  ctx.save();ctx.globalAlpha=.85;ctx.font='600 12px Barlow, sans-serif';ctx.fillStyle='#e8f6ff';ctx.fillText('👻 '+G.ghost.name,x+12,y-10);ctx.restore()}
+// debrief: compare with the ghost, leg by leg
+function ghostFacts(myT){const g=G.ghost;if(!g)return null;const me=G.me;let txt;
+  if(!me.done)txt=`Repte de ${g.name}: ${fmt(g.time)}. Aquesta vegada no has arribat.`;
+  else{const d=Math.round(myT-g.time);txt=d<0?`Has guanyat el repte de ${g.name} per ${-d} s!`:d===0?`Empat amb ${g.name}!`:`Et falten ${d} s per guanyar el repte de ${g.name}. Torna-hi!`}
+  let legs='';if(G.full&&g.splits&&g.splits.length===G.legs.length&&me.splits.length===G.legs.length){
+    legs=G.legs.map((L,i)=>{const a=me.splits[i]-(i?me.splits[i-1]:0),b=g.splits[i]-(i?g.splits[i-1]:0);const d=Math.round(a-b);return`${L.name}: ${d===0?'igual':(d<0?'−':'+')+Math.abs(d)+' s'}`}).join(' · ')}
+  return{txt,legs}}
+async function sendChallenge(myT){const L=G.L;const btn=$('sendCh');btn.disabled=true;btn.textContent='Enviant…';
+  const tr=G.me.trk.map(p=>[Math.round(p[2]*10)/10,Math.round(p[0]),Math.round(p[1])]);tr.push([Math.round(G.me.ft*10)/10,Math.round(G.me.x),Math.round(G.me.y)]);
+  try{await rpc('rolada_challenge_create',{p_family:FAM,p_id:P.id,p_level:L.key||L.id,p_seed:G.seed,p_time:myT,p_track:tr,p_splits:G.me.splits});btn.textContent='Repte enviat ✓';CH.t=0}
+  catch(e){btn.textContent='No s\'ha pogut enviar';btn.disabled=false}}
+function showChallengeDebrief(myT){const box=$('dChal');box.innerHTML='';box.hidden=true;if(!cloudReady()||CH.ok===false||G.daily||G.L.comp)return;
+  const gf=ghostFacts(myT);let h='';if(gf)h+=`<p class="lastmsg ${G.me.done&&myT<=G.ghost.time?'good':''}">${gf.txt}${gf.legs?`<br><span class="small">${gf.legs}</span>`:''}</p>`;
+  if(G.me.done)h+=`<button class="btn sec" id="sendCh">${gf?'Envia el teu temps com a repte nou':'Envia-la com a repte'}</button>`;
+  if(!h)return;box.innerHTML=h;box.hidden=false;if($('sendCh'))$('sendCh').onclick=()=>sendChallenge(myT);
+  if(G.ghost&&G.me.done)rpc('rolada_challenge_try',{p_family:FAM,p_cid:G.ghost.cid,p_id:P.id,p_time:myT}).then(()=>{CH.t=0}).catch(()=>{})}
 // ---------- menu
 function showMenu(){if(!P){showWho();return}$('who').hidden=true;$('board').hidden=true;$('garage').hidden=true;$('comp').hidden=true;
   {const c=compState(),S=STAGES[c.stage];const cb=pget('compBest',null);$('toComp').innerHTML=`<span><b>🏆 Competició</b><br><span class="small">Temporada ${c.season} · ${S.name} · ${c.champ.res.length?'regata '+(c.champ.res.length+1)+' de '+S.races:'per començar'}${cb?' · Millor: '+stLabel(cb.season,cb.stage)+' '+cb.pos+'a':''}</span></span><span class="stars">›</span>`;$('toComp').onclick=showComp}renderPbar();document.body.classList.remove('playing','prestart');if(G)G.phase='menu';$('game').hidden=true;$('debrief').hidden=true;$('menu').hidden=false;
@@ -1062,6 +1109,7 @@ function showMenu(){if(!P){showWho();return}$('who').hidden=true;$('board').hidd
   $('lvls').querySelectorAll('.lvl').forEach(el=>el.onclick=()=>newGame(+el.dataset.i));
   $('venues').innerHTML=VENUES.map(v=>`<div class="venue"><div class="vh"><b>${v.name}</b> <span class="small">${v.sub}</span></div><div class="vdays">${v.days.map(d=>{const L=VLEVELS.find(x=>x.id===d.id);const t=tierOf(L.id);const st=starsOf(lkey(L.id,t));const lg=LEAGUES[t];const b=pget('best:'+L.id,null);
     return`<button class="lvl vday" data-v="${L.id}"><span class="n"><b style="color:${lg.col}">${lg.name.toUpperCase()}</b></span><span class="t">${L.t}</span><span class="d">${L.d}</span><span class="stars">${[...st].sort((x,y)=>(y?1:0)-(x?1:0)).map(x=>`<span class="st ${x?'':'off'}">★</span>`).join('')}</span><span class="best">${b?'Millor: '+b.pos+'a de '+b.of+' · '+fmt(b.t):'&nbsp;'}</span></button>`}).join('')}</div></div>`).join('');
+  renderChallenges();loadChallenges().then(()=>{if(!$('menu').hidden)renderChallenges()});
   $('venues').querySelectorAll('.vday').forEach(el=>el.onclick=()=>newGame(VLEVELS.find(x=>x.id===el.dataset.v)));
   [4,7,12].forEach(s=>$('sp'+s).setAttribute('aria-pressed',ui.speed===s));$('aids').setAttribute('aria-pressed',ui.aids);$('aids').textContent=ui.aids?'Totes activades':'Segons el nivell'}
 [4,7,12].forEach(s=>$('sp'+s).onclick=()=>{ui.speed=s;store.set('speed',s);showMenu()});

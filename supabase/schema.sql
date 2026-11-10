@@ -153,6 +153,72 @@ language sql security definer set search_path = public, extensions as $$
   where p.family_hash = public.rolada_check(p_family)
 $$;
 
+-- v4: reptes entre germans (mateix vent, amb el vaixell de l'altre com a fantasma)
+create table if not exists public.rolada_challenges (
+  id bigint generated always as identity primary key,
+  family_hash text not null,
+  player_id uuid not null references public.rolada_players (id) on delete cascade,
+  level text not null check (char_length(level) <= 24),
+  seed bigint not null,
+  time_s real not null check (time_s > 0),
+  track jsonb not null,
+  splits jsonb not null default '[]'::jsonb,
+  created_at timestamptz not null default now()
+);
+create index if not exists rolada_challenges_family_idx on public.rolada_challenges (family_hash, created_at desc);
+create table if not exists public.rolada_challenge_tries (
+  id bigint generated always as identity primary key,
+  family_hash text not null,
+  challenge_id bigint not null references public.rolada_challenges (id) on delete cascade,
+  player_id uuid not null references public.rolada_players (id) on delete cascade,
+  time_s real not null check (time_s > 0),
+  created_at timestamptz not null default now()
+);
+alter table public.rolada_challenges enable row level security;
+alter table public.rolada_challenge_tries enable row level security;
+revoke all on public.rolada_challenges from anon, authenticated;
+revoke all on public.rolada_challenge_tries from anon, authenticated;
+
+create or replace function public.rolada_challenge_create(p_family text, p_id uuid, p_level text, p_seed bigint, p_time real, p_track jsonb, p_splits jsonb)
+returns bigint language plpgsql security definer set search_path = public, extensions as $$
+declare fh text := public.rolada_check(p_family); nid bigint;
+begin
+  if pg_column_size(p_track) > 200000 then raise exception 'recorregut massa llarg'; end if;
+  if not exists (select 1 from public.rolada_players p where p.id = p_id and p.family_hash = fh) then raise exception 'regatista desconegut'; end if;
+  insert into public.rolada_challenges (family_hash, player_id, level, seed, time_s, track, splits)
+  values (fh, p_id, left(p_level, 24), p_seed, p_time, p_track, coalesce(p_splits, '[]'::jsonb)) returning id into nid;
+  -- keep the last 60 per family
+  delete from public.rolada_challenges c where c.family_hash = fh and c.id not in (select c2.id from public.rolada_challenges c2 where c2.family_hash = fh order by c2.created_at desc limit 60);
+  return nid;
+end $$;
+
+create or replace function public.rolada_challenges(p_family text)
+returns table (id bigint, player_id uuid, name text, level text, seed bigint, time_s real, created_at timestamptz, tries jsonb)
+language sql security definer set search_path = public, extensions as $$
+  select c.id, c.player_id, p.name, c.level, c.seed, c.time_s, c.created_at,
+    coalesce((select jsonb_agg(jsonb_build_object('player_id', t.player_id, 'name', tp.name, 'best', t.best))
+      from (select t.player_id, min(t.time_s) as best from public.rolada_challenge_tries t where t.challenge_id = c.id group by t.player_id) t
+      join public.rolada_players tp on tp.id = t.player_id), '[]'::jsonb)
+  from public.rolada_challenges c join public.rolada_players p on p.id = c.player_id
+  where c.family_hash = public.rolada_check(p_family)
+  order by c.created_at desc limit 30
+$$;
+
+create or replace function public.rolada_challenge_get(p_family text, p_cid bigint)
+returns table (track jsonb, splits jsonb)
+language sql security definer set search_path = public, extensions as $$
+  select c.track, c.splits from public.rolada_challenges c
+  where c.id = p_cid and c.family_hash = public.rolada_check(p_family)
+$$;
+
+create or replace function public.rolada_challenge_try(p_family text, p_cid bigint, p_id uuid, p_time real)
+returns void language sql security definer set search_path = public, extensions as $$
+  insert into public.rolada_challenge_tries (family_hash, challenge_id, player_id, time_s)
+  select c.family_hash, c.id, p.id, p_time
+  from public.rolada_challenges c join public.rolada_players p on p.id = p_id and p.family_hash = c.family_hash
+  where c.id = p_cid and c.family_hash = public.rolada_check(p_family)
+$$;
+
 revoke execute on all functions in schema public from public;
 grant execute on function public.rolada_players_list(text) to anon, authenticated;
 grant execute on function public.rolada_join(text, text, text) to anon, authenticated;
@@ -161,3 +227,7 @@ grant execute on function public.rolada_save(text, uuid, integer, integer, integ
 grant execute on function public.rolada_level_board(text, text) to anon, authenticated;
 grant execute on function public.rolada_result(text, uuid, text, text, integer, integer, integer, real) to anon, authenticated;
 grant execute on function public.rolada_board(text, integer) to anon, authenticated;
+grant execute on function public.rolada_challenge_create(text, uuid, text, bigint, real, jsonb, jsonb) to anon, authenticated;
+grant execute on function public.rolada_challenges(text) to anon, authenticated;
+grant execute on function public.rolada_challenge_get(text, bigint) to anon, authenticated;
+grant execute on function public.rolada_challenge_try(text, bigint, uuid, real) to anon, authenticated;

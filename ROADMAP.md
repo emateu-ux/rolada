@@ -26,7 +26,7 @@ Recorregut: sortida → cenyida → **través** → **popa** → **porta de sota
 - Comentari quan fas un extrem, amb dades de quantes vegades fa podi.
 - Mesura (40 regates per nivell): la ruta ideal amb una sola virada a Persistent baixa de 33 a 5, i a Canvi de vent de 20 a 1. L'extrem guanya a Persistent 10 cops en lloc de 15, i a Canvi de vent 4 en lloc d'11.
 
-## v3 · Competició · Publicat (ara)
+## v3 · Competició · Publicat
 - Dos modes: Entrenament (el joc d'abans) i Competició.
 - Temporada: Campionat de Catalunya (40, passen 20) → Campionat d'Espanya (50, passen 10) → Europeu (50, passen 5) → Mundial (60).
 - Recorregut complet, puntuació baixa, descart a l'Europeu i al Mundial, rivals fixos durant el campionat.
@@ -34,7 +34,13 @@ Recorregut: sortida → cenyida → **través** → **popa** → **porta de sota
 - Premis en monedes, trofeus al garatge i pestanya Competició al rànquing de família.
 - Calibratge (12 campionats per etapa, temporada 1, amb un bon regatista sense saber el futur al lloc del jugador): Catalunya sempre, Espanya la meitat de les vegades, Europeu 1 de cada 4, Mundial al voltant del 15è.
 
-## v4 · Sortida real
+## v4 · Seus, lligues i reptes · Publicat (ara)
+- Popa d'Optimist: gairebé en popa redona i poques trasluchades; la decisió és el costat.
+- Lligues a cada nivell i a cada seu (Bronze, Plata, Or, Platí, Diamant): amb 3 estrelles es puja.
+- Seus: Garda (Ora, l'Ora que entra, Pelèr), Saint-Raphaël (brisa tèrmica, mistral, canvi de vent), Palma (embat, embat a clapes, xaloc) i Barcelona/Maresme (garbí, llevant, terral). Primera versió, per revisar amb la Mia.
+- Reptes entre germans amb vaixell fantasma i comparació per trams (cal l'esquema v4 a Supabase).
+
+## v5 · Sortida real
 - Compte enrere de 3 minuts accelerat; el vaixell es pot moure abans del senyal (accelerar, frenar, virar).
 - OCS si ets a sobre de la línia al senyal, amb retorn obligatori.
 - Lectura de la línia: costat afavorit segons el vent.
