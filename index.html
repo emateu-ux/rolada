@@ -334,10 +334,11 @@ const WIND1=[{k:'beat',name:'Cenyida',lab:'Boia',to:()=>MARK}];
 const FULL=[{k:'beat',name:'Cenyida',lab:'Boia 1',to:()=>MARK},{k:'reach',name:'Través',lab:'Boia 2',to:()=>M2},{k:'run',name:'Popa',lab:'Porta',to:b=>GATE[b.gate??0]},{k:'beat',name:'Última cenyida',lab:'Arrib.',to:finPt,fin:true}];
 const POLAR=[[0,0],[2,1.3],[4,2.4],[6,3.0],[8,3.4],[10,3.7],[13,3.9],[18,3.9],[25,3.6]];
 function polar(kn){for(let i=1;i<POLAR.length;i++)if(kn<=POLAR[i][0]){const a=POLAR[i-1],b=POLAR[i];return lerp(a[1],b[1],(kn-a[0])/(b[0]-a[0]))*0.5144}return 3.6*0.5144}
-// speed factor by true wind angle (1 = close-hauled). Best downwind VMG is around 155°, so the run is sailed in gybes.
-const SPF=[[0,1],[45,1],[90,1.15],[110,1.18],[135,1.13],[155,1.08],[180,.88]];
-function speedF(a){for(let i=1;i<SPF.length;i++)if(a<=SPF[i][0]){const p=SPF[i-1],q=SPF[i];return lerp(p[1],q[1],(a-p[0])/(q[0]-p[0]))}return .88}
-const TWA={beat:45,run:155};
+// speed factor by true wind angle (1 = close-hauled). An Optimist runs almost dead downwind (best VMG ~168°):
+// gybing gains little, so the run is about choosing the side (pressure, shifts, clear air), with one or two gybes.
+const SPF=[[0,1],[45,1],[90,1.15],[110,1.18],[135,1.13],[150,1.1],[168,1.08],[180,1.02]];
+function speedF(a){for(let i=1;i<SPF.length;i++)if(a<=SPF[i][0]){const p=SPF[i-1],q=SPF[i];return lerp(p[1],q[1],(a-p[0])/(q[0]-p[0]))}return 1.02}
+const TWA={beat:45,run:168};
 
 // ---------- levels
 const LEVELS=[
@@ -371,20 +372,22 @@ function wind(W,t,x,y){
 
 // ---------- fleet
 const NATIONS=['ITA','FRA','ESP','POL','GBR','NED','GER','DEN','SWE','USA','ARG','TUR','GRE','CRO','POR','NOR','HUN','AUT'];
-function makeFleet(lv,seed){
-  const r=rng(seed*7+3);const plan=lv==='fleet'?['smart','smart','smart','smart','shifty','shifty','shifty','shifty','press','press','press','middle','middle','middle']:['smart','smart','shifty','shifty','press','press','sideL','sideR','middle','middle','random'];
+function makeFleet(lv,seed,tier=0){
+  const r=rng(seed*7+3);let plan=lv==='fleet'?['smart','smart','smart','smart','shifty','shifty','shifty','shifty','press','press','press','middle','middle','middle']:['smart','smart','shifty','shifty','press','press','sideL','sideR','middle','middle','random'];
+  // each league: the weakest sailors are replaced by good ones and 4 more boats join
+  const weak=['random','sideR','sideL','middle'];for(let t=0;t<tier;t++){const i=plan.findIndex(s=>weak.includes(s));if(i>=0)plan[i]='sens';plan=plan.concat(['sens','smart','shifty','press'])}
   const nat=[...NATIONS].sort(()=>r()-.5);
-  const boats=plan.map((st,i)=>({name:nat[i]+' '+(1000+Math.floor(r()*8999)),st,ai:true,sk:st==='smart'?1.0:0.975+r()*0.04,m:st==='smart'?0.5:(-5+r()*6),thr:3+r()*3,del:4+r()*8,x:lerp(LINE[0]+8,LINE[1]-8,r()),tack:r()<.65?'S':'P'}));
+  const boats=plan.map((st,i)=>({name:nat[i%nat.length]+' '+(1000+Math.floor(r()*8999)),st,ai:true,sk:Math.min(1.02,(st==='smart'?1.0:0.975+r()*0.04)+0.003*tier),m:(st==='smart'||st==='sens')?0.5:(-5+r()*6),thr:Math.max(2,3+r()*3-.4*tier),del:Math.max(2,4+r()*8-tier),x:lerp(LINE[0]+8,LINE[1]-8,r()),tack:r()<.65?'S':'P'}));
   if(lv==='fleet')boats.forEach(b=>b.sk=Math.max(b.sk,0.99));
   return boats}
 
 // ---------- game state
 let G=null;const ui={speed:store.get('speed',7),aids:store.get('aids',false)};
 function newGame(lvIdx,seed,daily){$('who').hidden=true;$('garage').hidden=true;$('comp').hidden=true;VZ.z=2.5;VZ.follow=true;pendingTack=false;
-  const L=typeof lvIdx==='object'?lvIdx:LEVELS[lvIdx];seed=seed??Math.floor(Math.random()*1e9);
+  let L=typeof lvIdx==='object'?lvIdx:LEVELS[lvIdx];if(!L.comp&&L.tier==null)L=tierLevel(L,daily||!P?0:tierOf(L.id));seed=seed??Math.floor(Math.random()*1e9);
   const W=makeWind(L.wind||L.id,seed);
   let ai;if(L.comp){const ch=compState().champ;const half=Math.max(95,(ch.fleet.length+1)*2.6);LINE[0]=-half;LINE[1]=half;const r=rng(seed*7+3);ai=ch.fleet.map(f=>({...f,ai:true,x:lerp(LINE[0]+8,LINE[1]-8,r()),tack:r()<.65?'S':'P'}))}
-  else{LINE[0]=-95;LINE[1]=95;ai=makeFleet(L.id,seed)}
+  else{LINE[0]=-95;LINE[1]=95;ai=makeFleet(L.id,seed,L.tier||0)}
   const me={name:P?(P.sail||P.name):'TU',me:true,x:0,tack:'S',sk:1};
   const boats=[me,...ai].map(b=>Object.assign(b,{y:-4,h:0,v:0,tk:0,gy:false,done:false,ft:null,dirty:0,duck:0,last:-99,trk:[],mean:null,hd:0,nextD:0,leg:0,gate:null,gp:false,gfix:false,off:0,splits:[],acc:{t:0,tb:0,fav:0,tws:0,dirty:0,runSh:0,off:[0,0,0],n:0}}));
   G={L,lvIdx,seed,daily:!!daily,full:!!L.full,legs:L.full?FULL:WIND1,maxT:L.full?3000:1500,rr:rng(seed*13+5),skin:P?equipped('boat'):'opti',trail:P?equipped('trail'):'none',flag:P?equipped('flag'):'none',tail:[],W,boats,me,t:-30,phase:'pre',paused:false,trace:[],laylog:[],tacks:0,gybes:0,ducks:0,blocked:0,warnT:0,warnMsg:'',uiKey:null,gateInfo:null,field:null,fieldT:-99,parts:[]};
@@ -579,7 +582,7 @@ function setGate(g){if(!G||G.phase!=='race'||G.me.done||legK(G.me)!=='run')retur
 function bindTap(el,fn){let last=0;const h=e=>{const now=performance.now();if(now-last<350){if(e.cancelable)e.preventDefault();return}last=now;if(e.cancelable&&e.type!=='click')e.preventDefault();fn()};el.addEventListener('touchstart',h,{passive:false});['pointerdown','mousedown','click'].forEach(ev=>el.addEventListener(ev,h))}
 bindTap($('orsa'),()=>setOff(1));bindTap($('arriba'),()=>setOff(-1));bindTap($('gL'),()=>setGate(0));bindTap($('gR'),()=>setGate(1));
 // ---------- pre-start
-function showPre(){document.body.classList.add('playing','prestart');$('menu').hidden=true;$('debrief').hidden=true;$('game').hidden=false;$('pre').hidden=false;$('raceCtl').hidden=true;$('gateBar').hidden=true;G.uiKey=null;syncZ();$('preLvl').textContent=G.daily?'Repte del dia':G.L.n;$('preTitle').textContent=G.daily?'El mateix vent per a tothom':G.L.t;$('preBrief').textContent=G.L.brief;setStartTack(G.me.tack)}
+function showPre(){document.body.classList.add('playing','prestart');$('menu').hidden=true;$('debrief').hidden=true;$('game').hidden=false;$('pre').hidden=false;$('raceCtl').hidden=true;$('gateBar').hidden=true;G.uiKey=null;syncZ();$('preLvl').textContent=G.daily?'Repte del dia':G.L.n+(G.L.tier!=null&&!G.L.comp?' · Lliga '+LEAGUES[G.L.tier].name+' · '+G.boats.length+' vaixells':'');$('preTitle').textContent=G.daily?'El mateix vent per a tothom':G.L.t;$('preBrief').textContent=G.L.brief;setStartTack(G.me.tack)}
 function updatePre(){const me=G.me;const w=wind(G.W,0,me.x,me.y);const h=w.d+(G.t*0);$('readS').textContent=String(Math.round(norm(w.d-45))).padStart(3,'0')+'°';$('readP').textContent=String(Math.round(norm(w.d+45))).padStart(3,'0')+'°';me.h=w.d+(me.tack==='P'?45:-45)}
 function setStartTack(tk){G.me.tack=tk;$('stS').setAttribute('aria-pressed',tk==='S');$('stP').setAttribute('aria-pressed',tk==='P');placeStart()}
 $('stS').onclick=()=>setStartTack('S');$('stP').onclick=()=>setStartTack('P');
@@ -663,7 +666,7 @@ function finish(){if(G.phase!=='race')return;G.phase='debrief';
   const ref=G.st0?sensRef(G.st0.x,G.st0.tack):null;
   showDebrief({order,pos,myIdeal,bestStart,startX,ref});}
 function showDebrief(R0){const{order,pos,myIdeal,bestStart,startX,ref}=R0;const me=G.me;document.body.classList.remove('playing');$('game').hidden=true;$('debrief').hidden=false;
-  const L=G.L;$('dLvl').textContent=G.daily?'Repte del dia':L.n+' · '+L.t;$('dPos').textContent=me.done?(pos+'a de '+G.boats.length):'No has arribat';
+  const L=G.L;$('dLvl').textContent=G.daily?'Repte del dia':L.n+' · '+L.t+(L.tier?' · Lliga '+LEAGUES[L.tier].name:'');$('dPos').textContent=me.done?(pos+'a de '+G.boats.length):'No has arribat';
   const myT=me.done?me.ft:null;const rows=[];
   rows.push(['El teu temps',myT?fmt(myT):'—']);if(myIdeal)rows.push(['Ruta ideal des de la teva sortida',fmt(myIdeal.T)+(myT?'  ·  +'+Math.max(0,Math.round(myT-myIdeal.T))+' s':'')]);
   if(ref)rows.push(['Bon regatista sense saber el futur',fmt(ref.ft)+(myT?'  ·  '+(myT<=ref.ft?'−':'+')+Math.abs(Math.round(myT-ref.ft))+' s':'')]);
@@ -721,7 +724,14 @@ const pget=(k,d)=>store.get('p:'+P.id+':'+k,d),pset=(k,v)=>store.set('p:'+P.id+'
 const RANKS=[[0,'Grumet'],[300,'Mariner'],[800,'Patró'],[1600,'Regatista'],[3000,'Campió'],[5000,'Llegenda'],[8000,'Mite del mar']];
 function rankOf(xp){let i=0;while(i<RANKS.length-1&&xp>=RANKS[i+1][0])i++;const lo=RANKS[i][0],hi=i<RANKS.length-1?RANKS[i+1][0]:lo+3000;return{name:RANKS[i][1],lvl:i+1,pct:Math.min(1,(xp-lo)/(hi-lo)),next:i<RANKS.length-1?RANKS[i+1][1]:null,left:hi-xp}}
 const starsOf=id=>pget('stars:'+id,[0,0,0]);
-function totalStars(){return LEVELS.reduce((a,L)=>a+starsOf(L.id).reduce((x,y)=>x+y,0),0)}
+// leagues: 3 stars in a level move you up one league (bigger fleet, better rivals, fewer aids, tighter ideal star)
+const LEAGUES=[{name:'Bronze',col:'#cd7f32'},{name:'Plata',col:'#c9d3d8'},{name:'Or',col:'#ffd23f'},{name:'Platí',col:'#7ff0ff'},{name:'Diamant',col:'#c58bff'}];
+const tierOf=id=>Math.min(LEAGUES.length-1,pget('tier:'+id,0));
+const lkey=(id,t)=>id+(t?'@'+t:'');
+function tierLevel(L,t){const a={...L.aids};if(t>=1){a.hint=false;a.streaks=false}if(t>=2)a.lay=false;if(t>=3)a.shadow=false;
+  return{...L,tier:t,key:lkey(L.id,t),gap:Math.round((L.gap||20)*[1,.8,.65,.5,.4][t]),aids:a}}
+const allLevels=()=>LEVELS;
+function totalStars(){return allLevels().reduce((a,L)=>{const t=tierOf(L.id);return a+3*t+starsOf(lkey(L.id,t)).reduce((x,y)=>x+y,0)},0)}
 function prog(){return{stars:totalStars(),wins:pget('wins',0),streak:pget('streak',{n:0,d:''}).n,xp:pget('xp',0)}}
 function showWho(){document.body.classList.remove('playing','prestart');['menu','game','debrief','garage','board'].forEach(i=>$(i).hidden=true);$('who').hidden=false;$('whoMsg').textContent='';
   $('famBox').hidden=!CLOUD_ON;if(CLOUD_ON){$('famState').textContent=FAM?`Codi de família: ${FAM}. Tria qui ets o afegeix un regatista.`:'Escriu el codi de la teva família o crea\'n un. Sense codi, el progrés només es guarda en aquest mòbil.';$('famJoin').hidden=!!FAM}
@@ -764,25 +774,25 @@ function dayBefore(n){const d=new Date(Math.floor(n/10000),Math.floor(n/100)%100
 let audio=null;function beep(notes,type='triangle'){try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();let t=audio.currentTime;for(const [f,d] of notes){const o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(.12,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g).connect(audio.destination);o.start(t);o.stop(t+d);t+=d*0.8}}catch(e){}}
 function confetti(){const box=document.createElement('div');box.className='confetti';const cols=['#ff5b4a','#ffd166','#5fe08f','#c58bff','#fff','#3d7bff'];for(let i=0;i<70;i++){const c=document.createElement('i');c.style.left=Math.random()*100+'%';c.style.background=cols[i%cols.length];c.style.animationDelay=Math.random()*0.8+'s';c.style.animationDuration=1.8+Math.random()*1.4+'s';box.appendChild(c)}document.body.appendChild(box);setTimeout(()=>box.remove(),4200)}
 function award({pos,of,done,myT,idealT}){const L=G.L;const before=prog();const rkBefore=rankOf(before.xp);
-  const got=[done&&pos<=3,done&&pos===1,done&&idealT!=null&&myT-idealT<=(L.gap||20)];const old=G.daily?[0,0,0]:starsOf(L.id);const nw=got.map((g,i)=>g&&!old[i]);
-  if(!G.daily)pset('stars:'+L.id,old.map((o,i)=>o||got[i]?1:0));
+  const K=L.key||L.id;const got=[done&&pos<=3,done&&pos===1,done&&idealT!=null&&myT-idealT<=(L.gap||20)];const old=G.daily?[0,0,0]:starsOf(K);const nw=got.map((g,i)=>g&&!old[i]);
+  let tierUp=null;if(!G.daily){const ns=old.map((o,i)=>o||got[i]?1:0);pset('stars:'+K,ns);const t=L.tier||0;if(ns.every(Boolean)&&t<LEAGUES.length-1&&tierOf(L.id)===t){pset('tier:'+L.id,t+1);tierUp=LEAGUES[t+1].name}}
   let xp=done?50+Math.max(0,of-pos)*10:10;xp+=nw.filter(Boolean).length*60;if(G.daily&&done)xp+=50;
   if(done&&pos===1)pset('wins',pget('wins',0)+1);
   pset('xp',before.xp+xp);pset('races',pget('races',0)+1);
   if(done&&myT){const k='best:'+(G.daily?'daily'+today():L.id);const pb=pget(k,null);if(!pb||myT<pb.t||pos<pb.pos)pset(k,{pos:Math.min(pos,pb?pb.pos:99),of,t:Math.min(myT,pb?pb.t:1e9)})}
   if(G.daily){const st=pget('streak',{n:0,d:0});const td=today();if(st.d!==td){st.n=st.d===dayBefore(td)?st.n+1:1;st.d=td;pset('streak',st)}}
-  owned();const lila=lilaCount();const cn=done?10+5*Math.max(0,of-pos)+(pos===1?20:0)+15*nw.filter(Boolean).length+(G.daily?10:0)+5*lila:0;pset('coins',pget('coins',0)+cn);
-  syncCloud(done?{kind:G.daily?'daily':'level',level:L.id,day:G.daily?today():null,pos,fleet:of,time:myT}:null);
+  owned();const lila=lilaCount();const cn=done?10+5*Math.max(0,of-pos)+(pos===1?20:0)+15*nw.filter(Boolean).length+(G.daily?10:0)+5*lila:0;const cnM=Math.round(cn*(1+.5*(L.tier||0)));pset('coins',pget('coins',0)+cnM);
+  syncCloud(done?{kind:G.daily?'daily':'level',level:K,day:G.daily?today():null,pos,fleet:of,time:myT}:null);
   const after=prog();const unlocked=ITEMS.filter(k=>k.special&&!k.ok(before)&&k.ok(after));const rk=rankOf(after.xp);
-  return{got,nw,xp,cn,lila,unlocked,rk,rankUp:rk.lvl>rkBefore.lvl,starsShow:G.daily?got:got.map((g,i)=>g||old[i])}}
+  return{got,nw,xp,cn:cnM,lila,unlocked,rk,tierUp,rankUp:rk.lvl>rkBefore.lvl,starsShow:G.daily?got:got.map((g,i)=>g||old[i])}}
 function renderReward(r){const lab=['Podi','Victòria',`A menys de ${G.L.gap||20} s de la ruta ideal`];
   $('dRew').innerHTML=`<div class="stars3">${r.starsShow.map((g,i)=>`<span class="s3 ${r.nw[i]?'new':''}"><span class="st ${g?'':'off'}">★</span>${lab[i]}</span>`).join('')}</div>
    <div class="coinwin">+${r.cn} 🪙${r.lila?` <span class="small">(${r.lila} ${r.lila>1?'trams':'tram'} en lila)</span>`:''} · tens ${coins()} monedes</div>
    <div class="xp"><span class="rk">+${r.xp} XP · ${r.rk.name}${r.rk.next?` · falten ${r.rk.left} per a ${r.rk.next}`:''}</span><div class="bar"><i style="width:${Math.round(r.rk.pct*100)}%"></i></div></div>
-   ${r.rankUp?`<div class="unlock">Has pujat de rang: ara ets ${r.rk.name}!</div>`:''}${r.unlocked.map(k=>`<div class="unlock">Nou al garatge: ${k.name}!</div>`).join('')}`;
+   ${r.tierUp?`<div class="unlock">Puges a la lliga ${r.tierUp} de ${G.L.t}: flota més gran, rivals millors i menys ajudes.</div>`:''}${r.rankUp?`<div class="unlock">Has pujat de rang: ara ets ${r.rk.name}!</div>`:''}${r.unlocked.map(k=>`<div class="unlock">Nou al garatge: ${k.name}!</div>`).join('')}`;
   if(r.nw.some(Boolean)||r.unlocked.length)beep([[523,.15],[659,.15],[784,.15],[1047,.35]]);if(r.got[1])playCeleb(equipped('celeb'))}
 function lilaCount(){if(!G.full)return 0;const lt=(b,i)=>b.splits[i]==null?null:b.splits[i]-(i?b.splits[i-1]:0);let n=0;G.legs.forEach((L,i)=>{const m=lt(G.me,i);if(m!=null&&G.boats.every(b=>b.me||lt(b,i)==null||lt(b,i)>=m))n++});return n}
-function renderPbar(){const p=prog(),rk=rankOf(p.xp);$('pbar').innerHTML=`<div><div class="nm">${esc(P.name)}</div><div class="sail">${esc(P.sail)}</div></div><div class="xp"><span class="rk">${rk.name} · ${p.xp} XP</span><div class="bar"><i style="width:${Math.round(rk.pct*100)}%"></i></div></div><div class="stars">★ ${p.stars}/${LEVELS.length*3} · ${p.wins} ${p.wins===1?'victòria':'victòries'}</div><span class="coinbal" style="margin:0">🪙 ${coins()}</span><button class="btn sec" id="toGarage">Garatge</button>${CLOUD_ON&&FAM&&P.cloud?'<button class="btn sec" id="toBoard">Rànquing</button>':''}<button class="chip" id="toWho">Canvia</button>`;
+function renderPbar(){const p=prog(),rk=rankOf(p.xp);$('pbar').innerHTML=`<div><div class="nm">${esc(P.name)}</div><div class="sail">${esc(P.sail)}</div></div><div class="xp"><span class="rk">${rk.name} · ${p.xp} XP</span><div class="bar"><i style="width:${Math.round(rk.pct*100)}%"></i></div></div><div class="stars">★ ${p.stars} · ${p.wins} ${p.wins===1?'victòria':'victòries'}</div><span class="coinbal" style="margin:0">🪙 ${coins()}</span><button class="btn sec" id="toGarage">Garatge</button>${CLOUD_ON&&FAM&&P.cloud?'<button class="btn sec" id="toBoard">Rànquing</button>':''}<button class="chip" id="toWho">Canvia</button>`;
   $('toGarage').onclick=showGarage;if($('toBoard'))$('toBoard').onclick=showBoard;$('toWho').onclick=showWho;
   const st=pget('streak',{n:0,d:0});const db=pget('best:daily'+today(),null);const done=st.d===today();
   $('daily').innerHTML=`<span><b>Repte del dia</b><br><span class="small">El mateix vent per a tothom avui. ${db?'El teu millor: '+db.pos+'a, '+fmt(db.t)+'.':'Encara no l\'has fet.'}</span></span><span class="stars">${st.n?'🔥 '+st.n+(st.n===1?' dia':' dies')+(done?'':' · no la perdis'):'Comença una ratxa'}</span>`;
@@ -1022,7 +1032,7 @@ $('cGo').onclick=compGo;$('cBack').onclick=()=>showMenu();
 // ---------- menu
 function showMenu(){if(!P){showWho();return}$('who').hidden=true;$('board').hidden=true;$('garage').hidden=true;$('comp').hidden=true;
   {const c=compState(),S=STAGES[c.stage];const cb=pget('compBest',null);$('toComp').innerHTML=`<span><b>🏆 Competició</b><br><span class="small">Temporada ${c.season} · ${S.name} · ${c.champ.res.length?'regata '+(c.champ.res.length+1)+' de '+S.races:'per començar'}${cb?' · Millor: '+stLabel(cb.season,cb.stage)+' '+cb.pos+'a':''}</span></span><span class="stars">›</span>`;$('toComp').onclick=showComp}renderPbar();document.body.classList.remove('playing','prestart');if(G)G.phase='menu';$('game').hidden=true;$('debrief').hidden=true;$('menu').hidden=false;
-  $('lvls').innerHTML=LEVELS.map((L,i)=>{const b=pget('best:'+L.id,null);const st=starsOf(L.id);return`<button class="lvl" data-i="${i}"><span class="n">${L.n.toUpperCase()}</span><span class="t">${L.t}</span><span class="d">${L.d}</span><span class="stars" aria-label="${st.filter(Boolean).length} de 3 estrelles">${[...st].sort((x,y)=>(y?1:0)-(x?1:0)).map(x=>`<span class="st ${x?'':'off'}">★</span>`).join('')}</span><span class="best">${b?'Millor: '+b.pos+'a de '+b.of+' · '+fmt(b.t):'&nbsp;'}</span></button>`}).join('');
+  $('lvls').innerHTML=LEVELS.map((L,i)=>{const b=pget('best:'+L.id,null);const t=tierOf(L.id);const st=starsOf(lkey(L.id,t));const lg=LEAGUES[t];return`<button class="lvl" data-i="${i}"><span class="n">${L.n.toUpperCase()} · <b style="color:${lg.col}">${lg.name.toUpperCase()}</b></span><span class="t">${L.t}</span><span class="d">${L.d}</span><span class="stars" aria-label="${st.filter(Boolean).length} de 3 estrelles">${[...st].sort((x,y)=>(y?1:0)-(x?1:0)).map(x=>`<span class="st ${x?'':'off'}">★</span>`).join('')}</span><span class="best">${b?'Millor: '+b.pos+'a de '+b.of+' · '+fmt(b.t):'&nbsp;'}</span></button>`}).join('');
   $('lvls').querySelectorAll('.lvl').forEach(el=>el.onclick=()=>newGame(+el.dataset.i));
   [4,7,12].forEach(s=>$('sp'+s).setAttribute('aria-pressed',ui.speed===s));$('aids').setAttribute('aria-pressed',ui.aids);$('aids').textContent=ui.aids?'Totes activades':'Segons el nivell'}
 [4,7,12].forEach(s=>$('sp'+s).onclick=()=>{ui.speed=s;store.set('speed',s);showMenu()});
@@ -1032,6 +1042,6 @@ window.__rolada={get G(){return G},newGame,simStep,startRace,doTack,finish,ideal
 })();
 </script>
 
-<script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=abea23a2').catch(()=>{}))}</script>
+<script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=46ac9358').catch(()=>{}))}</script>
 </body>
 </html>
