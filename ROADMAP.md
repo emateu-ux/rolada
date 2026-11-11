@@ -68,10 +68,17 @@ Recorregut: sortida → cenyida → **través** → **popa** → **porta de sota
 - «Un dia de febrer» i «Com reconèixer el dia», com a Saint-Raphaël.
 - Els models no coincideixen en quanta Ora hi ha: cal contrastar-ho amb el que han vist a l'aigua.
 
-## v4.5 · El mateix recorregut a tot arreu · Publicat (ara)
+## v4.5 · El mateix recorregut a tot arreu · Publicat
 - A Garda el recorregut ja no està girat: través, popa i porta a l'esquerra, com sempre en Optimist.
 - Amb l'Ora, la segona cenyida surt de l'esquerra, lluny de la pedra i amb menys vent.
-- Pendent de parlar: l'angle del través (el diagrama oficial és més tancat que el del joc) i què fa difícil la segona cenyida a Garda.
+- Pendent de parlar: què fa difícil la segona cenyida a Garda.
+
+## v4.6 · Recorregut oficial, través real i Garraf · Publicat (ara)
+- Recorregut amb les mides del trapezi oficial d'Optimist: través a 120° del vent, popa llarga fins a una porta per sota de la sortida i última cenyida curta.
+- Través: anar recte és el més ràpid. Els rivals orsen per defensar-se i es barallen; qui pot anar recte guanya. Més ombra de vent al través.
+- Seu nova: Garraf, amb els dies de finals de novembre (Ventolina, Terral, Garbí, Llevant), «Un dia de novembre» i «Com reconèixer el dia».
+- Els temps i els rànquings antics de la regata completa i de les seus ja no són comparables.
+- Per confirmar amb els nens: on és l'arribada i com de llarga és la popa.
 
 ## v5 · Sortida real
 - Compte enrere de 3 minuts accelerat; el vaixell es pot moure abans del senyal (accelerar, frenar, virar).
