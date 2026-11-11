@@ -38,7 +38,9 @@ Recorregut: sortida → cenyida → **través** → **popa** → **porta de sota
 - Popa d'Optimist: gairebé en popa redona i poques trasluchades; la decisió és el costat.
 - Lligues a cada nivell i a cada seu (Bronze, Plata, Or, Platí, Diamant): amb 3 estrelles es puja.
 - Seus: Garda (Ora, l'Ora que entra, Pelèr), Saint-Raphaël (brisa tèrmica, mistral, canvi de vent), Palma (embat, embat a clapes, xaloc) i Barcelona/Maresme (garbí, llevant, terral). Primera versió, per revisar amb la Mia.
-- Reptes entre germans amb vaixell fantasma i comparació per trams (cal l'esquema v4 a Supabase).
+- Reptes entre germans amb vaixell fantasma i comparació per trams (esquema v4 executat a Supabase l'11/11/2026).
+- Popa calibrada amb 1.300 popes reals (MetaSail, Cap d'Agde 2026): TWA mediana 164° i, sobretot, una sola amura.
+- Menú nou: pantalla d'inici, apartats separats, barra d'onglets i rànquing amb tres pestanyes.
 
 ## v5 · Sortida real
 - Compte enrere de 3 minuts accelerat; el vaixell es pot moure abans del senyal (accelerar, frenar, virar).
