@@ -98,6 +98,41 @@ input{background:var(--panel2);border:1px solid var(--line);border-radius:6px;co
 .compbtn{border-color:#ffd166}.compbtn b{color:#ffd166}
 .venue{margin-bottom:10px}.venue .vh{margin:4px 0 6px}.venue .vh b{font-family:var(--f-disp);font-size:18px}.vdays{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.vday{padding:10px 10px 8px;min-height:0}.vday .t{font-size:16px;line-height:1.15}.vday .d{display:none}.vday .best{font-size:11px}.vday .n{font-size:11px}
 .chals{display:grid;gap:6px}.chal .t{font-size:17px}.chal .d{font-size:13px}#dChal{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+/* navigation */
+body.nav .app{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+#tabbar{display:none}
+#bLevel{background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font:inherit;width:100%}
+.tabchip{flex:1;text-align:center}
+body.nav #tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:15;background:rgba(10,24,32,.96);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));backdrop-filter:blur(8px)}
+#tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:0;color:var(--muted);font:600 12px var(--f-body,inherit);padding:6px 0;cursor:pointer}
+#tabbar button span{font-size:20px;line-height:1}
+#tabbar button[aria-current=page]{color:var(--fg)}
+#tabbar button[hidden]{display:none}
+section[hidden]{display:none!important}
+body.nav header.top{display:none}
+.hero{text-align:center;padding:18px 0 6px}
+.biglogo{font-size:64px;letter-spacing:.08em}
+.hero .tag{margin-top:6px}
+.mecard{width:100%;display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:center;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;color:var(--fg);cursor:pointer}
+.mecard .nm{font-family:var(--f-disp);font-size:20px;font-weight:700}
+.mecard .rk{font-size:13px;color:var(--muted);text-align:right}
+.mecard .bar{grid-column:1/-1;height:6px;border-radius:3px;background:var(--line);overflow:hidden}.mecard .bar i{display:block;height:100%;background:var(--me)}
+.mecard .mestats{grid-column:1/-1;font-family:var(--f-disp);color:#ffd166}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{display:flex;flex-direction:column;gap:4px;text-align:left;border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:16px 14px;min-height:128px;color:#fff;cursor:pointer}
+.tile .ic{font-size:30px;line-height:1}.tile .tt{font-family:var(--f-disp);font-size:22px;font-weight:700;margin-top:auto}.tile .td{font-size:12.5px;opacity:.85;line-height:1.3}
+.tile.t-comp{grid-column:1/-1;background:linear-gradient(140deg,#5a3d0c,#b8862a)}
+.t-seus{background:linear-gradient(140deg,#1f5a4c,#2a7f9e)}.t-train{background:linear-gradient(140deg,#1d3f7a,#3b74c4)}.t-rep{background:linear-gradient(140deg,#3d2a6b,#7a5cc4)}.t-gar{background:linear-gradient(140deg,#5a1f3a,#b84a6e)}
+.shead{display:flex;align-items:center;gap:10px}.shead h2{margin:0;font-family:var(--f-disp);font-size:26px}
+.back{width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--fg);font-size:26px;line-height:1;cursor:pointer}
+.intro{margin:0}
+.vcards{display:grid;gap:12px}
+.vcard{position:relative;overflow:hidden;display:flex;flex-direction:column;gap:2px;text-align:left;border:0;border-radius:16px;padding:16px;min-height:150px;color:#fff;cursor:pointer}
+.vcard svg,.vbanner svg{position:absolute;left:0;right:0;bottom:0;width:100%;height:60%;opacity:.9}
+.vcard>span,.vbanner>span{position:relative}
+.vcard .vt{font-family:var(--f-disp);font-size:28px;font-weight:700}.vcard .vs{font-size:13px;opacity:.9}.vcard .vd{font-size:13px;margin-top:auto;font-weight:600}.vcard .vst{position:absolute;top:14px;right:16px;font-family:var(--f-disp);color:#ffd166}
+.vbanner{position:relative;overflow:hidden;border-radius:16px;min-height:90px;padding:14px;color:#fff}
+#who,#home,#train,#seus,#seu,#reptes,#perfil{display:flex;flex-direction:column;gap:14px;max-width:760px;margin:0 auto;width:100%}
 h2.sect{font-family:var(--f-disp);font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:6px 0 -4px}
 .rew .s3{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
 .rew .s3 .st{font-size:24px}
@@ -222,22 +257,22 @@ table.res tr.me td{color:var(--me);font-weight:700}
   </section>
 
   <section id="board" hidden>
-    <div class="row" style="align-items:center;justify-content:space-between"><h2>Rànquing de família</h2><button class="btn sec" id="bBack">Tornar</button></div>
+    <div class="shead"><h2>Rànquing de família</h2><button class="btn sec" id="bBack" hidden>Inici</button></div>
     <p class="small" id="bInfo" style="margin:0"></p>
     <div class="settings" id="bTabs"></div>
-    <div class="settings" id="bLg"></div>
+    <div id="bLg"></div>
     <div style="overflow-x:auto"><table class="res board" id="bTable"></table></div>
   </section>
 
   <section id="garage" hidden>
-    <div class="row" style="align-items:center;justify-content:space-between"><h2>Garatge</h2><span class="coinbal">🪙 <b id="gCoins">0</b></span><button class="btn sec" id="gBack">Tornar</button></div>
+    <div class="shead"><h2>Garatge</h2><span class="coinbal">🪙 <b id="gCoins">0</b></span><button class="btn sec" id="gBack" hidden>Inici</button></div>
     <p class="small" style="margin:0">Guanya monedes a les regates i compra el que vulguis: estalvia per al millor o ves canviant. Només canvia com es veu: tots van igual de ràpid.</p>
     <div class="settings" id="gTabs"></div>
     <div class="skins" id="skins"></div>
   </section>
 
   <section id="comp" hidden>
-    <div class="row" style="align-items:center;justify-content:space-between"><h2 id="cTitle">Competició</h2><button class="btn sec" id="cBack">Menú</button></div>
+    <div class="shead"><button class="back" id="cBack" aria-label="Inici">‹</button><h2 id="cTitle">Competició</h2></div>
     <div class="cpath" id="cPath"></div>
     <div id="cInfo"></div>
     <table class="res" id="cTable"></table>
@@ -245,22 +280,43 @@ table.res tr.me td{color:var(--me);font-weight:700}
     <div id="cTroph"></div>
   </section>
 
-  <section id="menu">
-    <div class="pbar" id="pbar"></div>
-    <button class="daily compbtn" id="toComp"></button>
-    <div id="chal" hidden></div>
-    <h2 class="sect">Seus</h2>
-    <div id="venues"></div>
-    <h2 class="sect">Entrenament</h2>
+  <section id="home" hidden>
+    <div class="hero"><div class="logo biglogo">ROL<span>A</span>DA</div><div class="tag">Simulador de tàctica en Optimist</div></div>
+    <div id="meBox"></div>
+    <div class="tiles" id="tiles"></div>
+  </section>
+
+  <section id="train" hidden>
+    <div class="shead"><button class="back" data-go="home" aria-label="Inici">‹</button><h2>Entrenament</h2></div>
     <button class="daily" id="daily"></button>
-    <p class="small" style="max-width:68ch;margin:0">Una flota de 11 a 14 Optimist. Tu decideixes quan virar i el vaixell navega sol. Els nivells són una cenyida; la regata completa té través, popa i porta. El vent canvia de direcció i de força: llegeix l'aigua i la brúixola. Al final veuràs la ruta ideal que permetia el vent d'aquella regata.</p>
+    <p class="small intro">Una cenyida contra una flota d'Optimist, i la regata completa. Amb 3 estrelles puges de lliga.</p>
     <div class="lvls" id="lvls"></div>
-    <div class="settings">
-      <span class="small">Velocitat:</span>
-      <button class="chip" data-sp="4" id="sp4">Lenta</button><button class="chip" data-sp="7" id="sp7">Normal</button><button class="chip" data-sp="12" id="sp12">Ràpida</button>
-      <span class="small" style="margin-left:10px">Ajudes:</span>
-      <button class="chip" id="aids">Segons el nivell</button>
-    </div>
+  </section>
+
+  <section id="seus" hidden>
+    <div class="shead"><button class="back" data-go="home" aria-label="Inici">‹</button><h2>Seus</h2></div>
+    <p class="small intro">Practica amb el vent típic dels llocs on regateges.</p>
+    <div class="vcards" id="vcards"></div>
+  </section>
+
+  <section id="seu" hidden>
+    <div class="shead"><button class="back" data-go="seus" aria-label="Seus">‹</button><h2 id="seuTitle"></h2></div>
+    <div id="seuBanner"></div>
+    <div class="lvls" id="seuDays"></div>
+  </section>
+
+  <section id="reptes" hidden>
+    <div class="shead"><button class="back" data-go="home" aria-label="Inici">‹</button><h2>Reptes</h2></div>
+    <div id="chal"></div>
+  </section>
+
+  <section id="perfil" hidden>
+    <div class="shead"><button class="back" data-go="home" aria-label="Inici">‹</button><h2>Perfil</h2></div>
+    <div class="pbar" id="pbar"></div>
+    <div class="settings"><span class="small">Velocitat del joc:</span><button class="chip" data-sp="4" id="sp4">Lenta</button><button class="chip" data-sp="7" id="sp7">Normal</button><button class="chip" data-sp="12" id="sp12">Ràpida</button></div>
+    <div class="settings"><span class="small">Ajudes a l'entrenament:</span><button class="chip" id="aids">Segons el nivell</button></div>
+    <p class="small" id="famInfo"></p>
+    <div class="row"><button class="btn sec" id="toWho">Canvia de regatista</button></div>
   </section>
 
   <section id="game" hidden>
@@ -317,6 +373,7 @@ table.res tr.me td{color:var(--me);font-weight:700}
     </div>
   </section>
 </div>
+<nav id="tabbar"><button data-go="home"><span>⌂</span>Inici</button><button data-go="board" id="tabBoard"><span>☰</span>Rànquing</button><button data-go="garage"><span>🛠️</span>Garatge</button><button data-go="perfil"><span>☺</span>Perfil</button></nav>
 
 <script>
 (()=>{
@@ -627,7 +684,7 @@ function setGate(g){if(!G||G.phase!=='race'||G.me.done||legK(G.me)!=='run')retur
 function bindTap(el,fn){let last=0;const h=e=>{const now=performance.now();if(now-last<350){if(e.cancelable)e.preventDefault();return}last=now;if(e.cancelable&&e.type!=='click')e.preventDefault();fn()};el.addEventListener('touchstart',h,{passive:false});['pointerdown','mousedown','click'].forEach(ev=>el.addEventListener(ev,h))}
 bindTap($('orsa'),()=>setOff(1));bindTap($('arriba'),()=>setOff(-1));bindTap($('gL'),()=>setGate(0));bindTap($('gR'),()=>setGate(1));
 // ---------- pre-start
-function showPre(){document.body.classList.add('playing','prestart');$('menu').hidden=true;$('debrief').hidden=true;$('game').hidden=false;$('pre').hidden=false;$('raceCtl').hidden=true;$('gateBar').hidden=true;G.uiKey=null;syncZ();$('preLvl').textContent=G.daily?'Repte del dia':G.L.n+(G.L.tier!=null&&!G.L.comp?' · Lliga '+LEAGUES[G.L.tier].name+' · '+G.boats.length+' vaixells':'');$('preTitle').textContent=G.daily?'El mateix vent per a tothom':G.L.t;$('preBrief').textContent=G.L.brief;setStartTack(G.me.tack)}
+function showPre(){SCREENS.forEach(i=>{const el=$(i);if(el)el.hidden=i!=='game'});document.body.classList.remove('nav');document.body.classList.add('playing','prestart');$('pre').hidden=false;$('raceCtl').hidden=true;$('gateBar').hidden=true;G.uiKey=null;syncZ();$('preLvl').textContent=G.daily?'Repte del dia':G.L.n+(G.L.tier!=null&&!G.L.comp?' · Lliga '+LEAGUES[G.L.tier].name+' · '+G.boats.length+' vaixells':'');$('preTitle').textContent=G.daily?'El mateix vent per a tothom':G.L.t;$('preBrief').textContent=G.L.brief;setStartTack(G.me.tack)}
 function updatePre(){const me=G.me;const w=wind(G.W,0,me.x,me.y);const h=w.d+(G.t*0);$('readS').textContent=String(Math.round(norm(w.d-45))).padStart(3,'0')+'°';$('readP').textContent=String(Math.round(norm(w.d+45))).padStart(3,'0')+'°';me.h=w.d+(me.tack==='P'?45:-45)}
 function setStartTack(tk){G.me.tack=tk;$('stS').setAttribute('aria-pressed',tk==='S');$('stP').setAttribute('aria-pressed',tk==='P');placeStart()}
 $('stS').onclick=()=>setStartTack('S');$('stP').onclick=()=>setStartTack('P');
@@ -665,12 +722,12 @@ const vb=$('vira');vb.addEventListener('touchstart',press,{passive:false});vb.ad
 document.addEventListener('keydown',e=>{if($('game').hidden)return;if(e.code==='Space'||e.code==='Enter'){if(G.phase==='race'){e.preventDefault();if(!e.repeat)doTack()}}if(G&&G.phase==='race'&&!e.repeat){if(e.code==='ArrowUp')setOff(1);if(e.code==='ArrowDown')setOff(-1);if(e.code==='ArrowLeft')setGate(0);if(e.code==='ArrowRight')setGate(1)}if(e.key==='p'||e.key==='P')togglePause()});
 function togglePause(){if(!G||G.phase!=='race')return;G.paused=!G.paused;$('pause').textContent=G.paused?'▶':'II'}
 $('pause').onclick=togglePause;let quitT=0;$('quit').onclick=()=>{if(G&&G.L.comp&&G.phase==='race'){if(performance.now()-quitT>3000){quitT=performance.now();warn('Toca ✕ un altre cop per abandonar: comptarà com a retirat');return}
-    G.phase='menu';simRest();const order=[...G.boats].filter(b=>!b.me).sort((a,b)=>pkey(a)-pkey(b));order.push(G.me);compRaceDone(order);showComp();return}showMenu()};
+    G.phase='menu';simRest();const order=[...G.boats].filter(b=>!b.me).sort((a,b)=>pkey(a)-pkey(b));order.push(G.me);compRaceDone(order);showComp();return}backToPlay()};
 // after you retire, the others keep racing to the finish so their result is real
 function simRest(){const me=G.me;me.done=true;me.x=1e5;me.y=-1e5;let ld=-99;
   while(G.t<G.maxT&&G.boats.some(b=>!b.done&&!b.me)){const t=G.t;computeDirty(t);rightOfWay(t);if(t-ld>=1){ld=t;for(const b of G.boats)if(b.ai)decide(b,t)}for(const b of G.boats)stepBoat(b,t,DT);G.t+=DT}
   me.done=false;me.ft=null;me.ret=true}
-$('back1').onclick=()=>G&&G.L.comp?showComp():showMenu();$('back2').onclick=()=>showMenu();
+$('back1').onclick=()=>G&&G.L.comp?showComp():backToPlay();$('back2').onclick=()=>backToPlay();
 $('again').onclick=()=>newGame(G.lvIdx,G.seed,G.daily);$('newr').onclick=()=>G.L.comp?showComp():newGame(G.lvIdx);
 
 // ---------- reference: a good sailor who does not know the future, sailing alone from your start
@@ -778,7 +835,8 @@ function tierLevel(L,t){const a={...L.aids};if(t>=1){a.hint=false;a.streaks=fals
 const allLevels=()=>LEVELS.concat(VLEVELS);
 function totalStars(){return allLevels().reduce((a,L)=>{const t=tierOf(L.id);return a+3*t+starsOf(lkey(L.id,t)).reduce((x,y)=>x+y,0)},0)}
 function prog(){return{stars:totalStars(),wins:pget('wins',0),streak:pget('streak',{n:0,d:''}).n,xp:pget('xp',0)}}
-function showWho(){document.body.classList.remove('playing','prestart');['menu','game','debrief','garage','board'].forEach(i=>$(i).hidden=true);$('who').hidden=false;$('whoMsg').textContent='';
+function showWho(){go('who')}
+function showWhoR(){$('whoMsg').textContent='';
   $('famBox').hidden=!CLOUD_ON;if(CLOUD_ON){$('famState').textContent=FAM?`Codi de família: ${FAM}. Tria qui ets o afegeix un regatista.`:'Escriu el codi de la teva família o crea\'n un. Sense codi, el progrés només es guarda en aquest mòbil.';$('famJoin').hidden=!!FAM}
   renderWhoList()}
 async function renderWhoList(){const box=$('whoList');let list=store.get('players',[]);
@@ -800,22 +858,28 @@ $('famGo').onclick=async()=>{const c=$('famCode').value.trim().toUpperCase();if(
 function syncCloud(res){if(!CLOUD_ON||!FAM||!P||!P.cloud)return;const stars={};LEVELS.forEach(L=>stars[L.id]=starsOf(L.id));
   rpc('rolada_save',{p_family:FAM,p_id:P.id,p_xp:pget('xp',0),p_wins:pget('wins',0),p_races:pget('races',0),p_stars:stars,p_streak:pget('streak',{}),p_skin:pget('skin','opti'),p_coins:coins(),p_items:{own:owned(),eq:Object.fromEntries(CATS.map(c=>[c.key,pget(c.key,c.def)])),comp:pget('compBest',null),troph:pget('trophies',[]).length}}).catch(()=>{});
   if(res)rpc('rolada_result',{p_family:FAM,p_id:P.id,p_kind:res.kind,p_level:res.level,p_day:res.day,p_pos:res.pos,p_fleet:res.fleet,p_time:res.time}).catch(()=>{})}
-let boardTab='all',boardTier=null;
-async function showBoard(){['menu','who','game','debrief','garage','comp'].forEach(i=>$(i).hidden=true);$('board').hidden=false;$('bInfo').textContent=`Codi de família: ${FAM}`;$('bTable').innerHTML='<tr><td>Carregant…</td></tr>';
-  $('bTabs').innerHTML=`<button class="chip" data-t="all" aria-pressed="${boardTab==='all'}">General</button><button class="chip" data-t="comp" aria-pressed="${boardTab==='comp'}">Competició</button>`+allLevels().map(L=>`<button class="chip" data-t="${L.id}" aria-pressed="${boardTab===L.id}">${L.venue?L.n+' · ':''}${L.t}</button>`).join('');
-  $('bTabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{boardTab=b.dataset.t;boardTier=null;showBoard()});$('bLg').innerHTML='';
+let boardTab='all',boardTier=null,boardGroup='train',boardLevel=null;
+function showBoard(){go('board')}
+async function showBoardR(){$('bInfo').textContent=`Codi de família: ${FAM}`;$('bTable').innerHTML='<tr><td>Carregant…</td></tr>';
+  $('bTabs').innerHTML=[['all','General'],['comp','Competició'],['prova','Per prova']].map(([k,n])=>`<button class="chip tabchip" data-t="${k}" aria-pressed="${boardTab===k}">${n}</button>`).join('');
+  $('bTabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{boardTab=b.dataset.t;boardTier=null;showBoardR()});$('bLg').innerHTML='';
   if(boardTab==='comp'){try{const rows=await rpc('rolada_players_list',{p_family:FAM});const cb=r=>r.items&&r.items.comp;rows.sort((a,b)=>compBetter(cb(a)||{season:0,stage:0,pos:99},cb(b)||{season:0,stage:0,pos:99})?-1:1);
       $('bTable').innerHTML=`<tr><th></th><th>Regatista</th><th>Fins on ha arribat</th><th>Trofeus</th></tr>`+rows.map((r,i)=>{const c=cb(r);return`<tr class="${r.id===P.id?'me':''}"><td>${c?i+1:''}</td><td>${esc(r.name)} <span class="small">${esc(r.sail)}</span></td><td>${c?stLabel(c.season,c.stage)+' · '+c.pos+'a':'—'}</td><td>${r.items&&r.items.troph?'🏆 '+r.items.troph:'—'}</td></tr>`}).join('')}
     catch(e){$('bTable').innerHTML='<tr><td>No s\'ha pogut carregar el rànquing.</td></tr>'}return}
-  if(boardTab!=='all'){const bt=boardTier??tierOf(boardTab);$('bLg').innerHTML='<span class="small">Lliga:</span>'+LEAGUES.map((g,i)=>`<button class="chip" data-lg="${i}" aria-pressed="${i===bt}">${g.name}</button>`).join('');
-    $('bLg').querySelectorAll('button').forEach(b=>b.onclick=()=>{boardTier=+b.dataset.lg;showBoard()});
-    try{const rows=await rpc('rolada_level_board',{p_family:FAM,p_level:lkey(boardTab,bt)});rows.sort((a,b)=>(a.best_pos??99)-(b.best_pos??99)||(a.best_time??1e9)-(b.best_time??1e9)||b.wins-a.wins);
+  if(boardTab==='prova'){const pool=boardGroup==='train'?LEVELS:VLEVELS;if(!pool.some(L=>L.id===boardLevel))boardLevel=pool[0].id;const lid=boardLevel;const bt=boardTier??tierOf(lid);
+    $('bLg').innerHTML=`<div class="settings"><button class="chip" data-g="train" aria-pressed="${boardGroup==='train'}">Entrenament</button><button class="chip" data-g="seus" aria-pressed="${boardGroup==='seus'}">Seus</button></div>
+      <div class="settings"><select id="bLevel" aria-label="Prova">${pool.map(L=>`<option value="${L.id}" ${L.id===lid?'selected':''}>${L.venue?L.n+' · ':''}${L.t}</option>`).join('')}</select></div>
+      <div class="settings"><span class="small">Lliga:</span>${LEAGUES.map((g,i)=>`<button class="chip" data-lg="${i}" aria-pressed="${i===bt}">${g.name}</button>`).join('')}</div>`;
+    $('bLg').querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>{boardGroup=b.dataset.g;boardLevel=null;boardTier=null;showBoardR()});
+    $('bLevel').onchange=e=>{boardLevel=e.target.value;boardTier=null;showBoardR()};
+    $('bLg').querySelectorAll('[data-lg]').forEach(b=>b.onclick=()=>{boardTier=+b.dataset.lg;showBoardR()});
+    try{const rows=await rpc('rolada_level_board',{p_family:FAM,p_level:lkey(lid,bt)});rows.sort((a,b)=>(a.best_pos??99)-(b.best_pos??99)||(a.best_time??1e9)-(b.best_time??1e9)||b.wins-a.wins);
       $('bTable').innerHTML=`<tr><th></th><th>Regatista</th><th>Millor</th><th>Temps</th><th>Regates</th><th>Vict.</th></tr>`+rows.map((r,i)=>`<tr class="${r.id===P.id?'me':''}"><td>${r.best_pos?i+1:''}</td><td>${esc(r.name)} <span class="small">${esc(r.sail)}</span></td><td>${r.best_pos?r.best_pos+'a de '+r.best_fleet:'—'}</td><td>${r.best_time?fmt(r.best_time):'—'}</td><td>${r.races}</td><td>${r.wins}</td></tr>`).join('');}
     catch(e){$('bTable').innerHTML='<tr><td>No s\'ha pogut carregar el rànquing.</td></tr>'}return}
   try{const rows=await rpc('rolada_board',{p_family:FAM,p_day:today()});rows.sort((a,b)=>b.xp-a.xp);
     $('bTable').innerHTML=`<tr><th></th><th>Regatista</th><th>Rang</th><th>XP</th><th>★</th><th>Vict.</th><th>Repte d'avui</th></tr>`+rows.map((r,i)=>{const st=Object.values(r.stars||{}).flat().reduce((a,b)=>a+(b?1:0),0);return`<tr class="${r.id===P.id?'me':''}"><td>${i+1}</td><td>${esc(r.name)} <span class="small">${esc(r.sail)}</span></td><td>${rankOf(r.xp).name}</td><td>${r.xp}</td><td>${st}</td><td>${r.wins}</td><td>${r.daily_pos?r.daily_pos+'a · '+fmt(r.daily_time):'—'}</td></tr>`}).join('')}
   catch(e){$('bTable').innerHTML='<tr><td>No s\'ha pogut carregar el rànquing.</td></tr>'}}
-$('bBack').onclick=()=>showMenu();
+$('bBack').onclick=()=>go('home');
 const today=()=>{const d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate()};
 function dayBefore(n){const d=new Date(Math.floor(n/10000),Math.floor(n/100)%100-1,n%100);d.setDate(d.getDate()-1);return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate()}
 let audio=null;function beep(notes,type='triangle'){try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();let t=audio.currentTime;for(const [f,d] of notes){const o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(.12,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g).connect(audio.destination);o.start(t);o.stop(t+d);t+=d*0.8}}catch(e){}}
@@ -839,11 +903,6 @@ function renderReward(r){const lab=['Podi','Victòria',`A menys de ${G.L.gap||20
    ${r.tierUp?`<div class="unlock">Puges a la lliga ${r.tierUp} de ${G.L.t}: flota més gran, rivals millors i menys ajudes.</div>`:''}${r.rankUp?`<div class="unlock">Has pujat de rang: ara ets ${r.rk.name}!</div>`:''}${r.unlocked.map(k=>`<div class="unlock">Nou al garatge: ${k.name}!</div>`).join('')}`;
   if(r.nw.some(Boolean)||r.unlocked.length)beep([[523,.15],[659,.15],[784,.15],[1047,.35]]);if(r.got[1])playCeleb(equipped('celeb'))}
 function lilaCount(){if(!G.full)return 0;const lt=(b,i)=>b.splits[i]==null?null:b.splits[i]-(i?b.splits[i-1]:0);let n=0;G.legs.forEach((L,i)=>{const m=lt(G.me,i);if(m!=null&&G.boats.every(b=>b.me||lt(b,i)==null||lt(b,i)>=m))n++});return n}
-function renderPbar(){const p=prog(),rk=rankOf(p.xp);$('pbar').innerHTML=`<div><div class="nm">${esc(P.name)}</div><div class="sail">${esc(P.sail)}</div></div><div class="xp"><span class="rk">${rk.name} · ${p.xp} XP</span><div class="bar"><i style="width:${Math.round(rk.pct*100)}%"></i></div></div><div class="stars">★ ${p.stars} · ${p.wins} ${p.wins===1?'victòria':'victòries'}</div><span class="coinbal" style="margin:0">🪙 ${coins()}</span><button class="btn sec" id="toGarage">Garatge</button>${CLOUD_ON&&FAM&&P.cloud?'<button class="btn sec" id="toBoard">Rànquing</button>':''}<button class="chip" id="toWho">Canvia</button>`;
-  $('toGarage').onclick=showGarage;if($('toBoard'))$('toBoard').onclick=showBoard;$('toWho').onclick=showWho;
-  const st=pget('streak',{n:0,d:0});const db=pget('best:daily'+today(),null);const done=st.d===today();
-  $('daily').innerHTML=`<span><b>Repte del dia</b><br><span class="small">El mateix vent per a tothom avui. ${db?'El teu millor: '+db.pos+'a, '+fmt(db.t)+'.':'Encara no l\'has fet.'}</span></span><span class="stars">${st.n?'🔥 '+st.n+(st.n===1?' dia':' dies')+(done?'':' · no la perdis'):'Comença una ratxa'}</span>`;
-  $('daily').onclick=()=>newGame(5,today(),true)}
 
 // ---------- shop: coins, items, tiers
 const TIERS=[{id:'n',name:'Normal',price:100,col:'#b9c9cf'},{id:'r',name:'Rar',price:300,col:'#4aa8ff'},{id:'m',name:'Mític',price:700,col:'#c58bff'},{id:'l',name:'Llegendari',price:1500,col:'#ffb547'},{id:'u',name:'Ultrallegendari',price:3000,col:'#ff4f9a'}];
@@ -982,9 +1041,10 @@ function fireworks(n,cols){const c=document.createElement('canvas');c.className=
   (function f(){g.clearRect(0,0,W,H);for(const p of ps){p.x+=p.vx;p.y+=p.vy;p.vy+=.05;p.vx*=.985;p.l-=.012;if(p.l>0){g.globalAlpha=p.l;g.fillStyle=p.c;g.beginPath();g.arc(p.x,p.y,2.2,0,7);g.fill()}}if(performance.now()-t0<n*450+2200)requestAnimationFrame(f);else c.remove()})()}
 // ---------- garage = shop
 let shopCat='boat',buyPending=null;
-function showGarage(){['menu','who','game','debrief','board','comp'].forEach(i=>$(i).hidden=true);$('garage').hidden=false;owned();
+function showGarage(){go('garage')}
+function showGarageR(){owned();
   $('gCoins').textContent=coins();$('gTabs').innerHTML=CATS.map(c=>`<button class="chip" data-c="${c.id}" aria-pressed="${c.id===shopCat}">${c.name}</button>`).join('')+`<button class="chip" data-c="troph" aria-pressed="${shopCat==='troph'}">Trofeus</button>`;
-  $('gTabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{shopCat=b.dataset.c;buyPending=null;showGarage()});
+  $('gTabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{shopCat=b.dataset.c;buyPending=null;showGarageR()});
   if(shopCat==='troph'){const tr=pget('trophies',[]);cancelAnimationFrame(shopRAF);$('skins').innerHTML=tr.length?tr.slice().reverse().map((t,i)=>`<div class="skin" style="--tc:${['#cd7f32','#c0c0c0','#ffd23f','#7ff0ff'][t.stage]}"><span class="tier">Temporada ${t.season}</span><canvas width="220" height="220" data-st="${t.stage}" data-p="${t.pos}"></canvas><b>${STAGES[t.stage].name}</b><span class="small">${t.pos}a de ${t.n}</span></div>`).join(''):'<p class="small">Encara no tens trofeus. Classifica\'t en un campionat de la Competició.</p>';
     $('skins').querySelectorAll('canvas').forEach(c=>drawTrophy(c.getContext('2d'),+c.dataset.st,+c.dataset.p));return}
   const cur=equipped(shopCat);const list=ITEMS.filter(i=>i.cat===shopCat).sort((a,b)=>(a.free?-1:0)-(b.free?-1:0)||TIERS.findIndex(t=>t.id===a.t)-TIERS.findIndex(t=>t.id===b.t)||(a.special?1:0)-(b.special?1:0));
@@ -1004,12 +1064,12 @@ function previewItem(c,it,tm){const g=c.getContext('2d');g.setTransform(1,0,0,1,
   if(it.cat==='celeb'){drawCelebIcon(g,it.id,4,tm);return}
   if(it.cat==='trail'){const pts=[];for(let i=0;i<22;i++){const u=i/21;pts.push([-90+u*150,60-u*120+Math.sin(u*5+tm)*14])}const V={X:x=>x,Y:y=>-y};g.scale(1,1);drawTrail(g,V,pts.map(p=>[p[0],-p[1]]),it.id==='none'?'none':it.id,2.4,tm);g.translate(62,-62);g.rotate(0.9);g.scale(4,4);drawSkin(g,'opti',css('--me'),'S',tm)}}
 function shopTap(it){const k=ikey(it);const C=CATS.find(c=>c.id===it.cat);
-  if(has(it)){pset(C.key,it.id);buyPending=null;syncCloud();showGarage();return}
+  if(has(it)){pset(C.key,it.id);buyPending=null;syncCloud();showGarageR();return}
   if(it.special)return;
-  if(buyPending!==k){buyPending=k;showGarage();return}
-  const pr=priceOf(it);if(coins()<pr){showGarage();return}
-  pset('coins',coins()-pr);pset('own',[...owned(),k]);pset(C.key,it.id);buyPending=null;beep([[784,.1],[1047,.25]]);syncCloud();showGarage()}
-$('gBack').onclick=()=>{cancelAnimationFrame(shopRAF);showMenu()};
+  if(buyPending!==k){buyPending=k;showGarageR();return}
+  const pr=priceOf(it);if(coins()<pr){showGarageR();return}
+  pset('coins',coins()-pr);pset('own',[...owned(),k]);pset(C.key,it.id);buyPending=null;beep([[784,.1],[1047,.25]]);syncCloud();showGarageR()}
+$('gBack').onclick=()=>{cancelAnimationFrame(shopRAF);go('home')};
 // ---------- competition: seasons of championships with qualification
 const EURN=['ESP','ITA','FRA','POL','GBR','NED','GER','DEN','SWE','TUR','GRE','CRO','POR','NOR','HUN','AUT'];
 const STAGES=[
@@ -1057,7 +1117,8 @@ function compMsg(l){const S=STAGES[l.stage];
   if(l.stage===3)return`Has acabat ${l.pos}a de ${l.n} al Mundial.${l.pos===1?' Has guanyat el Mundial!':''} Temporada ${l.season} acabada: comença la temporada ${l.season+1}, amb rivals més forts.${l.bonus?` +${l.bonus} 🪙`:''}`;
   if(l.qual)return`Has acabat ${l.pos}a de ${l.n} ${S.al}. T'has classificat ${STAGES[l.stage+1].pal}! +${l.bonus} 🪙`;
   return`Has acabat ${l.pos}a de ${l.n} ${S.al}. Calia quedar entre els ${S.q} primers. Torna-ho a provar amb vents nous.`}
-function showComp(){['menu','who','game','debrief','board','garage'].forEach(i=>$(i).hidden=true);$('comp').hidden=false;document.body.classList.remove('playing','prestart');if(G)G.phase='menu';
+function showComp(){go('comp')}
+function showCompR(){
   const c=compState(),S=STAGES[c.stage],ch=c.champ;
   $('cTitle').textContent=`Competició · Temporada ${c.season}`;
   $('cPath').innerHTML=STAGES.map((s,i)=>`<span class="chip ${i<c.stage?'done':i===c.stage?'now':'lock'}">${i<c.stage?'✓ ':i===c.stage?'● ':''}${s.short}</span>`).join('<span class="arr">›</span>');
@@ -1075,7 +1136,7 @@ function showComp(){['menu','who','game','debrief','board','garage'].forEach(i=>
   $('cGo').textContent=k?`Regata ${k+1} de ${S.races}`:`Comença ${S.el}`;
   const tr=pget('trophies',[]);$('cTroph').innerHTML=tr.length?`<h3>Vitrina</h3><p class="small">${tr.slice(-12).reverse().map(t=>`🏆 ${stLabel(t.season,t.stage)} · ${t.pos}a`).join(' &nbsp; ')}</p>`:''}
 function compGo(){const c=compState();c.last=null;pset('comp',c);newGame(compLevel(c),c.champ.seed*31+c.champ.res.length*7919+1)}
-$('cGo').onclick=compGo;$('cBack').onclick=()=>showMenu();
+$('cGo').onclick=compGo;$('cBack').onclick=()=>go('home');
 // ---------- challenges between family members: same wind, with the other's boat as a ghost
 const CHAL_ON=false; // posar a true quan s'hagi executat l'esquema v4 a Supabase
 let CH={ok:null,list:[],t:0};
@@ -1086,11 +1147,11 @@ async function loadChallenges(force){if(!cloudReady()){CH.ok=false;return}if(!fo
   try{CH.list=await rpc('rolada_challenges',{p_family:FAM});CH.ok=true}catch(e){CH.ok=false;CH.list=[]}CH.t=performance.now()}
 function renderChallenges(){const box=$('chal');if(!CH.ok){box.hidden=true;return}
   const mine=CH.list.filter(c=>c.player_id!==P.id).slice(0,6);const sent=CH.list.filter(c=>c.player_id===P.id).slice(0,3);
-  if(!mine.length&&!sent.length){box.hidden=false;box.innerHTML='<h2 class="sect">Reptes</h2><p class="small">Encara no hi ha reptes. En acabar una regata, toca «Envia-la com a repte».</p>';return}
+  if(!mine.length&&!sent.length){box.hidden=false;box.innerHTML='<p class="small">Encara no hi ha reptes. En acabar una regata, toca «Envia-la com a repte».</p>';return}
   const row=(c,own)=>{const L=levelFromKey(c.level);if(!L)return'';const tries=(c.tries||[]).filter(x=>x.player_id!==c.player_id);const me=tries.find(x=>x.player_id===P.id);
     const others=tries.filter(x=>x.player_id!==P.id).map(x=>`${esc(x.name)} ${fmt(x.best)}`).join(', ');
     return`<button class="lvl chal" data-c="${c.id}"><span class="n">${own?'El teu repte':'Repte de '+esc(c.name)}</span><span class="t">${levelName(L)}</span><span class="d">${own?'El teu temps':'Temps a batre'}: <b>${fmt(c.time_s)}</b>${me?` · el teu millor: ${fmt(me.best)} ${me.best<c.time_s?'✓':''}`:''}${own&&others?` · ${others}`:''}</span></button>`};
-  box.hidden=false;box.innerHTML='<h2 class="sect">Reptes</h2><div class="chals">'+mine.map(c=>row(c,false)).join('')+sent.map(c=>row(c,true)).join('')+'</div>';
+  box.hidden=false;box.innerHTML='<div class="chals">'+mine.map(c=>row(c,false)).join('')+sent.map(c=>row(c,true)).join('')+'</div>';
   box.querySelectorAll('.chal').forEach(el=>el.onclick=()=>playChallenge(+el.dataset.c))}
 async function playChallenge(cid){const c=CH.list.find(x=>x.id===cid);if(!c)return;const L=levelFromKey(c.level);if(!L)return;
   let g;try{const r=await rpc('rolada_challenge_get',{p_family:FAM,p_cid:cid});g=r&&r[0]}catch(e){g=null}if(!g){alertMsg('No s\'ha pogut carregar el repte.');return}
@@ -1120,22 +1181,70 @@ function showChallengeDebrief(myT){const box=$('dChal');box.innerHTML='';box.hid
   if(!h)return;box.innerHTML=h;box.hidden=false;if($('sendCh'))$('sendCh').onclick=()=>sendChallenge(myT);
   if(G.ghost&&G.me.done)rpc('rolada_challenge_try',{p_family:FAM,p_cid:G.ghost.cid,p_id:P.id,p_time:myT}).then(()=>{CH.t=0}).catch(()=>{})}
 // ---------- menu
-function showMenu(){if(!P){showWho();return}$('who').hidden=true;$('board').hidden=true;$('garage').hidden=true;$('comp').hidden=true;
-  {const c=compState(),S=STAGES[c.stage];const cb=pget('compBest',null);$('toComp').innerHTML=`<span><b>🏆 Competició</b><br><span class="small">Temporada ${c.season} · ${S.name} · ${c.champ.res.length?'regata '+(c.champ.res.length+1)+' de '+S.races:'per començar'}${cb?' · Millor: '+stLabel(cb.season,cb.stage)+' '+cb.pos+'a':''}</span></span><span class="stars">›</span>`;$('toComp').onclick=showComp}renderPbar();document.body.classList.remove('playing','prestart');if(G)G.phase='menu';$('game').hidden=true;$('debrief').hidden=true;$('menu').hidden=false;
-  $('lvls').innerHTML=LEVELS.map((L,i)=>{const b=pget('best:'+L.id,null);const t=tierOf(L.id);const st=starsOf(lkey(L.id,t));const lg=LEAGUES[t];return`<button class="lvl" data-i="${i}"><span class="n">${L.n.toUpperCase()} · <b style="color:${lg.col}">${lg.name.toUpperCase()}</b></span><span class="t">${L.t}</span><span class="d">${L.d}</span><span class="stars" aria-label="${st.filter(Boolean).length} de 3 estrelles">${[...st].sort((x,y)=>(y?1:0)-(x?1:0)).map(x=>`<span class="st ${x?'':'off'}">★</span>`).join('')}</span><span class="best">${b?'Millor: '+b.pos+'a de '+b.of+' · '+fmt(b.t):'&nbsp;'}</span></button>`}).join('');
-  $('lvls').querySelectorAll('.lvl').forEach(el=>el.onclick=()=>newGame(+el.dataset.i));
-  $('venues').innerHTML=VENUES.map(v=>`<div class="venue"><div class="vh"><b>${v.name}</b> <span class="small">${v.sub}</span></div><div class="vdays">${v.days.map(d=>{const L=VLEVELS.find(x=>x.id===d.id);const t=tierOf(L.id);const st=starsOf(lkey(L.id,t));const lg=LEAGUES[t];const b=pget('best:'+L.id,null);
-    return`<button class="lvl vday" data-v="${L.id}"><span class="n"><b style="color:${lg.col}">${lg.name.toUpperCase()}</b></span><span class="t">${L.t}</span><span class="d">${L.d}</span><span class="stars">${[...st].sort((x,y)=>(y?1:0)-(x?1:0)).map(x=>`<span class="st ${x?'':'off'}">★</span>`).join('')}</span><span class="best">${b?'Millor: '+b.pos+'a de '+b.of+' · '+fmt(b.t):'&nbsp;'}</span></button>`}).join('')}</div></div>`).join('');
-  renderChallenges();loadChallenges().then(()=>{if(!$('menu').hidden)renderChallenges()});
-  $('venues').querySelectorAll('.vday').forEach(el=>el.onclick=()=>newGame(VLEVELS.find(x=>x.id===el.dataset.v)));
+// ---------- navigation: one screen at a time, tab bar at the bottom
+const SCREENS=['who','home','train','seus','seu','reptes','perfil','comp','garage','board','game','debrief'];
+let curScreen='home',lastPlay='home',curSeu=null;
+const PLAYSCR=['train','seu','comp','reptes'];
+function go(s,arg){if(!P&&s!=='who'){s='who'}
+  if(G&&G.phase!=='menu'&&!['game','debrief'].includes(s))G.phase='menu';
+  document.body.classList.remove('playing','prestart');SCREENS.forEach(i=>{const el=$(i);if(el)el.hidden=i!==s});
+  curScreen=s;if(PLAYSCR.includes(s))lastPlay=s;if(s==='seu'&&arg)curSeu=arg;
+  document.body.classList.toggle('nav',s!=='who');window.scrollTo(0,0);
+  $('tabbar').querySelectorAll('button').forEach(b=>b.setAttribute('aria-current',b.dataset.go===s||(b.dataset.go==='home'&&['train','seus','seu','reptes','comp'].includes(s))?'page':'false'));
+  $('tabBoard').hidden=!(CLOUD_ON&&FAM&&P&&P.cloud);
+  ({home:renderHome,train:renderTrain,seus:renderSeus,seu:renderSeu,reptes:renderReptes,perfil:renderPerfil,comp:showCompR,garage:showGarageR,board:showBoardR,who:showWhoR})[s]?.()}
+function showMenu(){go('home')}
+const backToPlay=()=>go(lastPlay||'home');
+document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b){e.preventDefault();go(b.dataset.go)}});
+// --- home
+function renderHome(){const p=prog(),rk=rankOf(p.xp);const tr=pget('trophies',[]).length;
+  $('meBox').innerHTML=`<button class="mecard" data-go="perfil"><span class="nm">${esc(P.name)} <span class="small">${esc(P.sail)}</span></span><span class="rk">${rk.name} · ${p.xp} XP</span><span class="bar"><i style="width:${Math.round(rk.pct*100)}%"></i></span><span class="mestats">★ ${p.stars} · 🪙 ${coins()}${tr?' · 🏆 '+tr:''}</span></button>`;
+  const c=compState(),S=STAGES[c.stage];const st=pget('streak',{n:0,d:0});
+  const nCh=CH.ok?CH.list.filter(x=>x.player_id!==P.id&&!(x.tries||[]).some(t=>t.player_id===P.id)).length:0;
+  const tiles=[
+    {go:'comp',ic:'🏆',t:'Competició',d:`Temporada ${c.season} · ${S.short} · ${c.champ.res.length?'regata '+(c.champ.res.length+1)+' de '+S.races:'per començar'}`,cls:'t-comp'},
+    {go:'seus',ic:'📍',t:'Seus',d:'Garda, Saint-Raphaël, Palma i Barcelona',cls:'t-seus'},
+    {go:'train',ic:'🎯',t:'Entrenament',d:`Nivells i repte del dia${st.n?' · 🔥 '+st.n:''}`,cls:'t-train'},
+    {go:'reptes',ic:'👻',t:'Reptes',d:CHAL_ON?(nCh?`${nCh} per jugar`:'Entre germans, amb el mateix vent'):'Aviat',cls:'t-rep'},
+    {go:'garage',ic:'🛠️',t:'Garatge',d:`Botiga i trofeus · 🪙 ${coins()}`,cls:'t-gar'}];
+  $('tiles').innerHTML=tiles.map(x=>`<button class="tile ${x.cls}" data-go="${x.go}"><span class="ic">${x.ic}</span><span class="tt">${x.t}</span><span class="td">${x.d}</span></button>`).join('');
+  if(CHAL_ON&&CH.ok==null)loadChallenges().then(()=>{if(curScreen==='home')renderHome()})}
+// --- training
+function lvlCard(L,attr){const t=tierOf(L.id);const st=starsOf(lkey(L.id,t));const lg=LEAGUES[t];const b=pget('best:'+L.id,null);
+  return`<button class="lvl" ${attr}><span class="n">${L.venue?'':L.n.toUpperCase()+' · '}<b style="color:${lg.col}">${lg.name.toUpperCase()}</b></span><span class="t">${L.t}</span><span class="d">${L.d}</span><span class="stars" aria-label="${st.filter(Boolean).length} de 3 estrelles">${[...st].sort((x,y)=>(y?1:0)-(x?1:0)).map(x=>`<span class="st ${x?'':'off'}">★</span>`).join('')}</span><span class="best">${b?'Millor: '+b.pos+'a de '+b.of+' · '+fmt(b.t):'&nbsp;'}</span></button>`}
+function renderTrain(){const st=pget('streak',{n:0,d:0});const db=pget('best:daily'+today(),null);const done=st.d===today();
+  $('daily').innerHTML=`<span><b>Repte del dia</b><br><span class="small">El mateix vent per a tothom avui. ${db?'El teu millor: '+db.pos+'a, '+fmt(db.t)+'.':'Encara no l\'has fet.'}</span></span><span class="stars">${st.n?'🔥 '+st.n+(st.n===1?' dia':' dies')+(done?'':' · no la perdis'):'Comença una ratxa'}</span>`;
+  $('daily').onclick=()=>newGame(5,today(),true);
+  $('lvls').innerHTML=LEVELS.map((L,i)=>lvlCard(L,`data-i="${i}"`)).join('');$('lvls').querySelectorAll('.lvl').forEach(el=>el.onclick=()=>newGame(+el.dataset.i))}
+// --- venues
+const VART={garda:{g:'linear-gradient(160deg,#1f5a4c,#2a7f9e)',svg:'<path d="M0 44 L22 14 L40 32 L66 4 L92 36 L118 12 L160 40 V60 H0Z" fill="#163a32"/><rect y="46" width="160" height="14" fill="#2c84a6"/>'},
+  sr:{g:'linear-gradient(160deg,#8a3424,#d0703c)',svg:'<path d="M0 46 L18 28 L30 36 L48 18 L62 30 L80 22 L96 38 L120 26 L160 44 V60 H0Z" fill="#6e2416"/><rect y="48" width="160" height="12" fill="#2a6f9e"/>'},
+  palma:{g:'linear-gradient(160deg,#b9862c,#e6b85c)',svg:'<circle cx="124" cy="18" r="10" fill="#fff3c4"/><path d="M0 44 Q40 30 80 40 T160 36 V60 H0Z" fill="#8a6420"/><rect y="48" width="160" height="12" fill="#2c84a6"/>'},
+  bcn:{g:'linear-gradient(160deg,#1d3f7a,#3b74c4)',svg:'<path d="M0 46 V36 H10 V28 H18 V38 H28 V22 H36 V40 H48 V30 H58 V42 H72 V18 H76 V12 H80 V18 H84 V40 H98 V30 H110 V44 H126 V34 H136 V44 H160 V60 H0Z" fill="#14294d"/><rect y="48" width="160" height="12" fill="#2c84a6"/>'}};
+function venueStars(v){return v.days.reduce((a,d)=>{const t=tierOf(d.id);return a+3*t+starsOf(lkey(d.id,t)).reduce((x,y)=>x+y,0)},0)}
+function renderSeus(){$('vcards').innerHTML=VENUES.map(v=>`<button class="vcard" data-v="${v.id}" style="background:${VART[v.id].g}"><svg viewBox="0 0 160 60" preserveAspectRatio="none" aria-hidden="true">${VART[v.id].svg}</svg><span class="vt">${v.name}</span><span class="vs">${v.sub}</span><span class="vd">${v.days.map(d=>d.t).join(' · ')}</span><span class="vst">★ ${venueStars(v)}</span></button>`).join('');
+  $('vcards').querySelectorAll('.vcard').forEach(el=>el.onclick=()=>go('seu',el.dataset.v))}
+function renderSeu(){const v=VENUES.find(x=>x.id===curSeu)||VENUES[0];$('seuTitle').textContent=v.name;
+  $('seuBanner').innerHTML=`<div class="vbanner" style="background:${VART[v.id].g}"><svg viewBox="0 0 160 60" preserveAspectRatio="none" aria-hidden="true">${VART[v.id].svg}</svg><span class="vs">${v.sub}</span></div>`;
+  $('seuDays').innerHTML=v.days.map(d=>lvlCard(VLEVELS.find(x=>x.id===d.id),`data-v="${d.id}"`)).join('');
+  $('seuDays').querySelectorAll('.lvl').forEach(el=>el.onclick=()=>newGame(VLEVELS.find(x=>x.id===el.dataset.v)))}
+// --- challenges
+function renderReptes(){if(!CHAL_ON){$('chal').innerHTML='<p class="small">Els reptes entre germans s\'activaran aviat: navegareu el mateix vent i veureu el vaixell de l\'altre com un fantasma.</p>';return}
+  if(!(CLOUD_ON&&FAM&&P.cloud)){$('chal').innerHTML='<p class="small">Per fer reptes cal un codi de família (a Perfil).</p>';return}
+  renderChallenges();loadChallenges(true).then(()=>{if(curScreen==='reptes')renderChallenges()})}
+// --- profile
+function renderPerfil(){const p=prog(),rk=rankOf(p.xp);
+  $('pbar').innerHTML=`<div><div class="nm">${esc(P.name)}</div><div class="sail">${esc(P.sail)}</div></div><div class="xp"><span class="rk">${rk.name} · ${p.xp} XP${rk.next?` · falten ${rk.left} per a ${rk.next}`:''}</span><div class="bar"><i style="width:${Math.round(rk.pct*100)}%"></i></div></div><div class="stars">★ ${p.stars} · ${p.wins} ${p.wins===1?'victòria':'victòries'}</div><span class="coinbal" style="margin:0">🪙 ${coins()}</span>`;
+  $('famInfo').textContent=CLOUD_ON?(FAM?`Codi de família: ${FAM}`:'Sense codi de família: el progrés només es guarda en aquest mòbil.'):'';
   [4,7,12].forEach(s=>$('sp'+s).setAttribute('aria-pressed',ui.speed===s));$('aids').setAttribute('aria-pressed',ui.aids);$('aids').textContent=ui.aids?'Totes activades':'Segons el nivell'}
-[4,7,12].forEach(s=>$('sp'+s).onclick=()=>{ui.speed=s;store.set('speed',s);showMenu()});
-$('aids').onclick=()=>{ui.aids=!ui.aids;store.set('aids',ui.aids);showMenu()};
-showMenu();requestAnimationFrame(frame);
-window.__rolada={get G(){return G},newGame,simStep,startRace,doTack,finish,ideal,idealFull,sensRef,compState,compLevel,STAGES,COMPTUNE:()=>COMPTUNE,setTune:t=>Object.assign(COMPTUNE,t),showComp,setOff,setGate,ui,legK,effKind,ddFor,tgtOf,wind};
+[4,7,12].forEach(s=>$('sp'+s).onclick=()=>{ui.speed=s;store.set('speed',s);renderPerfil()});
+$('aids').onclick=()=>{ui.aids=!ui.aids;store.set('aids',ui.aids);renderPerfil()};
+$('toWho').onclick=()=>go('who');
+go(P?'home':'who');requestAnimationFrame(frame);
+window.__rolada={get G(){return G},go,newGame,simStep,startRace,doTack,finish,ideal,idealFull,sensRef,compState,compLevel,STAGES,COMPTUNE:()=>COMPTUNE,setTune:t=>Object.assign(COMPTUNE,t),showComp,setOff,setGate,ui,legK,effKind,ddFor,tgtOf,wind};
 })();
 </script>
 
-<script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=51b5a43a').catch(()=>{}))}</script>
+<script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=ca63c059').catch(()=>{}))}</script>
 </body>
 </html>
