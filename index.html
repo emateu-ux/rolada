@@ -1120,7 +1120,7 @@ function compMsg(l){const S=STAGES[l.stage];
 function showComp(){go('comp')}
 function showCompR(){
   const c=compState(),S=STAGES[c.stage],ch=c.champ;
-  $('cTitle').textContent=`Competició · Temporada ${c.season}`;
+  $('cTitle').textContent=`Temporada ${c.season}`;
   $('cPath').innerHTML=STAGES.map((s,i)=>`<span class="chip ${i<c.stage?'done':i===c.stage?'now':'lock'}">${i<c.stage?'✓ ':i===c.stage?'● ':''}${s.short}</span>`).join('<span class="arr">›</span>');
   const st=standings(c);const me=st.findIndex(r=>r.me)+1;const k=ch.res.length;
   let info=c.last?`<p class="lastmsg ${c.last.qual?'good':''}">${compMsg(c.last)}</p>`:'';
@@ -1245,6 +1245,6 @@ window.__rolada={get G(){return G},go,newGame,simStep,startRace,doTack,finish,id
 })();
 </script>
 
-<script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=ca63c059').catch(()=>{}))}</script>
+<script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=48e7fd3f').catch(()=>{}))}</script>
 </body>
 </html>
