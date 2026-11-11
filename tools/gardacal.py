@@ -16,7 +16,7 @@ JS="""([vid,N])=>{const R=window.__rolada;const out=[];
 with sync_playwright() as p:
   b=p.chromium.launch();pg=b.new_page();errs=[];pg.on('pageerror',lambda e:errs.append(str(e)))
   pg.goto('http://127.0.0.2:8765/');pg.evaluate("()=>{localStorage.clear();localStorage.setItem('rolada:player',JSON.stringify({id:'x',name:'A',sail:'',cloud:false}))}");pg.reload();pg.wait_for_timeout(400)
-  pg.evaluate("([v,c])=>{const l=window.__rolada.VLEVELS.find(x=>x.id===v);const {loc,...r}=c;if(loc!==undefined)l.loc=loc;for(const k in r){if(['osc','osc2','spd','skew','gusts','trend','trendSign','build','grad','bend'].includes(k))l.wind[k]=r[k];else if(l.wind.cliff)l.wind.cliff[k]=r[k]}}",[vid,over])
+  pg.evaluate("([v,c])=>{const l=window.__rolada.VLEVELS.find(x=>x.id===v);const {loc,...r}=c;if(loc!==undefined)l.loc=loc;for(const k in r){if(['osc','osc2','spd','skew','gusts','trend','trendSign','build','grad','bend','chop','lee'].includes(k))l.wind[k]=r[k];else if(l.wind.cliff)l.wind.cliff[k]=r[k]}}",[vid,over])
   res=pg.evaluate(JS,[vid,N]);pc=lambda s:round(s.count('R')/max(1,len(s))*100)
   fl=''.join(r['fleet'] for r in res);t3=''.join(r['top3'] for r in res);m3=''.join(r['m1'][:3] for r in res)
   bestL=[r['m1'].find('L')+1 or 99 for r in res];bestR=[r['m1'].find('R')+1 or 99 for r in res]

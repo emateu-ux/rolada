@@ -42,12 +42,20 @@ Recorregut: sortida → cenyida → **través** → **popa** → **porta de sota
 - Popa calibrada amb 1.300 popes reals (MetaSail, Cap d'Agde 2026): TWA mediana 164° i, sobretot, una sola amura.
 - Menú nou: pantalla d'inici, apartats separats, barra d'onglets i rànquing amb tres pestanyes.
 
-## v4.1 · Garda ben fet · Publicat (ara)
+## v4.1 · Garda ben fet · Publicat
 - Ora: el camp és sota els penya-segats, a la dreta. Més vent i gir a prop de la pedra, i la majoria de la flota hi va. Guanya la dreta gairebé sempre.
 - Pelèr: guanya l'esquerra, amb més joc de rolades.
 - Palma (embat): una mica millor l'esquerra. Barcelona (garbí): una mica més de vent a prop de terra, a la dreta.
 - A totes les seus el camp queda muntat al vent.
-- Per revisar amb la Mia: cap on gira el vent a prop de la pedra, quanta flota va a la dreta, i Saint-Raphaël.
+- Per revisar amb la Mia: cap on gira el vent a prop de la pedra i quanta flota va a la dreta.
+
+## v4.2 · Saint-Raphaël per a la CIP · Publicat (ara)
+- Quatre dies: tèrmic de tarda, tèrmic fluix, mistral i vent d'est.
+- Tèrmic de tarda: entra després de la calma del migdia i va pujant; sovint paga l'esquerra, a prop de la costa.
+- Tèrmic fluix: no s'estableix, clapes i rolades grans.
+- Mistral: de terra, amb menys vent i més irregular a prop de la platja.
+- Vent d'est: el més freqüent, amb onada.
+- Tret de cròniques de regates de Pasqua a la mateixa badia. Cal contrastar-ho amb algú que hi hagi regatejat.
 
 ## v5 · Sortida real
 - Compte enrere de 3 minuts accelerat; el vaixell es pot moure abans del senyal (accelerar, frenar, virar).

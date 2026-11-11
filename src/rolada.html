@@ -402,7 +402,7 @@ const LEVELS=[
 
 // ---------- venues: the typical winds of the places where they race (to be reviewed with the sailors)
 // loc = local knowledge: favoured side and share of the fleet that goes there first. cliff = more wind and a wind bend near one side (also used for a shore).
-// Sources: Garda (Ora: right under the cliffs; Pelèr: left, more shift play), Palma sea breeze (left: pressure and left shift), Barcelona garbí (a bit more pressure inshore, right). Saint-Raphaël not verified.
+// Sources: Garda (Ora: right under the cliffs; Pelèr: left, more shift play), Palma sea breeze (left: pressure and left shift), Barcelona garbí (a bit more pressure inshore, right). Saint-Raphaël (CIP in April): Easter regatta reports from the same bay (south thermal after a midday calm, better inshore late in the day, locals go left along the coast; on cool days it does not settle), east wind with swell, offshore mistral lighter near the beach (lee = knots lost towards the windward mark). Which coast is 'left' is inferred.
 // side: +1 = right side of the course looking upwind, -1 = left side
 const VAIDS={streaks:false,hint:false,lay:true,shadow:true};
 const VENUES=[
@@ -411,9 +411,10 @@ const VENUES=[
   {id:'g_oraIn',t:"L'Ora que entra",d:'Entra pel mig del llac i després arriba a la pedra.',brief:"L'Ora comença a entrar. Al principi bufa més al mig del llac; a poc a poc es fa forta a prop dels penya-segats.",mirror:true,off:230,field:[-440,400],shore:{side:1,x:430,name:'Penya-segats'},wind:{k:'osc',spd:[7,9],osc:{A:[4,6],P:[150,220]},grad:{mid:1,kn:3,fill:800},build:5,cliff:{x:430,side:1,kn:6,w:300,veer:22,vw:200,bay:1.5,grow:900}}},
   {id:'g_peler',t:'Pelèr',d:'Vent del nord del matí. Ara la pedra és a l\'esquerra.',brief:"Pelèr de matí, del nord. Els penya-segats queden a l'esquerra i hi bufa més. Hi ha rolades i ratxes que baixen de la muntanya: aquí compta més seguir les rolades i la flota. Va baixant.",off:230,field:[-400,440],shore:{side:-1,x:-430,name:'Penya-segats'},loc:{side:-1,p:.2},wind:{k:'osc',spd:[9,12],osc:{A:[7,10],P:[100,160]},gusts:{n:7,a:[2.5,4],dd:10},build:-4,cliff:{x:-430,side:-1,kn:4,w:260,veer:12,bay:1.5}}}]},
  {id:'sr',name:'Saint-Raphaël',sub:"Badia de Fréjus i l'Esterel",days:[
-  {id:'sr_breeze',t:'Brisa tèrmica',d:'Brisa de mar que va pujant i gira a poc a poc.',brief:"Brisa tèrmica de tarda, de 9 a 14 nusos. Va pujant i sovint gira a poc a poc cap a la dreta.",wind:{k:'pers',spd:[9,12],trend:[5,12],trendSign:1,build:3}},
-  {id:'sr_mistral',t:'Mistral',d:'Vent de terra, fort i a ratxes, amb rolades grans.',brief:"Mistral: vent de terra, fort i a ratxes. Les ratxes arriben amb rolades grans: mira l'aigua i la brúixola.",wind:{k:'osc',spd:[15,19],osc:{A:[9,13],P:[70,120]},gusts:{n:9,a:[4,6],dd:15}}},
-  {id:'sr_switch',t:'Canvi de vent',d:"El vent del matí s'apaga i n'entra un altre.",brief:"El vent de nord-est del matí s'apaga i entra el de ponent. Qui l'agafa primer guanya molt.",wind:{k:'trans',front:{old0:7,old1:3,neu:[10,13],dNew:[25,45],t0:[60,240]}}}]},
+  {id:'sr_breeze',t:'Tèrmic de tarda',d:"Brisa del sud que va pujant. Sovint paga l'esquerra, a prop de la costa.",brief:"Tèrmic del sud. Al matí bufa de terra, al migdia calma i cap a les dues entra el tèrmic i va pujant, de 8 a 15 nusos. Els de casa solen tirar a l'esquerra, a prop de la costa, i com més tard, més vent hi ha a prop de terra. Onada curta: virar costa una mica més.",shore:{side:-1,name:'Costa'},loc:{side:-1,p:.12},wind:{k:'osc',spd:[8,10],osc:{A:[4,6],P:[150,230]},build:4,chop:1.2,cliff:{x:-520,side:-1,kn:2.5,w:320,veer:6,bay:0,grow:900}}},
+  {id:'sr_weak',t:'Tèrmic fluix',d:"El tèrmic no acaba d'entrar: clapes i rolades.",brief:"Dia fresc: el tèrmic no s'acaba d'establir. De 4 a 9 nusos, a clapes i amb rolades grans. Avui anar a la costa no paga sempre: mira on hi ha vent.",shore:{side:-1,name:'Costa'},wind:{k:'press',spd:[5,7],osc:{A:[8,12],P:[120,200]},gusts:{n:14,a:[2.5,4.5],dd:12}}},
+  {id:'sr_mistral',t:'Mistral',d:'Vent de terra, fort i a ratxes. Aigua plana.',brief:"Mistral: vent de terra, de ponent, fort i a ratxes, amb aigua plana. A prop de la platja bufa menys i més irregular; enfora, molt més. Les ratxes arriben amb rolades grans: mira l'aigua i la brúixola.",wind:{k:'osc',spd:[15,19],osc:{A:[9,13],P:[70,120]},gusts:{n:9,a:[4,6],dd:15},lee:5}},
+  {id:'sr_est',t:"Vent d'est",d:'El vent més freqüent. Entra onada a la badia.',brief:"Vent d'est, de 10 a 16 nusos. La badia és oberta a l'est i l'onada puja de pressa: cada virada costa més. Vira poc i bé.",wind:{k:'osc',spd:[10,13],osc:{A:[5,8],P:[110,180]},build:2,chop:1.6}}]},
  {id:'palma',name:'Palma',sub:'Badia de Palma',days:[
   {id:'p_embat',t:'Embat',d:'Brisa de mar regular que va pujant.',brief:"Embat: brisa de mar regular que va pujant. Sovint hi ha una mica més de vent a l'esquerra i hi gira. Amb tanta flota, l'aire net i la sortida decideixen molt.",loc:{side:-1,p:.2},wind:{k:'osc',spd:[9,11],osc:{A:[3,5],P:[200,300]},build:3,cliff:{x:-520,side:-1,kn:3,w:350,veer:10,bay:0}}},
   {id:'p_patchy',t:'Embat a clapes',d:"Amb l'aigua calenta, entra a clapes.",brief:"Amb l'aigua molt calenta, l'embat entra a clapes: hi ha zones amb molt més vent que d'altres.",wind:{k:'press',spd:[7,10],gusts:{n:16,a:[3.5,6],dd:8}}},
@@ -448,12 +449,12 @@ function applySpec(W,S,r){W.venue=true;
   if(S.trend){W.trend=(S.trendSign||(r()<.5?-1:1))*rr2(r,S.trend);W.tr0=r()*150;W.trD=500+r()*400}
   if(S.front){const F=S.front,sd=r()<.5?-1:1;W.front={s:sd,t0:rr2(r,F.t0),v:.3+r()*.4,dNew:sd*rr2(r,F.dNew),old0:F.old0,old1:F.old1,neu:rr2(r,F.neu)}}
   if(S.gusts){const G0=S.gusts;W.gusts=[];for(let i=0;i<G0.n;i++){const side=r()<.5?-1:1;W.gusts.push({vx:(r()-.5)*.6,x:side*(20+r()*400)-150,y0:r()*(D+500)-150,r:55+r()*60,a:rr2(r,G0.a),dd:(r()-.5)*2*G0.dd,vd:1.4+r()*.9})}}
-  W.grad=S.grad||null;W.build=S.build||0;W.bend=S.bend||null;W.chop=S.chop||1;W.cliff=S.cliff||null}
+  W.grad=S.grad||null;W.build=S.build||0;W.bend=S.bend||null;W.chop=S.chop||1;W.cliff=S.cliff||null;W.lee=S.lee||0}
 function wind(W,t,x,y){
   let d=W.base+W.osc.A*Math.sin(2*Math.PI*t/W.osc.P+W.osc.ph)+W.osc2.A*Math.sin(2*Math.PI*t/W.osc2.P+W.osc2.ph)+W.trend*(W.trD?clamp((t-W.tr0)/W.trD,0,1.3):clamp(t/600,0,1.3))+1.5*Math.sin(x/260+W.wob+t/300);
   let s=W.spd+0.6*Math.sin(x/170+y/230+t/40+W.wob);
   if(W.venue){if(W.grad){const g=W.grad;s+=g.mid?g.kn*(0.5-clamp(Math.abs(x+150)/350,0,1))*clamp(1-t/(g.fill||900),0,1):g.kn*clamp(g.side*(x+150)/450,-0.4,1)}
-    if(W.build)s+=W.build*clamp(t/1200,0,1.2);if(W.bend)d+=W.bend.deg*clamp(W.bend.side*(x+150)/500,0,1);
+    if(W.build)s+=W.build*clamp(t/1200,0,1.2);if(W.lee)s-=W.lee*clamp(y/D,0,1.2);if(W.bend)d+=W.bend.deg*clamp(W.bend.side*(x+150)/500,0,1);
     if(W.cliff){const c=W.cliff;const dc=Math.max(0,c.side*(c.x-x));const e=Math.exp(-dc/c.w)*(c.grow?clamp(0.35+t/c.grow,0,1):1);s+=c.kn*e-(c.bay||0)*clamp((dc-350)/450,0,1);d+=c.side*c.veer*(c.vw?Math.exp(-dc/c.vw)*e/Math.exp(-dc/c.w):e)}}
   if(W.front){const F=W.front;const half=XB+150;const fp=half-F.v*Math.max(0,t-F.t0);const w=1/(1+Math.exp(-(F.s*x-fp)/35));const old=lerp(F.old0,F.old1,clamp(t/600,0,1));s=lerp(old,F.neu,w)+0.4*Math.sin(x/170+y/230+t/40);d+=w*F.dNew}
   for(const g of W.gusts){const span=D+500;const gy=((g.y0-g.vd*t+150)%span+span)%span-150;const gx=g.x-Math.sin(W.base*R)*(g.vd*t)*0.3+(g.vx||0)*t;const q=((x-gx)**2+(y-gy)**2)/(g.r*g.r);if(q<6){const e=Math.exp(-q);s+=g.a*e;d+=g.dd*e}}
