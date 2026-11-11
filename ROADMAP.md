@@ -34,13 +34,20 @@ Recorregut: sortida → cenyida → **través** → **popa** → **porta de sota
 - Premis en monedes, trofeus al garatge i pestanya Competició al rànquing de família.
 - Calibratge (12 campionats per etapa, temporada 1, amb un bon regatista sense saber el futur al lloc del jugador): Catalunya sempre, Espanya la meitat de les vegades, Europeu 1 de cada 4, Mundial al voltant del 15è.
 
-## v4 · Seus, lligues i reptes · Publicat (ara)
+## v4 · Seus, lligues i reptes · Publicat
 - Popa d'Optimist: gairebé en popa redona i poques trasluchades; la decisió és el costat.
 - Lligues a cada nivell i a cada seu (Bronze, Plata, Or, Platí, Diamant): amb 3 estrelles es puja.
 - Seus: Garda (Ora, l'Ora que entra, Pelèr), Saint-Raphaël (brisa tèrmica, mistral, canvi de vent), Palma (embat, embat a clapes, xaloc) i Barcelona/Maresme (garbí, llevant, terral). Primera versió, per revisar amb la Mia.
 - Reptes entre germans amb vaixell fantasma i comparació per trams (esquema v4 executat a Supabase l'11/11/2026).
 - Popa calibrada amb 1.300 popes reals (MetaSail, Cap d'Agde 2026): TWA mediana 164° i, sobretot, una sola amura.
 - Menú nou: pantalla d'inici, apartats separats, barra d'onglets i rànquing amb tres pestanyes.
+
+## v4.1 · Garda ben fet · Publicat (ara)
+- Ora: el camp és sota els penya-segats, a la dreta. Més vent i gir a prop de la pedra, i la majoria de la flota hi va. Guanya la dreta gairebé sempre.
+- Pelèr: guanya l'esquerra, amb més joc de rolades.
+- Palma (embat): una mica millor l'esquerra. Barcelona (garbí): una mica més de vent a prop de terra, a la dreta.
+- A totes les seus el camp queda muntat al vent.
+- Per revisar amb la Mia: cap on gira el vent a prop de la pedra, quanta flota va a la dreta, i Saint-Raphaël.
 
 ## v5 · Sortida real
 - Compte enrere de 3 minuts accelerat; el vaixell es pot moure abans del senyal (accelerar, frenar, virar).

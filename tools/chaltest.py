@@ -22,7 +22,7 @@ with sync_playwright() as p:
   pg.on('pageerror',lambda e:errs.append(str(e)));pg.on('console',lambda m:errs.append(m.text) if m.type=='error' and 'fonts' not in m.text and 'Failed to load resource' not in m.text else None)
   pg.route('**/rest/v1/rpc/**',handle)
   def as_player(pid,name):
-    pg.goto('http://127.0.0.1:8765/');pg.evaluate(f"""()=>{{localStorage.setItem('rolada:family',JSON.stringify('ROL-TEST-1234'));localStorage.setItem('rolada:player',JSON.stringify({{id:'{pid}',name:'{name}',sail:'',cloud:true}}))}}""");pg.reload();pg.wait_for_timeout(800)
+    pg.goto('http://127.0.0.2:8765/');pg.evaluate(f"""()=>{{localStorage.setItem('rolada:family',JSON.stringify('ROL-TEST-1234'));localStorage.setItem('rolada:player',JSON.stringify({{id:'{pid}',name:'{name}',sail:'',cloud:true}}))}}""");pg.reload();pg.wait_for_timeout(800)
   as_player('a-pl1','Ana');pg.evaluate("localStorage.clear()");as_player('a-pl1','Ana')
   pg.evaluate("window.__rolada.go('reptes')");pg.wait_for_timeout(600);print('reptes (Ana, empty):',pg.inner_text('#chal')[:120].replace('\n',' | '))
   pg.evaluate("""()=>{window.__rolada.go('seu','garda');document.querySelector('#seuDays .lvl[data-v="g_ora"]').click();const R=window.__rolada,G=R.G;R.startRace();Object.assign(G.me,{ai:true,st:'sens',m:.5,thr:4,del:2});let n=0;while(G.phase==='race'&&n<14000){R.simStep();n++}}""")

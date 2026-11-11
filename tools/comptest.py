@@ -1,7 +1,7 @@
 from playwright.sync_api import sync_playwright
 import json
 S='/home/claude/work/c'
-ADV=open('/home/claude/work/test.py').read().split('ADV="""')[1].split('"""')[0]
+ADV=open(__file__.replace('comptest.py','test.py')).read().split('ADV="""')[1].split('"""')[0]
 with sync_playwright() as p:
   b=p.chromium.launch();c=b.new_context(viewport={'width':390,'height':844},device_scale_factor=2,is_mobile=True,has_touch=True);pg=c.new_page();errs=[]
   pg.on('pageerror',lambda e:errs.append(str(e)));pg.on('console',lambda m:errs.append(m.text) if m.type=='error' and 'Failed to load resource' not in m.text else None)
