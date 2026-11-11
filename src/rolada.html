@@ -28,6 +28,7 @@ header.top{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
 .chip{background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:6px 12px;cursor:pointer;font-size:14px}
 .chip[aria-pressed="true"]{background:var(--fg);color:var(--ink);border-color:var(--fg)}
 .small{font-size:13px;color:var(--muted)}
+.vguide{margin:18px 0 8px}.vguide h3{font-family:var(--f-disp);font-size:19px;margin:0 0 10px}.vg{border-left:3px solid var(--line,#27495a);padding:2px 0 2px 12px;margin:0 0 14px}.vg b{font-size:16px}.vg p{margin:4px 0 0;font-size:14px;color:var(--muted)}.vg p span{color:var(--fg);font-weight:600}
 h2{font-family:var(--f-disp);font-weight:600;font-size:20px;margin:0;letter-spacing:.02em;text-wrap:balance}
 /* menu */
 #menu{display:flex;flex-direction:column;gap:16px}
@@ -286,6 +287,7 @@ table.res tr.me td{color:var(--me);font-weight:700}
     <div class="shead"><button class="back" data-go="seus" aria-label="Seus">‹</button><h2 id="seuTitle"></h2></div>
     <div id="seuBanner"></div>
     <div class="lvls" id="seuDays"></div>
+    <div id="seuGuide"></div>
   </section>
 
   <section id="reptes" hidden>
@@ -410,11 +412,16 @@ const VENUES=[
   {id:'g_ora',t:'Ora',d:'Vent del sud de la tarda. Guanya la dreta, cap a la pedra.',brief:"Ora de tarda. El camp és just sota els penya-segats, a la dreta. Sota la pedra bufa fins a 17 nusos i el vent gira: en virar a estribord et puja cap a la boia. A l'esquerra, de 8 a 10 nusos. Gairebé tothom tira a la dreta: busca aire net.",mirror:true,off:230,field:[-440,400],shore:{side:1,x:430,name:'Penya-segats'},loc:{side:1,p:.5},wind:{k:'osc',spd:[8,10],osc:{A:[3,5],P:[180,260]},cliff:{x:430,side:1,kn:7,w:300,veer:25,vw:200,bay:3}}},
   {id:'g_oraIn',t:"L'Ora que entra",d:'Entra pel mig del llac i després arriba a la pedra.',brief:"L'Ora comença a entrar. Al principi bufa més al mig del llac; a poc a poc es fa forta a prop dels penya-segats.",mirror:true,off:230,field:[-440,400],shore:{side:1,x:430,name:'Penya-segats'},wind:{k:'osc',spd:[7,9],osc:{A:[4,6],P:[150,220]},grad:{mid:1,kn:3,fill:800},build:5,cliff:{x:430,side:1,kn:6,w:300,veer:22,vw:200,bay:1.5,grow:900}}},
   {id:'g_peler',t:'Pelèr',d:'Vent del nord del matí. Ara la pedra és a l\'esquerra.',brief:"Pelèr de matí, del nord. Els penya-segats queden a l'esquerra i hi bufa més. Hi ha rolades i ratxes que baixen de la muntanya: aquí compta més seguir les rolades i la flota. Va baixant.",off:230,field:[-400,440],shore:{side:-1,x:-430,name:'Penya-segats'},loc:{side:-1,p:.2},wind:{k:'osc',spd:[9,12],osc:{A:[7,10],P:[100,160]},gusts:{n:7,a:[2.5,4],dd:10},build:-4,cliff:{x:-430,side:-1,kn:4,w:260,veer:12,bay:1.5}}}]},
- {id:'sr',name:'Saint-Raphaël',sub:"Badia de Fréjus i l'Esterel",days:[
-  {id:'sr_breeze',t:'Tèrmic de tarda',d:"Brisa del sud que va pujant. Sovint paga l'esquerra, a prop de la costa.",brief:"Tèrmic del sud. Al matí bufa de terra, al migdia calma i cap a les dues entra el tèrmic i va pujant, de 8 a 15 nusos. Els de casa solen tirar a l'esquerra, a prop de la costa, i com més tard, més vent hi ha a prop de terra. Onada curta: virar costa una mica més.",shore:{side:-1,name:'Costa'},loc:{side:-1,p:.12},wind:{k:'osc',spd:[8,10],osc:{A:[4,6],P:[150,230]},build:4,chop:1.2,cliff:{x:-520,side:-1,kn:2.5,w:320,veer:6,bay:0,grow:900}}},
-  {id:'sr_weak',t:'Tèrmic fluix',d:"El tèrmic no acaba d'entrar: clapes i rolades.",brief:"Dia fresc: el tèrmic no s'acaba d'establir. De 4 a 9 nusos, a clapes i amb rolades grans. Avui anar a la costa no paga sempre: mira on hi ha vent.",shore:{side:-1,name:'Costa'},wind:{k:'press',spd:[5,7],osc:{A:[8,12],P:[120,200]},gusts:{n:14,a:[2.5,4.5],dd:12}}},
-  {id:'sr_mistral',t:'Mistral',d:'Vent de terra, fort i a ratxes. Aigua plana.',brief:"Mistral: vent de terra, de ponent, fort i a ratxes, amb aigua plana. A prop de la platja bufa menys i més irregular; enfora, molt més. Les ratxes arriben amb rolades grans: mira l'aigua i la brúixola.",wind:{k:'osc',spd:[15,19],osc:{A:[9,13],P:[70,120]},gusts:{n:9,a:[4,6],dd:15},lee:5}},
-  {id:'sr_est',t:"Vent d'est",d:'El vent més freqüent. Entra onada a la badia.',brief:"Vent d'est, de 10 a 16 nusos. La badia és oberta a l'est i l'onada puja de pressa: cada virada costa més. Vira poc i bé.",wind:{k:'osc',spd:[10,13],osc:{A:[5,8],P:[110,180]},build:2,chop:1.6}}]},
+ {id:'sr',name:'Saint-Raphaël',sub:"Badia de Fréjus i l'Esterel",
+  // days and shares from hourly wind in the bay, 19-26 April 2016-2026, 12-17 h (weather model reanalysis, 88 days):
+  // S-SSE 49% (thermal, onset ~12 h, peak ~15 h, veers ~10° right in the afternoon), E 35% (cloudy, gusty, peak at noon), W 9%, under 5 kn 7%
+  guide:"Vent de la badia del 19 al 26 d'abril, de 12 a 17 h, anys 2016 a 2026 (model meteorològic). Nou dies de cada deu són tèrmic o llevant. L'endemà d'un dia de tèrmic torna a ser tèrmic una mica més de la meitat de les vegades, i amb el llevant passa igual.",
+  days:[
+  {id:'sr_breeze',p:49,t:'Tèrmic del sud',d:"49% dels dies. Entra al migdia i va pujant. Sovint paga l'esquerra, a prop de la costa.",brief:"Tèrmic del sud-sud-est, de 7 a 13 nusos. Entra cap a les dotze, fa el màxim cap a les tres i afluixa al vespre. Els de casa solen tirar a l'esquerra, a prop de la costa. Onada curta: virar costa una mica més.",signs:"Cel clar. A primera hora, calma o vent fluix de terra. Cap a les onze l'aigua s'enfosqueix pel sud i el vent entra de mar.",how:"La terra s'escalfa i xucla aire de mar. Ve d'uns 160°, entra cap a les dotze i fa el màxim a les tres. A la tarda sol girar uns 10° a la dreta: dins d'una regata gairebé no es nota, entre regates sí.",shore:{side:-1,name:'Costa'},loc:{side:-1,p:.12},wind:{k:'osc',spd:[7,10],osc:{A:[4,6],P:[150,230]},build:3,chop:1.2,cliff:{x:-520,side:-1,kn:1.8,w:320,veer:5,bay:0,grow:900}}},
+  {id:'sr_est',p:35,t:'Llevant',d:'35% dels dies. Tapat, a ratxes i amb onada.',brief:"Llevant, de 8 a 14 nusos, a ratxes. Bufa des del matí, fa el màxim al migdia i baixa a la tarda. La badia és oberta a l'est i entra onada: cada virada costa més.",signs:"Cel tapat. Ja bufa de l'est quan arribes al club i entra onada a la badia.",how:"És vent de mapa, no tèrmic: no depèn del sol. La direcció és força estable, uns 90°, però les ratxes doblen el vent mitjà. Un de cada tres dies de llevant fa menys de 8 nusos; un de cada deu, més de 15.",wind:{k:'osc',spd:[8,12],osc:{A:[4,7],P:[110,180]},gusts:{n:8,a:[3,5],dd:8},build:-1,chop:1.5}},
+  {id:'sr_mistral',p:9,t:'Mistral',d:'9% dels dies. Vent de terra, fort i a ratxes. Aigua plana.',brief:"Mistral: vent de terra, de ponent, de 12 a 19 nusos i a ratxes, amb aigua plana. A prop de la platja bufa menys i més irregular; enfora, molt més. Les ratxes arriben amb rolades grans: mira l'aigua i la brúixola.",signs:"Bufa fort de ponent des de primera hora i no afluixa. Aigua plana a prop de la platja i borreguets enfora.",how:"Vent de terra, d'uns 280°, igual tot el dia, amb ratxes de 30 nusos. Com més a prop de la platja, menys vent i més irregular. Un de cada cinc dies de mistral passa de 18 nusos de mitjana.",wind:{k:'osc',spd:[12,17],osc:{A:[9,13],P:[70,120]},gusts:{n:9,a:[4,6],dd:15},lee:4}},
+  {id:'sr_weak',p:7,t:'Dia fluix',d:'7% dels dies. Poc vent, a clapes i canviant.',brief:"Dia tapat i fresc: el tèrmic no arrenca. Menys de 6 nusos, a clapes i amb rolades grans. Avui cap costat paga sempre: mira on hi ha vent.",signs:"Cel tapat i fresc. A migdia encara no ha entrat res clar i les banderes canvien de costat.",how:"Sense sol la terra no s'escalfa i el tèrmic no arrenca. Menys de 5 nusos i la direcció es mou 30° amunt i avall. Guanya qui va de clapa en clapa.",shore:{side:-1,name:'Costa'},wind:{k:'press',spd:[3.5,5.5],osc:{A:[10,15],P:[120,200]},gusts:{n:14,a:[2,4],dd:12}}},
+  {id:'sr_any',any:['sr_breeze','sr_est','sr_mistral','sr_weak'],t:"Un dia d'abril",d:'No saps quin dia toca. Mira els senyals abans de sortir.',brief:''}]},
  {id:'palma',name:'Palma',sub:'Badia de Palma',days:[
   {id:'p_embat',t:'Embat',d:'Brisa de mar regular que va pujant.',brief:"Embat: brisa de mar regular que va pujant. Sovint hi ha una mica més de vent a l'esquerra i hi gira. Amb tanta flota, l'aire net i la sortida decideixen molt.",loc:{side:-1,p:.2},wind:{k:'osc',spd:[9,11],osc:{A:[3,5],P:[200,300]},build:3,cliff:{x:-520,side:-1,kn:3,w:350,veer:10,bay:0}}},
   {id:'p_patchy',t:'Embat a clapes',d:"Amb l'aigua calenta, entra a clapes.",brief:"Amb l'aigua molt calenta, l'embat entra a clapes: hi ha zones amb molt més vent que d'altres.",wind:{k:'press',spd:[7,10],gusts:{n:16,a:[3.5,6],dd:8}}},
@@ -475,6 +482,8 @@ function makeFleet(lv,seed,tier=0){
 let G=null;const ui={speed:store.get('speed',7),aids:store.get('aids',false)};
 function newGame(lvIdx,seed,daily){$('who').hidden=true;$('garage').hidden=true;$('comp').hidden=true;VZ.z=2.5;VZ.follow=true;pendingTack=false;
   let L=typeof lvIdx==='object'?lvIdx:LEVELS[lvIdx];if(!L.comp&&L.tier==null)L=tierLevel(L,daily||!P?0:tierOf(L.id));seed=seed??Math.floor(Math.random()*1e9);
+  if(L.any){const days=L.any.map(id=>VLEVELS.find(x=>x.id===id)),tot=days.reduce((a,d)=>a+d.p,0);let u=rng(seed*17+1)()*tot,D=days[0];for(const d of days){if(u<d.p){D=d;break}u-=d.p}
+    L={...L,wind:D.wind,loc:D.loc,shore:D.shore,mirror:D.mirror,off:D.off,field:D.field,real:D,brief:'El que veus abans de sortir: '+D.signs}}
   const W=makeWind(L.wind||L.id,seed);
   let ai;if(L.comp){const ch=compState().champ;const half=Math.max(95,(ch.fleet.length+1)*2.6);LINE[0]=-half;LINE[1]=half;const r=rng(seed*7+3);ai=ch.fleet.map(f=>({...f,ai:true,x:lerp(LINE[0]+8,LINE[1]-8,r()),tack:r()<.65?'S':'P'}))}
   else{LINE[0]=-95;LINE[1]=95;ai=makeFleet(L.id,seed,L.tier||0)}
@@ -767,7 +776,7 @@ function finish(){if(G.phase!=='race')return;G.phase='debrief';
 function showDebrief(R0){const{order,pos,myIdeal,bestStart,startX,ref}=R0;const me=G.me;document.body.classList.remove('playing');$('game').hidden=true;$('debrief').hidden=false;
   const L=G.L;$('dLvl').textContent=G.daily?'Repte del dia':L.n+' · '+L.t+(L.tier?' · Lliga '+LEAGUES[L.tier].name:'');$('dPos').textContent=me.done?(pos+'a de '+G.boats.length):'No has arribat';
   const myT=me.done?me.ft:null;const rows=[];
-  rows.push(['El teu temps',myT?fmt(myT):'—']);if(myIdeal)rows.push(['Ruta ideal des de la teva sortida',fmt(myIdeal.T)+(myT?'  ·  +'+Math.max(0,Math.round(myT-myIdeal.T))+' s':'')]);
+  rows.push(['El teu temps',myT?fmt(myT):'—']);if(L.real)rows.push(['Avui era',L.real.t]);if(myIdeal)rows.push(['Ruta ideal des de la teva sortida',fmt(myIdeal.T)+(myT?'  ·  +'+Math.max(0,Math.round(myT-myIdeal.T))+' s':'')]);
   if(ref)rows.push(['Bon regatista sense saber el futur',fmt(ref.ft)+(myT?'  ·  '+(myT<=ref.ft?'−':'+')+Math.abs(Math.round(myT-ref.ft))+' s':'')]);
   const win=order[0];rows.push(['Guanyador',win.name+(win.done?' · '+fmt(win.ft):'')]);
   $('dTimes').innerHTML=rows.map(r=>`<span>${r[0]}</span><b>${r[1]}</b>`).join('');
@@ -1224,7 +1233,8 @@ function renderSeus(){$('vcards').innerHTML=VENUES.map(v=>`<button class="vcard"
 function renderSeu(){const v=VENUES.find(x=>x.id===curSeu)||VENUES[0];$('seuTitle').textContent=v.name;
   $('seuBanner').innerHTML=`<div class="vbanner" style="background:${VART[v.id].g}"><svg viewBox="0 0 160 60" preserveAspectRatio="none" aria-hidden="true">${VART[v.id].svg}</svg><span class="vs">${v.sub}</span></div>`;
   $('seuDays').innerHTML=v.days.map(d=>lvlCard(VLEVELS.find(x=>x.id===d.id),`data-v="${d.id}"`)).join('');
-  $('seuDays').querySelectorAll('.lvl').forEach(el=>el.onclick=()=>newGame(VLEVELS.find(x=>x.id===el.dataset.v)))}
+  $('seuDays').querySelectorAll('.lvl').forEach(el=>el.onclick=()=>newGame(VLEVELS.find(x=>x.id===el.dataset.v)));
+  const gd=v.days.filter(d=>d.signs);$('seuGuide').innerHTML=gd.length?`<div class="vguide"><h3>Com reconèixer el dia</h3>${gd.map(d=>`<div class="vg"><b>${d.t}${d.p?' · '+d.p+'%':''}</b><p><span>Què veus.</span> ${d.signs}</p><p><span>Com funciona.</span> ${d.how}</p></div>`).join('')}${v.guide?`<p class="small">${v.guide}</p>`:''}</div>`:''}
 // --- challenges
 function renderReptes(){if(!CHAL_ON){$('chal').innerHTML='<p class="small">Els reptes entre germans s\'activaran aviat: navegareu el mateix vent i veureu el vaixell de l\'altre com un fantasma.</p>';return}
   if(!(CLOUD_ON&&FAM&&P.cloud)){$('chal').innerHTML='<p class="small">Per fer reptes cal un codi de família: a Perfil, toca «Canvia de regatista» i escriu-lo.</p>';return}

@@ -49,13 +49,18 @@ Recorregut: sortida → cenyida → **través** → **popa** → **porta de sota
 - A totes les seus el camp queda muntat al vent.
 - Per revisar amb la Mia: cap on gira el vent a prop de la pedra i quanta flota va a la dreta.
 
-## v4.2 · Saint-Raphaël per a la CIP · Publicat (ara)
+## v4.2 · Saint-Raphaël per a la CIP · Publicat
 - Quatre dies: tèrmic de tarda, tèrmic fluix, mistral i vent d'est.
 - Tèrmic de tarda: entra després de la calma del migdia i va pujant; sovint paga l'esquerra, a prop de la costa.
 - Tèrmic fluix: no s'estableix, clapes i rolades grans.
 - Mistral: de terra, amb menys vent i més irregular a prop de la platja.
 - Vent d'est: el més freqüent, amb onada.
 - Tret de cròniques de regates de Pasqua a la mateixa badia. Cal contrastar-ho amb algú que hi hagi regatejat.
+
+## v4.3 · Els dies d'abril a Saint-Raphaël · Publicat (ara)
+- Els quatre dies surten de dades reals de vent de la badia (19-26 d'abril, 2016-2026) i porten el seu percentatge: tèrmic del sud 49%, llevant 35%, mistral 9%, dia fluix 7%.
+- «Un dia d'abril»: no saps quin dia toca, només veus els senyals d'abans de sortir. Al resum et diu quin era.
+- «Com reconèixer el dia» a la pàgina de la seu: què es veu i com funciona cada vent.
 
 ## v5 · Sortida real
 - Compte enrere de 3 minuts accelerat; el vaixell es pot moure abans del senyal (accelerar, frenar, virar).
