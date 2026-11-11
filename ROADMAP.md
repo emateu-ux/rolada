@@ -80,10 +80,19 @@ Recorregut: sortida → cenyida → **través** → **popa** → **porta de sota
 - Els temps i els rànquings antics de la regata completa i de les seus ja no són comparables.
 - Per confirmar amb els nens: on és l'arribada i com de llarga és la popa.
 
-## v4.7 · Palma al desembre · Publicat (ara)
+## v4.7 · Palma al desembre · Publicat
 - Palma amb els dies del Ciutat de Palma (primers de desembre): Calma i embat fluix 37%, Mestral 28%, Vent del nord 16%, Gregal 13%, Llebeig 6%.
 - «Un dia de desembre» i «Com reconèixer el dia».
 - Barcelona es queda com estava: és on entrenen.
+
+## v4.8 · Més premis al garatge · Publicat (ara)
+- Vaixells nous: de gel, de neó, de tempesta, Moth amb foils, Holandès Errant, Kraken, nebulosa i catamarà F50.
+- Esteles noves: escuma, neu, tinta, neó i llamps.
+- Celebracions noves: nevada, dofins, disco, onada gegant, volcà i tempesta amb trons.
+- Premis que no es venen: Optimist de diamant (30 estrelles), estela de pols d'or (10 victòries), Copa de campió (un trofeu de la Competició) i Aurora boreal (passar el Campionat d'Espanya).
+- Conjunts que fan joc (vaixell + estela + celebració), indicats a cada targeta.
+- Els premis guanyats ja no es perden (abans l'Optimist daurat marxava si es trencava la ratxa).
+- Per ajustar amb els nens: preus i quantes estrelles o victòries demana cada premi.
 
 ## v5 · Sortida real
 - Compte enrere de 3 minuts accelerat; el vaixell es pot moure abans del senyal (accelerar, frenar, virar).
