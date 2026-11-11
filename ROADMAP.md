@@ -62,11 +62,16 @@ Recorregut: sortida → cenyida → **través** → **popa** → **porta de sota
 - «Un dia d'abril»: no saps quin dia toca, només veus els senyals d'abans de sortir. Al resum et diu quin era.
 - «Com reconèixer el dia» a la pàgina de la seu: què es veu i com funciona cada vent.
 
-## v4.4 · Els dies de febrer a Garda · Publicat (ara)
+## v4.4 · Els dies de febrer a Garda · Publicat
 - Garda amb dades de vent de Riva de l'última setmana de febrer: Ora 62%, Ora fluixa 18%, vent del nord 13%, Pelèr de matí 7%.
 - L'Ora d'hivern és més fluixa que la d'estiu i la dreta encara pesa més.
 - «Un dia de febrer» i «Com reconèixer el dia», com a Saint-Raphaël.
 - Els models no coincideixen en quanta Ora hi ha: cal contrastar-ho amb el que han vist a l'aigua.
+
+## v4.5 · El mateix recorregut a tot arreu · Publicat (ara)
+- A Garda el recorregut ja no està girat: través, popa i porta a l'esquerra, com sempre en Optimist.
+- Amb l'Ora, la segona cenyida surt de l'esquerra, lluny de la pedra i amb menys vent.
+- Pendent de parlar: l'angle del través (el diagrama oficial és més tancat que el del joc) i què fa difícil la segona cenyida a Garda.
 
 ## v5 · Sortida real
 - Compte enrere de 3 minuts accelerat; el vaixell es pot moure abans del senyal (accelerar, frenar, virar).
