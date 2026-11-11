@@ -392,7 +392,9 @@ const D=650,LINE=[-95,95],MARK={x:0,y:D},XB=440;
 // downwind side to the left of the start: long reach (~410 m), run straight down to the gate, finish line beside the run lane
 const M2={x:-400,y:560},GATE=[{x:-435,y:110},{x:-365,y:110}],GC={x:-400,y:110},FIN={y:470,x0:-300,x1:-180};
 // field limits: wider to the left in the full race
-const FX0=()=>G&&G.full?-640:-XB,FX1=()=>XB;
+const FX0=()=>G&&G.L.field?G.L.field[0]:(G&&G.full?(G.mirror?-XB:-640):-XB),FX1=()=>G&&G.L.field?G.L.field[1]:(G&&G.full&&G.mirror?640:XB);
+// mirrored course for venues where the downwind side must be on the right (e.g. Garda with the Ora: cliffs on the right)
+function setCourse(mirror,off=400){const m=mirror?-1:1,c=-off*m;M2.x=c;GC.x=c;GATE[0].x=c-35;GATE[1].x=c+35;const f=c+160*m;FIN.x0=Math.min(f-60,f+60);FIN.x1=Math.max(f-60,f+60)}
 const finPt=b=>({x:clamp(b.x,FIN.x0+5,FIN.x1-5),y:FIN.y});
 const WIND1=[{k:'beat',name:'Cenyida',lab:'Boia',to:()=>MARK}];
 const FULL=[{k:'beat',name:'Cenyida',lab:'Boia 1',to:()=>MARK},{k:'reach',name:'Través',lab:'Boia 2',to:()=>M2},{k:'run',name:'Popa',lab:'Porta',to:b=>GATE[b.gate??0]},{k:'beat',name:'Última cenyida',lab:'Arrib.',to:finPt,fin:true}];
@@ -419,10 +421,10 @@ const LEVELS=[
 // side: +1 = right side of the course looking upwind, -1 = left side
 const VAIDS={streaks:false,hint:false,lay:true,shadow:true};
 const VENUES=[
- {id:'garda',name:'Garda',sub:'Riva i Torbole',days:[
-  {id:'g_ora',t:'Ora',d:'Vent del sud de la tarda, fort i regular.',brief:'Ora de tarda, de 13 a 18 nusos i bastant regular. A prop dels penya-segats bufa més fort.',shore:{side:1,name:'Penya-segats'},wind:{k:'osc',spd:[13,18],osc:{A:[3,5],P:[180,260]},grad:{side:1,kn:3}}},
-  {id:'g_oraIn',t:"L'Ora que entra",d:'Primer bufa al mig del llac i després arriba a les vores.',brief:"L'Ora comença a entrar. Al principi bufa més al mig del llac; a poc a poc arriba a les vores.",shore:{side:1,name:'Penya-segats'},wind:{k:'osc',spd:[8,11],osc:{A:[4,6],P:[150,220]},grad:{mid:1,kn:4,fill:900},build:5}},
-  {id:'g_peler',t:'Pelèr',d:'Vent del nord del matí, a ratxes i que va baixant.',brief:'Pelèr de matí, del nord. Rolades i ratxes que baixen de la muntanya, i més vent a prop dels penya-segats. Va baixant.',shore:{side:-1,name:'Penya-segats'},wind:{k:'osc',spd:[11,15],osc:{A:[7,10],P:[100,160]},gusts:{n:7,a:[2.5,4],dd:10},grad:{side:-1,kn:2.5},build:-4}}]},
+ {id:'garda',name:'Garda',sub:'Riva del Garda',days:[
+  {id:'g_ora',t:'Ora',d:'Vent del sud de la tarda. Guanya la dreta, cap a la pedra.',brief:"Ora de tarda, de 12 a 18 nusos. El camp és just sota els penya-segats: a prop de la pedra bufa més fort i el vent gira, i en virar a estribord et puja cap a la boia. A l'esquerra, menys vent.",mirror:true,off:230,field:[-440,400],shore:{side:1,x:430,name:'Penya-segats'},wind:{k:'osc',spd:[11,14],osc:{A:[3,5],P:[180,260]},cliff:{x:430,side:1,kn:5,w:180,veer:12,bay:2}}},
+  {id:'g_oraIn',t:"L'Ora que entra",d:'Entra pel mig del llac i després arriba a la pedra.',brief:"L'Ora comença a entrar. Al principi bufa més al mig del llac; a poc a poc es fa forta a prop dels penya-segats.",mirror:true,off:230,field:[-440,400],shore:{side:1,x:430,name:'Penya-segats'},wind:{k:'osc',spd:[7,9],osc:{A:[4,6],P:[150,220]},grad:{mid:1,kn:3,fill:800},build:5,cliff:{x:430,side:1,kn:4,w:160,veer:10,bay:1.5,grow:900}}},
+  {id:'g_peler',t:'Pelèr',d:'Vent del nord del matí. Ara la pedra és a l\'esquerra.',brief:"Pelèr de matí, del nord. Els penya-segats queden a l'esquerra i hi bufa més. Hi ha rolades i ratxes que baixen de la muntanya: aquí compta més seguir les rolades i la flota. Va baixant.",off:230,field:[-400,440],shore:{side:-1,x:-430,name:'Penya-segats'},wind:{k:'osc',spd:[11,14],osc:{A:[7,10],P:[100,160]},gusts:{n:7,a:[2.5,4],dd:10},build:-4,cliff:{x:-430,side:-1,kn:3,w:160,veer:9,bay:1.5}}}]},
  {id:'sr',name:'Saint-Raphaël',sub:"Badia de Fréjus i l'Esterel",days:[
   {id:'sr_breeze',t:'Brisa tèrmica',d:'Brisa de mar que va pujant i gira a poc a poc.',brief:"Brisa tèrmica de tarda, de 9 a 14 nusos. Va pujant i sovint gira a poc a poc cap a la dreta.",wind:{k:'pers',spd:[9,12],trend:[5,12],trendSign:1,build:3}},
   {id:'sr_mistral',t:'Mistral',d:'Vent de terra, fort i a ratxes, amb rolades grans.',brief:"Mistral: vent de terra, fort i a ratxes. Les ratxes arriben amb rolades grans: mira l'aigua i la brúixola.",wind:{k:'osc',spd:[15,19],osc:{A:[9,13],P:[70,120]},gusts:{n:9,a:[4,6],dd:15}}},
@@ -432,8 +434,8 @@ const VENUES=[
   {id:'p_patchy',t:'Embat a clapes',d:"Amb l'aigua calenta, entra a clapes.",brief:"Amb l'aigua molt calenta, l'embat entra a clapes: hi ha zones amb molt més vent que d'altres.",wind:{k:'press',spd:[7,10],gusts:{n:16,a:[3.5,6],dd:8}}},
   {id:'p_xaloc',t:'Xaloc del matí',d:"Com més enfora, més gira a l'esquerra.",brief:"Xaloc de matí, fluix. Com més t'allunyes de la costa, més gira el vent a l'esquerra.",shore:{side:-1,name:'Costa'},wind:{k:'osc',spd:[7,10],osc:{A:[4,6],P:[150,220]},bend:{side:1,deg:-10}}}]},
  {id:'bcn',name:'Barcelona i Maresme',sub:'Costa central',days:[
-  {id:'b_garbi',t:'Garbí',d:'Tèrmic de tarda del sud-oest, que va pujant.',brief:"Garbí: tèrmic de tarda, de 9 a 15 nusos. Entra cap a la una i va pujant.",shore:{side:-1,name:'Costa'},wind:{k:'osc',spd:[9,12],osc:{A:[4,6],P:[160,240]},build:4}},
-  {id:'b_llevant',t:'Llevant',d:'Vent de mar inestable, amb onada.',brief:"Llevant: vent de mar inestable i amb onada. Cada virada costa més: tria bé quan.",wind:{k:'osc',spd:[8,12],osc:{A:[6,9],P:[90,150]},osc2:{A:[3,4],P:[45,70]},chop:1.5}},
+  {id:'b_garbi',t:'Garbí',d:'Tèrmic de tarda del sud-oest, que va pujant.',brief:"Garbí: tèrmic de tarda, de 9 a 15 nusos. Entra cap a la una i va pujant. Bufa paral·lel a la costa, que queda a la dreta.",shore:{side:1,name:'Costa'},wind:{k:'osc',spd:[9,12],osc:{A:[4,6],P:[160,240]},build:4}},
+  {id:'b_llevant',t:'Llevant',d:'Vent de mar inestable, amb onada.',brief:"Llevant: vent de mar inestable i amb onada. Cada virada costa més: tria bé quan.",shore:{side:-1,name:'Costa'},wind:{k:'osc',spd:[8,12],osc:{A:[6,9],P:[90,150]},osc2:{A:[3,4],P:[45,70]},chop:1.5}},
   {id:'b_terral',t:'Terral',d:'Mestral o tramuntana: vent de terra a ratxes.',brief:"Terral: vent de terra (mestral o tramuntana) a ratxes. Les ratxes baixen de terra amb rolades.",wind:{k:'osc',spd:[11,15],osc:{A:[8,11],P:[80,130]},gusts:{n:8,a:[3,5],dd:12}}}]}];
 const VLEVELS=VENUES.flatMap(v=>v.days.map(d=>({...d,venue:v.id,n:v.name,full:true,gap:40,aids:VAIDS})));
 // ---------- wind model
@@ -459,12 +461,13 @@ function applySpec(W,S,r){W.venue=true;
   if(S.trend){W.trend=(S.trendSign||(r()<.5?-1:1))*rr2(r,S.trend);W.tr0=r()*150;W.trD=500+r()*400}
   if(S.front){const F=S.front,sd=r()<.5?-1:1;W.front={s:sd,t0:rr2(r,F.t0),v:.3+r()*.4,dNew:sd*rr2(r,F.dNew),old0:F.old0,old1:F.old1,neu:rr2(r,F.neu)}}
   if(S.gusts){const G0=S.gusts;W.gusts=[];for(let i=0;i<G0.n;i++){const side=r()<.5?-1:1;W.gusts.push({vx:(r()-.5)*.6,x:side*(20+r()*400)-150,y0:r()*(D+500)-150,r:55+r()*60,a:rr2(r,G0.a),dd:(r()-.5)*2*G0.dd,vd:1.4+r()*.9})}}
-  W.grad=S.grad||null;W.build=S.build||0;W.bend=S.bend||null;W.chop=S.chop||1}
+  W.grad=S.grad||null;W.build=S.build||0;W.bend=S.bend||null;W.chop=S.chop||1;W.cliff=S.cliff||null}
 function wind(W,t,x,y){
   let d=W.base+W.osc.A*Math.sin(2*Math.PI*t/W.osc.P+W.osc.ph)+W.osc2.A*Math.sin(2*Math.PI*t/W.osc2.P+W.osc2.ph)+W.trend*(W.trD?clamp((t-W.tr0)/W.trD,0,1.3):clamp(t/600,0,1.3))+1.5*Math.sin(x/260+W.wob+t/300);
   let s=W.spd+0.6*Math.sin(x/170+y/230+t/40+W.wob);
   if(W.venue){if(W.grad){const g=W.grad;s+=g.mid?g.kn*(0.5-clamp(Math.abs(x+150)/350,0,1))*clamp(1-t/(g.fill||900),0,1):g.kn*clamp(g.side*(x+150)/450,-0.4,1)}
-    if(W.build)s+=W.build*clamp(t/1200,0,1.2);if(W.bend)d+=W.bend.deg*clamp(W.bend.side*(x+150)/500,0,1)}
+    if(W.build)s+=W.build*clamp(t/1200,0,1.2);if(W.bend)d+=W.bend.deg*clamp(W.bend.side*(x+150)/500,0,1);
+    if(W.cliff){const c=W.cliff;const dc=Math.max(0,c.side*(c.x-x));const e=Math.exp(-dc/c.w)*(c.grow?clamp(0.35+t/c.grow,0,1):1);s+=c.kn*e-(c.bay||0)*clamp((dc-350)/450,0,1);d+=c.side*c.veer*e}}
   if(W.front){const F=W.front;const half=XB+150;const fp=half-F.v*Math.max(0,t-F.t0);const w=1/(1+Math.exp(-(F.s*x-fp)/35));const old=lerp(F.old0,F.old1,clamp(t/600,0,1));s=lerp(old,F.neu,w)+0.4*Math.sin(x/170+y/230+t/40);d+=w*F.dNew}
   for(const g of W.gusts){const span=D+500;const gy=((g.y0-g.vd*t+150)%span+span)%span-150;const gx=g.x-Math.sin(W.base*R)*(g.vd*t)*0.3+(g.vx||0)*t;const q=((x-gx)**2+(y-gy)**2)/(g.r*g.r);if(q<6){const e=Math.exp(-q);s+=g.a*e;d+=g.dd*e}}
   return{d,s:Math.max(1.5,s)}}
@@ -489,7 +492,7 @@ function newGame(lvIdx,seed,daily){$('who').hidden=true;$('garage').hidden=true;
   else{LINE[0]=-95;LINE[1]=95;ai=makeFleet(L.id,seed,L.tier||0)}
   const me={name:P?(P.sail||P.name):'TU',me:true,x:0,tack:'S',sk:1};
   const boats=[me,...ai].map(b=>Object.assign(b,{y:-4,h:0,v:0,tk:0,gy:false,done:false,ft:null,dirty:0,duck:0,last:-99,trk:[],mean:null,hd:0,nextD:0,leg:0,gate:null,gp:false,gfix:false,off:0,splits:[],acc:{t:0,tb:0,fav:0,tws:0,dirty:0,runSh:0,off:[0,0,0],n:0}}));
-  G={L,lvIdx,seed,daily:!!daily,full:!!L.full,legs:L.full?FULL:WIND1,maxT:L.full?3000:1500,rr:rng(seed*13+5),skin:P?equipped('boat'):'opti',trail:P?equipped('trail'):'none',flag:P?equipped('flag'):'none',tail:[],W,boats,me,t:-30,phase:'pre',paused:false,trace:[],laylog:[],tacks:0,gybes:0,ducks:0,blocked:0,warnT:0,warnMsg:'',uiKey:null,gateInfo:null,field:null,fieldT:-99,parts:[]};
+  setCourse(!!L.mirror,L.off||400);G={L,lvIdx,seed,mirror:!!L.mirror,daily:!!daily,full:!!L.full,legs:L.full?FULL:WIND1,maxT:L.full?3000:1500,rr:rng(seed*13+5),skin:P?equipped('boat'):'opti',trail:P?equipped('trail'):'none',flag:P?equipped('flag'):'none',tail:[],W,boats,me,t:-30,phase:'pre',paused:false,trace:[],laylog:[],tacks:0,gybes:0,ducks:0,blocked:0,warnT:0,warnMsg:'',uiKey:null,gateInfo:null,field:null,fieldT:-99,parts:[]};
   for(let i=0;i<240;i++)G.parts.push(newPart(true));
   placeStart();showPre();}
 function placeStart(){for(const b of G.boats){const w=wind(G.W,0,b.x,b.y);b.h=w.d+(b.tack==='P'?45:-45);b.v=polar(w.s)*0.85*b.sk;b.mean=w.d}}
@@ -601,7 +604,7 @@ function warn(m){if(!G)return;G.warnMsg=m;G.warnT=performance.now()+(/^(Vira|Tra
 // ---------- rendering
 const cv=$('cv'),cx=cv.getContext('2d');let VIEW=null;
 const VZ={z:1,cx:0,cy:(D-30)/2,follow:false};
-function setupCanvas(c,ctx,zoomable){const dpr=Math.min(2,window.devicePixelRatio||1);let W,H;if(zoomable){W=c.clientWidth||400;H=c.clientHeight||500;c.width=W*dpr;c.height=H*dpr}else{W=c.clientWidth||900;H=Math.round(W*(D+170)/(FX1()-FX0()+40));c.width=W*dpr;c.height=H*dpr;c.style.height=H+'px'}ctx.setTransform(dpr,0,0,dpr,0,0);const shs=G&&G.L.shore?G.L.shore.side:0;const xmin=FX0()-20-(shs<0?90:0),xmax=FX1()+20+(shs>0?90:0),ymin=-100,ymax=D+70;const s0=Math.min(W/(xmax-xmin),H/(ymax-ymin));
+function setupCanvas(c,ctx,zoomable){const dpr=Math.min(2,window.devicePixelRatio||1);let W,H;if(zoomable){W=c.clientWidth||400;H=c.clientHeight||500;c.width=W*dpr;c.height=H*dpr}else{W=c.clientWidth||900;H=Math.round(W*(D+170)/(FX1()-FX0()+40));c.width=W*dpr;c.height=H*dpr;c.style.height=H+'px'}ctx.setTransform(dpr,0,0,dpr,0,0);const shs=G&&G.L.shore?G.L.shore.side:0;const xmin=FX0()-20-(shs<0?60:0),xmax=FX1()+20+(shs>0?60:0),ymin=-100,ymax=D+70;const s0=Math.min(W/(xmax-xmin),H/(ymax-ymin));
   let z=1,cxw=(xmin+xmax)/2,cyw=(ymin+ymax)/2;if(zoomable){z=VZ.z;if(VZ.follow&&G){VZ.cx=G.me.x;VZ.cy=G.me.y}if(z>1.01){cxw=VZ.cx;cyw=VZ.cy}}const s=s0*z;
   return{W,H,s,z,X:x=>W/2+(x-cxw)*s,Y:y=>H/2-(y-cyw)*s,ix:px=>cxw+(px-W/2)/s,iy:py=>cyw-(py-H/2)/s,xmin,xmax,ymin,ymax}}
 function seaColor(s){const t=clamp((s-3)/9,0,1);const a=[59,138,160],b=[15,74,99];return[Math.round(lerp(a[0],b[0],t)),Math.round(lerp(a[1],b[1],t)),Math.round(lerp(a[2],b[2],t))]}
@@ -613,7 +616,7 @@ function drawParts(ctx,V,t,realDt){ctx.strokeStyle='rgba(255,255,255,.28)';ctx.l
 function drawMark(ctx,V,p,lab,hi){const x=V.X(p.x),y=V.Y(p.y);if(hi){ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=1.5;ctx.setLineDash([3,3]);ctx.beginPath();ctx.arc(x,y,15,0,7);ctx.stroke();ctx.setLineDash([])}
   ctx.fillStyle=css('--buoy');ctx.beginPath();ctx.arc(x,y,7,0,7);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();if(lab){ctx.font='700 12px Chakra Petch, sans-serif';ctx.fillStyle='#fff';ctx.fillText(lab,x+10,y-9)}}
 function layFrom(ctx,V,T,hs){ctx.strokeStyle='rgba(255,255,255,.35)';ctx.setLineDash([3,6]);ctx.lineWidth=1;for(const h of hs){ctx.beginPath();ctx.moveTo(V.X(T.x),V.Y(T.y));ctx.lineTo(V.X(T.x-Math.sin(h*R)*900),V.Y(T.y-Math.cos(h*R)*900));ctx.stroke()}ctx.setLineDash([])}
-function drawShore(ctx,V){const sh=G.L.shore;if(!sh)return;const x0=sh.side>0?FX1()+40:FX0()-40;const X=V.X(x0);ctx.fillStyle='#2f3d33';ctx.beginPath();
+function drawShore(ctx,V){const sh=G.L.shore;if(!sh)return;const x0=sh.x??(sh.side>0?FX1()+40:FX0()-40);const X=V.X(x0);ctx.fillStyle='#2f3d33';ctx.beginPath();
   const far=sh.side>0?V.W+400:-400;const y0=-600,y1=D+900;ctx.moveTo(far,V.Y(y0));for(let y=y0;y<=y1;y+=25)ctx.lineTo(X+sh.side*(4*Math.sin(y/37)+2.5*Math.sin(y/13)),V.Y(y));ctx.lineTo(far,V.Y(y1));ctx.closePath();ctx.fill();
   ctx.save();ctx.translate(clamp(X+sh.side*14,12,V.W-12),V.H/2);ctx.rotate(sh.side>0?Math.PI/2:-Math.PI/2);ctx.fillStyle='rgba(255,255,255,.7)';ctx.font='600 13px Barlow, sans-serif';ctx.textAlign='center';ctx.fillText(sh.name,0,0);ctx.restore()}
 function drawCourse(ctx,V,t,lay){drawShore(ctx,V);const me=G.me,racing=G.phase==='race'||G.phase==='pre';const leg=racing?Math.min(me.leg,G.legs.length-1):-1;
@@ -1242,10 +1245,10 @@ function renderPerfil(){const p=prog(),rk=rankOf(p.xp);
 $('aids').onclick=()=>{ui.aids=!ui.aids;store.set('aids',ui.aids);renderPerfil()};
 $('toWho').onclick=()=>go('who');
 go(P?'home':'who');requestAnimationFrame(frame);
-window.__rolada={get G(){return G},go,newGame,simStep,startRace,doTack,finish,ideal,idealFull,sensRef,compState,compLevel,STAGES,COMPTUNE:()=>COMPTUNE,setTune:t=>Object.assign(COMPTUNE,t),showComp,setOff,setGate,ui,legK,effKind,ddFor,tgtOf,wind};
+window.__rolada={get G(){return G},go,VLEVELS,newGame,simStep,startRace,doTack,finish,ideal,idealFull,sensRef,compState,compLevel,STAGES,COMPTUNE:()=>COMPTUNE,setTune:t=>Object.assign(COMPTUNE,t),showComp,setOff,setGate,ui,legK,effKind,ddFor,tgtOf,wind};
 })();
 </script>
 
-<script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=cfccb525').catch(()=>{}))}</script>
+<script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=1e7165b7').catch(()=>{}))}</script>
 </body>
 </html>
