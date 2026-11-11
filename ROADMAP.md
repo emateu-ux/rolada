@@ -57,10 +57,16 @@ Recorregut: sortida → cenyida → **través** → **popa** → **porta de sota
 - Vent d'est: el més freqüent, amb onada.
 - Tret de cròniques de regates de Pasqua a la mateixa badia. Cal contrastar-ho amb algú que hi hagi regatejat.
 
-## v4.3 · Els dies d'abril a Saint-Raphaël · Publicat (ara)
+## v4.3 · Els dies d'abril a Saint-Raphaël · Publicat
 - Els quatre dies surten de dades reals de vent de la badia (19-26 d'abril, 2016-2026) i porten el seu percentatge: tèrmic del sud 49%, llevant 35%, mistral 9%, dia fluix 7%.
 - «Un dia d'abril»: no saps quin dia toca, només veus els senyals d'abans de sortir. Al resum et diu quin era.
 - «Com reconèixer el dia» a la pàgina de la seu: què es veu i com funciona cada vent.
+
+## v4.4 · Els dies de febrer a Garda · Publicat (ara)
+- Garda amb dades de vent de Riva de l'última setmana de febrer: Ora 62%, Ora fluixa 18%, vent del nord 13%, Pelèr de matí 7%.
+- L'Ora d'hivern és més fluixa que la d'estiu i la dreta encara pesa més.
+- «Un dia de febrer» i «Com reconèixer el dia», com a Saint-Raphaël.
+- Els models no coincideixen en quanta Ora hi ha: cal contrastar-ho amb el que han vist a l'aigua.
 
 ## v5 · Sortida real
 - Compte enrere de 3 minuts accelerat; el vaixell es pot moure abans del senyal (accelerar, frenar, virar).
