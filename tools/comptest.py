@@ -22,7 +22,7 @@ with sync_playwright() as p:
   pg.wait_for_timeout(600);pg.screenshot(path=S+'_deb.png',full_page=True);print('pos',pg.inner_text('#dPos'),'| rew',pg.inner_text('#dRew'),'| btn',pg.inner_text('#newr'),'again hidden',pg.is_hidden('#again'))
   pg.tap('#newr');pg.wait_for_timeout(300);pg.screenshot(path=S+'_comp1.png',full_page=True);print(pg.inner_text('#cInfo'))
   # race 2: quit -> retired (needs double tap)
-  pg.tap('#cGo');pg.wait_for_timeout(300);pg.tap('#go');pg.wait_for_timeout(500);pg.tap('#quit');pg.wait_for_timeout(200);print('after 1 tap phase',pg.evaluate("window.__rolada.G.phase"),pg.inner_text('#warn'));pg.tap('#quit');pg.wait_for_timeout(300)
+  pg.tap('#cGo');pg.wait_for_timeout(300);pg.tap('#go');pg.wait_for_timeout(500);pg.tap('#quit');pg.wait_for_timeout(200);print('after 1 tap phase',pg.evaluate("window.__rolada.G.phase"),pg.inner_text('#quitBox').replace('\n',' | '),'paused',pg.evaluate("window.__rolada.G.paused"));pg.tap('#quitYes');pg.wait_for_timeout(300)
   print('after 2 taps comp visible',pg.is_visible('#comp'));print(pg.inner_text('#cTable')[:300])
   # race 3 by simulation to end championship
   pg.tap('#cGo');pg.wait_for_timeout(300);pg.evaluate("(()=>{const R=window.__rolada;R.startRace();const G=R.G;Object.assign(G.me,{ai:true,st:'sens',m:.5,thr:4,del:2});let n=0;while(G.phase==='race'&&n<14000){R.simStep();n++}})()")

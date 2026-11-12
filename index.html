@@ -238,6 +238,9 @@ table.res tr.me td{color:var(--me);font-weight:700}
 }
 @media (max-width:900px){#debrief .dcard:last-child{order:-1}}
 /* v4.10 */
+.quitbox{position:absolute;inset:0;z-index:6;display:flex;align-items:center;justify-content:center;background:rgba(8,20,28,.6);padding:20px}.quitbox[hidden]{display:none}
+.qcard{display:flex;flex-direction:column;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;max-width:320px;width:100%;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+.qcard b{font-family:var(--f-disp);font-size:22px}.qcard span{color:var(--muted);font-size:14.5px}.qcard .row{flex-wrap:nowrap;gap:8px}.qcard .btn{flex:1}
 .tiles{grid-template-columns:repeat(6,1fr)!important}.tiles .tile{grid-column:span 3}.tiles .t-comp{grid-column:1/-1}.tiles .t3{grid-column:span 2;padding:12px 10px}.tiles .t3 .tt{font-size:19px}
 .t-shop{background:linear-gradient(140deg,#7a5a12,#d09a2a)}
 .vcard::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05) 30%,rgba(0,0,0,.6));z-index:0}
@@ -357,6 +360,7 @@ table.res tr.me td{color:var(--me);font-weight:700}
     <div class="field" id="field">
       <canvas id="cv" width="400" height="500" aria-label="Camp de regates vist des de dalt"></canvas>
       <div class="toast" id="warn" aria-live="polite" hidden></div>
+      <div class="quitbox" id="quitBox" role="dialog" aria-labelledby="quitTtl" hidden><div class="qcard"><b id="quitTtl">Vols deixar la regata?</b><span id="quitTxt"></span><div class="row"><button class="btn" id="quitNo">Continua</button><button class="btn sec" id="quitYes">Deixa-la</button></div></div></div>
       <div class="ztools"><button class="zb" id="zin" aria-label="Apropa">+</button><button class="zb" id="zout" aria-label="Allunya">−</button><button class="zb wide" id="zf" aria-pressed="true">Segueix-me</button><button class="zb wide" id="zall">Tot</button><span id="zl"></span></div>
     </div>
     <div class="ctl">
@@ -562,7 +566,7 @@ function makeFleet(lv,seed,tier=0){
 
 // ---------- game state
 let G=null;const ui={speed:store.get('speed',7),aids:store.get('aids',false)};
-function newGame(lvIdx,seed,daily){$('who').hidden=true;$('garage').hidden=true;$('comp').hidden=true;VZ.z=2.5;VZ.follow=true;pendingTack=false;
+function newGame(lvIdx,seed,daily){$('who').hidden=true;$('quitBox').hidden=true;$('garage').hidden=true;$('comp').hidden=true;VZ.z=2.5;VZ.follow=true;pendingTack=false;
   let L=typeof lvIdx==='object'?lvIdx:LEVELS[lvIdx];if(!L.comp&&L.tier==null)L=tierLevel(L,daily||!P?0:tierOf(L.id));seed=seed??Math.floor(Math.random()*1e9);
   // the finish line is not always laid in the same place: centre from 100 m outside (left of) the gate to 50 m inside, a bit higher or lower
   {const q=rng(seed*13+5),c=GC.x-100+150*q(),hw=55+10*q();FIN.x0=Math.round(c-hw);FIN.x1=Math.round(c+hw);FIN.y=Math.round(165+40*q())}
@@ -743,7 +747,7 @@ function render(realDt){if(G.phase==='debrief')return;const V=setupCanvas(cv,cx,
    const pts=[...G.tail,[me.x,me.y,G.t]];const k=Math.max(1,Math.min(3,(V.z||1)*0.55));const tm=performance.now()/1000;if(G.skin==='lava')drawTrail(cx,V,pts.slice(-14),'smoke',k,tm);drawTrail(cx,V,pts,G.trail,k,tm)}
   if(G.ghost)drawGhost(cx,V);
   drawBoat(cx,V,G.me,css('--me'),G.me.name);
-  if(G.paused){cx.fillStyle='rgba(8,20,28,.45)';cx.fillRect(0,0,V.W,V.H);cx.font='700 30px Chakra Petch, sans-serif';cx.fillStyle='#fff';cx.textAlign='center';cx.fillText('PAUSA',V.W/2,V.H/2);cx.font='14px Barlow, sans-serif';cx.fillText('Toca ▶ per continuar',V.W/2,V.H/2+24);cx.textAlign='left'}
+  if(G.paused&&$('quitBox').hidden){cx.fillStyle='rgba(8,20,28,.45)';cx.fillRect(0,0,V.W,V.H);cx.font='700 30px Chakra Petch, sans-serif';cx.fillStyle='#fff';cx.textAlign='center';cx.fillText('PAUSA',V.W/2,V.H/2);cx.font='14px Barlow, sans-serif';cx.fillText('Toca ▶ per continuar',V.W/2,V.H/2+24);cx.textAlign='left'}
   if(G.phase==='pre'){cx.font='700 24px Chakra Petch, sans-serif';cx.fillStyle='rgba(255,255,255,.92)';cx.textAlign='center';cx.fillText('Tria on surts',V.W/2,40);cx.textAlign='left'}
   updateHud()}
 function effAids(){return ui.aids&&!G.L.comp?{streaks:true,hint:true,lay:true,shadow:true}:G.L.aids}
@@ -818,10 +822,12 @@ function doTack(){const btn=$('vira');btn.classList.remove('flash');void btn.off
 let lastPress=0;function press(e){const now=performance.now();if(now-lastPress<350){if(e&&e.cancelable)e.preventDefault();return}lastPress=now;if(e&&e.cancelable&&e.type!=='click')e.preventDefault();doTack()}
 const vb=$('vira');vb.addEventListener('touchstart',press,{passive:false});vb.addEventListener('pointerdown',press);vb.addEventListener('mousedown',press);vb.addEventListener('click',press);
 document.addEventListener('keydown',e=>{if($('game').hidden)return;if(e.code==='Space'||e.code==='Enter'){if(G.phase==='race'){e.preventDefault();if(!e.repeat)doTack()}}if(G&&G.phase==='race'&&!e.repeat){if(e.code==='ArrowUp')setOff(1);if(e.code==='ArrowDown')setOff(-1);if(e.code==='ArrowLeft')setGate(0);if(e.code==='ArrowRight')setGate(1)}if(e.key==='p'||e.key==='P')togglePause()});
-function togglePause(){if(!G||G.phase!=='race')return;G.paused=!G.paused;$('pause').textContent=G.paused?'▶':'II'}
-$('pause').onclick=togglePause;let quitT=0;$('quit').onclick=()=>{if(G&&G.L.comp&&G.phase==='race'){if(performance.now()-quitT>3000){quitT=performance.now();warn('Toca ✕ un altre cop per abandonar: comptarà com a retirat');return}
-    G.phase='menu';simRest();const order=[...G.boats].filter(b=>!b.me).sort((a,b)=>pkey(a)-pkey(b));order.push(G.me);compRaceDone(order);showComp();return}
-  if(G&&G.phase==='race'&&G.t>20&&performance.now()-quitT>3000){quitT=performance.now();warn('Toca ✕ un altre cop per deixar la regata');return}backToPlay()};
+function togglePause(){if(!G||G.phase!=='race')return;$('quitBox').hidden=true;G.paused=!G.paused;$('pause').textContent=G.paused?'▶':'II'}
+$('pause').onclick=togglePause;function quitNow(){$('quitBox').hidden=true;if(G&&G.L.comp&&G.phase==='race'){G.paused=false;
+    G.phase='menu';simRest();const order=[...G.boats].filter(b=>!b.me).sort((a,b)=>pkey(a)-pkey(b));order.push(G.me);compRaceDone(order);showComp();return}backToPlay()}
+function quitAsk(){if(!(G&&G.phase==='race')){backToPlay();return}
+  G.paused=true;$('pause').textContent='▶';const comp=!!G.L.comp;$('quitTxt').textContent=comp?'Comptarà com a retirat en aquest campionat.':'No es desarà res d\'aquesta regata.';$('quitYes').textContent=comp?'Abandona':'Deixa-la';$('quitBox').hidden=false}
+$('quit').onclick=quitAsk;$('quitYes').onclick=quitNow;$('quitNo').onclick=()=>{$('quitBox').hidden=true;G.paused=false;$('pause').textContent='II'};
 // after you retire, the others keep racing to the finish so their result is real
 function simRest(){const me=G.me;me.done=true;me.x=1e5;me.y=-1e5;let ld=-99;
   while(G.t<G.maxT&&G.boats.some(b=>!b.done&&!b.me)){const t=G.t;computeDirty(t);rightOfWay(t);if(t-ld>=1){ld=t;for(const b of G.boats)if(b.ai)decide(b,t)}for(const b of G.boats)stepBoat(b,t,DT);G.t+=DT}
@@ -1478,6 +1484,6 @@ window.__rolada={get G(){return G},go,VLEVELS,newGame,simStep,startRace,doTack,f
 })();
 </script>
 
-<script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=88330ead').catch(()=>{}))}</script>
+<script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=66be6ca1').catch(()=>{}))}</script>
 </body>
 </html>
