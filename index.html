@@ -928,7 +928,7 @@ function drawWindChart(){const c=$('dWind'),g=c.getContext('2d');const pts=G.tra
 function revealWind(){const W=G.W;const k=W.real;const side=v=>v>0?'la dreta':'l\'esquerra';
   if(W.rz!=null){const mn=v=>nf(v/60,v<150?1:0),o=W.osc,o2=W.osc2;let t=o.A<2.5?`Avui gairebé no hi havia rolades: 1 o 2° a cada costat.${W.cliff?' Manava la pressió, no la direcció.':''}`:`Rolades d'avui: uns ${Math.round(o.A)}° a cada costat, cada ${mn(o.P)} min més o menys${W.rz>=.7?', irregulars':''}.`;
     if(o2.A>=2.5)t+=` A sobre, girs curts d'uns ${Math.round(o2.A)}° amb les ratxes.`;if(W.long)t+=` I una rolada lenta d'uns ${Math.round(W.long.A)}° que triga ${mn(W.long.P)} min a tornar: sembla persistent i no ho és.`;
-    if(W.trend)t+=` A més, el vent ha anat girant ${Math.round(Math.abs(W.trend))}° cap a ${side(W.trend)}.`;t+=Math.abs(W.lat*W.adv)>.25?` Les rolades entraven abans per ${side(W.lat)} i per dalt.`:' Les rolades arribaven abans a dalt del camp.';return t}
+    if(W.trend)t+=` A més, el vent ha anat girant ${Math.round(Math.abs(W.trend))}° cap a ${side(W.trend)}.`;if(o.A>=2.5)t+=Math.abs(W.lat*W.adv)>.25?` Les rolades entraven abans per ${side(W.lat)} i per dalt.`:' Les rolades arribaven abans a dalt del camp.';return t}
   if(k==='osc')return`Avui el vent oscil·lava uns ${Math.round(W.osc.A)}° a cada costat, cada ${nf(W.osc.P/60,1)} minuts més o menys.`;
   if(k==='press')return`Avui hi havia més ratxes per ${side(W.gustSide)} del camp.`;
   if(k==='pers')return`Avui el vent ha girat ${Math.round(Math.abs(W.trend))}° cap a ${side(W.trend)} durant la cenyida.`;
@@ -1485,6 +1485,6 @@ window.__rolada={get G(){return G},go,VLEVELS,newGame,simStep,startRace,doTack,f
 })();
 </script>
 
-<script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=5b2d8c37').catch(()=>{}))}</script>
+<script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=56665bce').catch(()=>{}))}</script>
 </body>
 </html>
