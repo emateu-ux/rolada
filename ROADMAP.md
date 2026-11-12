@@ -110,12 +110,19 @@ Recorregut: sortida → cenyida → **través** → **popa** → **porta de sota
 - Targetes de les seus més llegibles, categories en una sola fila, formulari d'entrada que no talla el text.
 - Pendent: packs de conjunt i missions.
 
-## v4.11 · Torrevieja · Publicat (ara)
+## v4.11 · Torrevieja · Publicat
 - Seu nova: Torrevieja, amb els dies de finals de gener (Ponent 33%, Calma i vent de mar fluix 25%, Gregal i llevant 22%, Llebeig 21%), «Un dia de gener» i «Com reconèixer el dia».
 - Data exacta de Garda: 26-28 de febrer de 2027.
 - v4.11.1: la Botiga és un apartat a part, fora de Skins, amb entrada pròpia a l'inici i a la barra de baix.
 - v4.11.2: l'arribada ja no és sempre al mateix lloc; a cada regata queda més per fora o més per dins de la porta.
 - Per confirmar: les dates de Torrevieja (la premsa diu 28-31 de gener i TracTrac 30 de gener - 2 de febrer) i on munten el camp.
+
+## v4.12 · Menys rolada, més pressió · Publicat (ara)
+- Garda amb Ora: gairebé sense rolades (1 o 2° a cada costat). La dreta guanya per la ratxa de sota la pedra, no per la direcció. Ho va corregir el Loris després de navegar-hi.
+- Vents de terra establerts (mistral, mestral, ponent de Torrevieja): direcció més estable, amb un gir curt a cada ratxa.
+- Tèrmic de Saint-Raphaël i llebeig de Palma: rolades més petites. Fora l'oscil·lació lenta del tèrmic.
+- Nord i Pelèr de Garda: rolades més petites.
+- Per fer: mesurar les rolades amb fitxers de MetaSail de cada seu, i que la Mia i el Loris repassin dia per dia.
 
 ## v5 · Sortida real
 - Compte enrere de 3 minuts accelerat; el vaixell es pot moure abans del senyal (accelerar, frenar, virar).
