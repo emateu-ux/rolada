@@ -564,6 +564,8 @@ function makeFleet(lv,seed,tier=0){
 let G=null;const ui={speed:store.get('speed',7),aids:store.get('aids',false)};
 function newGame(lvIdx,seed,daily){$('who').hidden=true;$('garage').hidden=true;$('comp').hidden=true;VZ.z=2.5;VZ.follow=true;pendingTack=false;
   let L=typeof lvIdx==='object'?lvIdx:LEVELS[lvIdx];if(!L.comp&&L.tier==null)L=tierLevel(L,daily||!P?0:tierOf(L.id));seed=seed??Math.floor(Math.random()*1e9);
+  // the finish line is not always laid in the same place: centre from 100 m outside (left of) the gate to 50 m inside, a bit higher or lower
+  {const q=rng(seed*13+5),c=GC.x-100+150*q(),hw=55+10*q();FIN.x0=Math.round(c-hw);FIN.x1=Math.round(c+hw);FIN.y=Math.round(165+40*q())}
   if(L.any){const days=L.any.map(id=>VLEVELS.find(x=>x.id===id)),tot=days.reduce((a,d)=>a+d.p,0);let u=rng(seed*17+1)()*tot,D=days[0];for(const d of days){if(u<d.p){D=d;break}u-=d.p}
     L={...L,wind:D.wind,loc:D.loc,shore:D.shore,mirror:D.mirror,off:D.off,field:D.field,real:D,brief:'El que veus abans de sortir: '+D.signs}}
   const W=makeWind(L.wind||L.id,seed);
@@ -1476,6 +1478,6 @@ window.__rolada={get G(){return G},go,VLEVELS,newGame,simStep,startRace,doTack,f
 })();
 </script>
 
-<script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=de9b7323').catch(()=>{}))}</script>
+<script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=88330ead').catch(()=>{}))}</script>
 </body>
 </html>
