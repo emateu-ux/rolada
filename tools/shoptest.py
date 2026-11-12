@@ -14,13 +14,13 @@ with sync_playwright() as p:
   print('coins',pg.inner_text('#gCoins'))
   own=pg.evaluate("JSON.parse(localStorage.getItem('rolada:p:x_test:own'))");print('own',own)
   # give coins, open the shop view and buy a duck (tap twice)
-  pg.evaluate("localStorage.setItem('rolada:p:x_test:coins','10000')");pg.tap('#tabbar [data-go=home]');pg.tap('#tabbar [data-go=garage]');pg.wait_for_timeout(200);pg.tap('#gView [data-v=shop]');pg.wait_for_timeout(200)
+  pg.evaluate("localStorage.setItem('rolada:p:x_test:coins','10000')");pg.tap('#tabbar [data-go=home]');pg.tap('#tabbar [data-go=shop]');pg.wait_for_timeout(300)
   def buy(k):
     pg.tap(f'.skin[data-k="{k}"]');pg.wait_for_timeout(100);t1=pg.inner_text(f'.skin[data-k="{k}"]');pg.tap(f'.skin[data-k="{k}"]');pg.wait_for_timeout(100);return t1.split('\n')[-1],pg.inner_text('#gMsg')
   print('duck',buy('boat:duck'));print('lava',buy('boat:lava'))
   for cat,item in [('trail','fire'),('flag','flame'),('celeb','horn')]:
     pg.tap(f'#gTabs [data-c="{cat}"]');pg.wait_for_timeout(300);print(cat,buy(f'{cat}:{item}'));pg.screenshot(path=f'{S}_{cat}.png',full_page=True)
-  pg.tap('#gView [data-v=mine]');pg.wait_for_timeout(200);print('mine celeb:',pg.inner_text('.skin[data-k="celeb:horn"]').replace('\n',' | '));pg.tap('.skin[data-k="celeb:horn"] .play');pg.wait_for_timeout(700);pg.screenshot(path=S+'_nova.png')
+  pg.tap('#tabbar [data-go=garage]');pg.wait_for_timeout(200);print('mine celeb:',pg.inner_text('.skin[data-k="celeb:horn"]').replace('\n',' | '));pg.tap('.skin[data-k="celeb:horn"] .play');pg.wait_for_timeout(700);pg.screenshot(path=S+'_nova.png')
   pg.wait_for_timeout(4000)
   print('coins after',pg.inner_text('#gCoins'))
   # race with lava + fire + flame flag; pre-start buttons

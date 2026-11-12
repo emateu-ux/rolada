@@ -238,6 +238,8 @@ table.res tr.me td{color:var(--me);font-weight:700}
 }
 @media (max-width:900px){#debrief .dcard:last-child{order:-1}}
 /* v4.10 */
+.tiles{grid-template-columns:repeat(6,1fr)!important}.tiles .tile{grid-column:span 3}.tiles .t-comp{grid-column:1/-1}.tiles .t3{grid-column:span 2;padding:12px 10px}.tiles .t3 .tt{font-size:19px}
+.t-shop{background:linear-gradient(140deg,#7a5a12,#d09a2a)}
 .vcard::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05) 30%,rgba(0,0,0,.6));z-index:0}
 .vcard>span{z-index:1;text-shadow:0 1px 3px rgba(0,0,0,.55)}
 #gTabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -12px;padding:0 12px}#gTabs::-webkit-scrollbar{display:none}#gTabs .chip{flex:none}
@@ -282,8 +284,7 @@ table.res tr.me td{color:var(--me);font-weight:700}
   </section>
 
   <section id="garage" hidden>
-    <div class="shead"><h2>Skins</h2><span class="coinbal">🪙 <b id="gCoins">0</b></span><button class="btn sec" id="gBack" hidden>Inici</button></div>
-    <div class="seg" id="gView"><button data-v="mine">Les meves</button><button data-v="shop">Botiga</button></div>
+    <div class="shead"><h2 id="gTitle">Skins</h2><span class="coinbal">🪙 <b id="gCoins">0</b></span><button class="btn sec" id="gBack" hidden>Inici</button></div>
     <div id="gOffer"></div>
     <div class="settings" id="gTabs"></div>
     <p class="small" id="gMsg" style="margin:0" aria-live="polite"></p>
@@ -395,7 +396,7 @@ table.res tr.me td{color:var(--me);font-weight:700}
     </div>
   </section>
 </div>
-<nav id="tabbar"><button data-go="home"><span>⌂</span>Inici</button><button data-go="board" id="tabBoard"><span>☰</span>Rànquing</button><button data-go="garage"><span>🎨</span>Skins</button><button data-go="perfil"><span>☺</span>Perfil</button></nav>
+<nav id="tabbar"><button data-go="home"><span>⌂</span>Inici</button><button data-go="board" id="tabBoard"><span>☰</span>Rànquing</button><button data-go="garage"><span>🎨</span>Skins</button><button data-go="shop"><span>🛒</span>Botiga</button><button data-go="perfil"><span>☺</span>Perfil</button></nav>
 
 <script>
 (()=>{
@@ -1259,10 +1260,10 @@ let shopCat='boat',buyPending=null,shopView='mine',shopMsg='';
 function showGarage(){go('garage')}
 function showGarageR(){owned();
   const shop=shopView==='shop';if(shop&&shopCat==='troph')shopCat='boat';
-  $('gView').querySelectorAll('button').forEach(b=>{b.setAttribute('aria-pressed',b.dataset.v===shopView);b.onclick=()=>{shopView=b.dataset.v;buyPending=null;shopMsg='';showGarageR()}});
+  $('gTitle').textContent=shop?'Botiga':'Skins';
   const os=offerSet(),left=ITEMS.filter(i=>onOffer(i)&&!has(i));
   $('gOffer').innerHTML=shop?`<div class="offer"><span class="small">Conjunt de la setmana · 25% menys</span><b>${os}</b><span class="small">${left.length?left.map(i=>i.name).join(' · '):'Ja el tens sencer.'}</span></div>`:'';
-  $('gMsg').textContent=shopMsg||(shop?'Només canvia com es veu: tots van igual de ràpid.':'');
+  $('gMsg').textContent=shopMsg||(shop?'Només canvia com es veu: tots van igual de ràpid.':'El que tens. Toca per equipar. Per comprar-ne més, ves a la Botiga.');
   $('gCoins').textContent=coins();$('gTabs').innerHTML=CATS.map(c=>`<button class="chip" data-c="${c.id}" aria-pressed="${c.id===shopCat}">${c.name}</button>`).join('')+(shop?'':`<button class="chip" data-c="troph" aria-pressed="${shopCat==='troph'}">Trofeus</button>`);
   $('gTabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{shopCat=b.dataset.c;buyPending=null;shopMsg='';showGarageR()});
   if(shopCat==='troph'){const tr=pget('trophies',[]);cancelAnimationFrame(shopRAF);$('skins').innerHTML=tr.length?tr.slice().reverse().map((t,i)=>`<div class="skin" style="--tc:${['#cd7f32','#c0c0c0','#ffd23f','#7ff0ff'][t.stage]}"><span class="tier">Temporada ${t.season}</span><canvas width="220" height="220" data-st="${t.stage}" data-p="${t.pos}"></canvas><b>${STAGES[t.stage].name}</b><span class="small">${t.pos}a de ${t.n}</span></div>`).join(''):'<p class="small">Encara no tens trofeus. Classifica\'t en un campionat de la Competició.</p>';
@@ -1289,7 +1290,7 @@ function shopTap(it){const k=ikey(it);const C=CATS.find(c=>c.id===it.cat);
   if(it.special)return;
   if(buyPending!==k){buyPending=k;showGarageR();return}
   const pr=priceOf(it);if(coins()<pr){showGarageR();return}
-  pset('coins',coins()-pr);pset('own',[...owned(),k]);pset(C.key,it.id);buyPending=null;shopMsg=`${it.name}: comprat i equipat. El trobaràs a «Les meves».`;beep([[784,.1],[1047,.25]]);syncCloud();showGarageR()}
+  pset('coins',coins()-pr);pset('own',[...owned(),k]);pset(C.key,it.id);buyPending=null;shopMsg=`${it.name}: comprat i equipat. El trobaràs a Skins.`;beep([[784,.1],[1047,.25]]);syncCloud();showGarageR()}
 $('gBack').onclick=()=>{cancelAnimationFrame(shopRAF);go('home')};
 // ---------- competition: seasons of championships with qualification
 const EURN=['ESP','ITA','FRA','POL','GBR','NED','GER','DEN','SWE','TUR','GRE','CRO','POR','NOR','HUN','AUT'];
@@ -1407,11 +1408,13 @@ const SCREENS=['who','home','train','seus','seu','reptes','perfil','comp','garag
 let curScreen='home',lastPlay='home',curSeu=null;
 const PLAYSCR=['train','seu','comp','reptes'];
 function go(s,arg){if(!P&&s!=='who'){s='who'}
+  // Skins (what you own) and Botiga (what you can buy) are two entries that share one screen
+  let tab=s;if(s==='shop'||s==='garage'){shopView=s==='shop'?'shop':'mine';buyPending=null;shopMsg='';s='garage'}
   if(G&&G.phase!=='menu'&&!['game','debrief'].includes(s))G.phase='menu';
   document.body.classList.remove('playing','prestart');SCREENS.forEach(i=>{const el=$(i);if(el)el.hidden=i!==s});
   curScreen=s;if(PLAYSCR.includes(s))lastPlay=s;if(s==='seu'&&arg)curSeu=arg;
   document.body.classList.toggle('nav',s!=='who');window.scrollTo(0,0);
-  $('tabbar').querySelectorAll('button').forEach(b=>b.setAttribute('aria-current',b.dataset.go===s||(b.dataset.go==='home'&&['train','seus','seu','reptes','comp'].includes(s))?'page':'false'));
+  $('tabbar').querySelectorAll('button').forEach(b=>b.setAttribute('aria-current',b.dataset.go===tab||(b.dataset.go==='home'&&['train','seus','seu','reptes','comp'].includes(s))?'page':'false'));
   $('tabBoard').hidden=!(CLOUD_ON&&FAM&&P&&P.cloud);
   ({home:renderHome,train:renderTrain,seus:renderSeus,seu:renderSeu,reptes:renderReptes,perfil:renderPerfil,comp:showCompR,garage:showGarageR,board:showBoardR,who:showWhoR})[s]?.()}
 function showMenu(){go('home')}
@@ -1426,8 +1429,9 @@ function renderHome(){const p=prog(),rk=rankOf(p.xp);const tr=pget('trophies',[]
     {go:'comp',ic:'🏆',t:'Competició',d:`Temporada ${c.season} · ${S.short} · ${c.champ.res.length?'regata '+(c.champ.res.length+1)+' de '+S.races:'per començar'}`,cls:'t-comp'},
     {go:'seus',ic:'📍',t:'Seus',d:`${VENUES.length} camps de regata, cadascun amb el seu vent`,cls:'t-seus'},
     {go:'train',ic:'🎯',t:'Entrenament',d:`Nivells i repte del dia${st.n?' · 🔥 '+st.n:''}`,cls:'t-train'},
-    {go:'reptes',ic:'👻',t:'Reptes',d:CHAL_ON?(nCh?`${nCh} per jugar`:'Entre germans, amb el mateix vent'):'Aviat',cls:'t-rep'},
-    {go:'garage',ic:'🎨',t:'Skins',d:`Les teves i la botiga · 🪙 ${coins()}`,cls:'t-gar'}];
+    {go:'reptes',ic:'👻',t:'Reptes',d:CHAL_ON?(nCh?`${nCh} per jugar`:'Entre germans'):'Aviat',cls:'t-rep t3'},
+    {go:'garage',ic:'🎨',t:'Skins',d:'Les teves',cls:'t-gar t3'},
+    {go:'shop',ic:'🛒',t:'Botiga',d:`🪙 ${coins()}`,cls:'t-shop t3'}];
   {const now=new Date(),day0=new Date(now.getFullYear(),now.getMonth(),now.getDate()),dt=a=>new Date(a[0],a[1]-1,a[2]);const nx=VENUES.filter(v=>v.when&&dt(v.when.e)>=day0).sort((a,b)=>dt(a.when.d)-dt(b.when.d))[0];
    const dd=nx?Math.round((dt(nx.when.d)-day0)/864e5):0;const done=st.d===today();
    $('quick').innerHTML=(nx?`<button id="qNext"><span class="ql">Propera regata</span><span class="qt">${nx.name.split(' ')[0]}</span><span class="qd">${dd<=0?'Ara, '+nx.when.txt:nx.when.approx?nx.when.txt:dd===1?'Demà':'D\'aquí a '+dd+' dies'} · practica-hi</span></button>`:'')+
@@ -1472,6 +1476,6 @@ window.__rolada={get G(){return G},go,VLEVELS,newGame,simStep,startRace,doTack,f
 })();
 </script>
 
-<script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=fa8023d0').catch(()=>{}))}</script>
+<script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=de9b7323').catch(()=>{}))}</script>
 </body>
 </html>

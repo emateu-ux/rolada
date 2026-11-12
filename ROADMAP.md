@@ -113,6 +113,7 @@ Recorregut: sortida → cenyida → **través** → **popa** → **porta de sota
 ## v4.11 · Torrevieja · Publicat (ara)
 - Seu nova: Torrevieja, amb els dies de finals de gener (Ponent 33%, Calma i vent de mar fluix 25%, Gregal i llevant 22%, Llebeig 21%), «Un dia de gener» i «Com reconèixer el dia».
 - Data exacta de Garda: 26-28 de febrer de 2027.
+- v4.11.1: la Botiga és un apartat a part, fora de Skins, amb entrada pròpia a l'inici i a la barra de baix.
 - Per confirmar: les dates de Torrevieja (la premsa diu 28-31 de gener i TracTrac 30 de gener - 2 de febrer) i on munten el camp.
 
 ## v5 · Sortida real
