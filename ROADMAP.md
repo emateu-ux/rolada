@@ -103,12 +103,17 @@ Recorregut: sortida → cenyida → **través** → **popa** → **porta de sota
 - Per confirmar amb els nens: quant dura una primera cenyida real, i si les rolades de cada seu s'assemblen al que han vist.
 - Els reptes pendents fets a les seus abans d'aquesta versió ja no tenen el mateix vent.
 
-## v4.10 · Interfície més clara, Skins i Botiga · Publicat (ara)
+## v4.10 · Interfície més clara, Skins i Botiga · Publicat
 - Inici: propera regata (amb els dies que falten) i repte del dia a un toc.
 - «Garatge» ara és «Skins», amb dues vistes: «Les meves» i «Botiga». Conjunt de la setmana amb un 25% menys, sense compte enrere.
 - Resum: botons sempre visibles a baix. Deixar una regata demana confirmar. La pausa es veu.
 - Targetes de les seus més llegibles, categories en una sola fila, formulari d'entrada que no talla el text.
 - Pendent: packs de conjunt i missions.
+
+## v4.11 · Torrevieja · Publicat (ara)
+- Seu nova: Torrevieja, amb els dies de finals de gener (Ponent 33%, Calma i vent de mar fluix 25%, Gregal i llevant 22%, Llebeig 21%), «Un dia de gener» i «Com reconèixer el dia».
+- Data exacta de Garda: 26-28 de febrer de 2027.
+- Per confirmar: les dates de Torrevieja (la premsa diu 28-31 de gener i TracTrac 30 de gener - 2 de febrer) i on munten el camp.
 
 ## v5 · Sortida real
 - Compte enrere de 3 minuts accelerat; el vaixell es pot moure abans del senyal (accelerar, frenar, virar).
