@@ -122,7 +122,7 @@ body.nav header.top{display:none}
 .mecard .bar{grid-column:1/-1;height:6px;border-radius:3px;background:var(--line);overflow:hidden}.mecard .bar i{display:block;height:100%;background:var(--me)}
 .mecard .mestats{grid-column:1/-1;font-family:var(--f-disp);color:#ffd166}
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.tile{display:flex;flex-direction:column;gap:4px;text-align:left;border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:16px 14px;min-height:128px;color:#fff;cursor:pointer}
+.tile{display:flex;flex-direction:column;gap:4px;text-align:left;border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:14px 14px;min-height:104px;color:#fff;cursor:pointer}
 .tile .ic{font-size:30px;line-height:1}.tile .tt{font-family:var(--f-disp);font-size:22px;font-weight:700;margin-top:auto}.tile .td{font-size:12.5px;opacity:.85;line-height:1.3}
 .tile.t-comp{grid-column:1/-1;background:linear-gradient(140deg,#5a3d0c,#b8862a)}
 .t-seus{background:linear-gradient(140deg,#1f5a4c,#2a7f9e)}.t-train{background:linear-gradient(140deg,#1d3f7a,#3b74c4)}.t-rep{background:linear-gradient(140deg,#3d2a6b,#7a5cc4)}.t-gar{background:linear-gradient(140deg,#5a1f3a,#b84a6e)}
@@ -237,6 +237,21 @@ table.res tr.me td{color:var(--me);font-weight:700}
   #debrief{grid-template-columns:1fr}
 }
 @media (max-width:900px){#debrief .dcard:last-child{order:-1}}
+/* v4.10 */
+.vcard::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05) 30%,rgba(0,0,0,.6));z-index:0}
+.vcard>span{z-index:1;text-shadow:0 1px 3px rgba(0,0,0,.55)}
+#gTabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -12px;padding:0 12px}#gTabs::-webkit-scrollbar{display:none}#gTabs .chip{flex:none}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px}
+.seg button{border:0;border-radius:9px;background:none;color:var(--muted);font:600 16px var(--f-disp);padding:9px 0;cursor:pointer}.seg button[aria-pressed=true]{background:var(--fg);color:var(--ink)}
+.offer{display:flex;flex-direction:column;gap:2px;border:1px solid #ffd166;border-radius:12px;padding:10px 14px;background:linear-gradient(140deg,rgba(255,209,102,.16),rgba(255,209,102,.04))}
+.offer b{font-family:var(--f-disp);font-size:18px}.skin .was{text-decoration:line-through;color:var(--muted);font-size:12px;margin-right:6px}
+.quick{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.quick button{display:flex;flex-direction:column;gap:2px;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 12px;color:var(--fg);cursor:pointer;min-width:0}
+.quick .ql{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}.quick .qt{font-family:var(--f-disp);font-size:18px;font-weight:700}.quick .qd{font-size:12.5px;color:var(--muted)}
+#who .row input{flex:1 1 130px}
+@media (max-width:900px){#debrief{padding-bottom:86px}
+  #debrief .dacts{position:fixed;left:0;right:0;bottom:0;z-index:14;margin:0;flex-wrap:nowrap!important;gap:8px;background:rgba(10,24,32,.97);border-top:1px solid var(--line);padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px))}
+  #debrief .dacts .btn{flex:1;padding-left:6px;padding-right:6px;white-space:nowrap}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
@@ -253,7 +268,7 @@ table.res tr.me td{color:var(--me);font-weight:700}
     <div class="who" id="whoList"></div>
     <div class="card" style="max-width:none">
       <span class="small">Regatista nou</span>
-      <div class="row" style="flex-wrap:wrap"><input id="oName" placeholder="Nom" maxlength="16" aria-label="Nom"><input id="oSail" placeholder="Número de vela (ESP 1234)" maxlength="10" aria-label="Número de vela" autocapitalize="characters"><button class="btn" id="oGo">Endavant</button></div>
+      <div class="row" style="flex-wrap:wrap"><input id="oName" placeholder="Nom" maxlength="16" aria-label="Nom"><input id="oSail" placeholder="Núm. de vela" maxlength="10" aria-label="Número de vela" autocapitalize="characters"><button class="btn" id="oGo">Endavant</button></div>
     </div>
     <p class="small" id="whoMsg" aria-live="polite"></p>
   </section>
@@ -267,9 +282,11 @@ table.res tr.me td{color:var(--me);font-weight:700}
   </section>
 
   <section id="garage" hidden>
-    <div class="shead"><h2>Garatge</h2><span class="coinbal">🪙 <b id="gCoins">0</b></span><button class="btn sec" id="gBack" hidden>Inici</button></div>
-    <p class="small" style="margin:0">Guanya monedes a les regates i compra el que vulguis: estalvia per al millor o ves canviant. Només canvia com es veu: tots van igual de ràpid.</p>
+    <div class="shead"><h2>Skins</h2><span class="coinbal">🪙 <b id="gCoins">0</b></span><button class="btn sec" id="gBack" hidden>Inici</button></div>
+    <div class="seg" id="gView"><button data-v="mine">Les meves</button><button data-v="shop">Botiga</button></div>
+    <div id="gOffer"></div>
     <div class="settings" id="gTabs"></div>
+    <p class="small" id="gMsg" style="margin:0" aria-live="polite"></p>
     <div class="skins" id="skins"></div>
   </section>
 
@@ -285,6 +302,7 @@ table.res tr.me td{color:var(--me);font-weight:700}
   <section id="home" hidden>
     <div class="hero"><div class="logo biglogo">ROL<span>A</span>DA</div><div class="tag">Simulador de tàctica en Optimist</div></div>
     <div id="meBox"></div>
+    <div class="quick" id="quick"></div>
     <div class="tiles" id="tiles"></div>
   </section>
 
@@ -373,11 +391,11 @@ table.res tr.me td{color:var(--me);font-weight:700}
       <h2>Què ha passat</h2>
       <ul class="facts" id="dFacts"></ul>
       <table class="res" id="dRes"></table>
-      <div class="row" style="flex-wrap:wrap"><button class="btn" id="again">Mateix vent</button><button class="btn sec" id="newr">Nova regata</button><button class="btn sec" id="back2">Menú</button></div>
+      <div class="row dacts" style="flex-wrap:wrap"><button class="btn" id="again">Mateix vent</button><button class="btn sec" id="newr">Nova regata</button><button class="btn sec" id="back2">Menú</button></div>
     </div>
   </section>
 </div>
-<nav id="tabbar"><button data-go="home"><span>⌂</span>Inici</button><button data-go="board" id="tabBoard"><span>☰</span>Rànquing</button><button data-go="garage"><span>🛠️</span>Garatge</button><button data-go="perfil"><span>☺</span>Perfil</button></nav>
+<nav id="tabbar"><button data-go="home"><span>⌂</span>Inici</button><button data-go="board" id="tabBoard"><span>☰</span>Rànquing</button><button data-go="garage"><span>🎨</span>Skins</button><button data-go="perfil"><span>☺</span>Perfil</button></nav>
 
 <script>
 (()=>{
@@ -428,7 +446,7 @@ const LEVELS=[
 // side: +1 = right side of the course looking upwind, -1 = left side
 const VAIDS={streaks:false,hint:false,lay:true,shadow:true};
 const VENUES=[
- {id:'garda',name:'Garda',sub:'Riva del Garda',
+ {id:'garda',when:{d:[2027,2,22],e:[2027,2,28],txt:'finals de febrer',approx:1},name:'Garda',sub:'Riva del Garda',
   // days and shares from hourly wind at Riva, 20-28 February: two fine models (ICON-D2 and AROME, 2023-2026, 36 days each: Ora 64-69%, under 4 kn 17-19%,
   // north all day 11-14%, north only in the morning 3-11%) and a coarser reanalysis (CERRA, 2012-2021, 90 days: Ora 29%, calm 50%, north 13%). Ora onset ~12 h, peak 14-15 h, ~200°.
   guide:"Vent a Riva del 20 al 28 de febrer, segons tres models meteorològics. Els dos més fins (2023 a 2026) donen Ora dos dies de cada tres. El més gruixut (2012 a 2021) en dona un de cada tres i molta més calma. El vent del nord tot el dia surt igual a tots tres: un dia de cada vuit. El 2026 la primera jornada es va fer amb l'Ora de la tarda, després d'esperar al matí.",
@@ -439,7 +457,7 @@ const VENUES=[
   {id:'g_nord',p:13,t:'Vent del nord',d:"13% dels dies. Bufa del nord tot el dia i l'Ora no entra.",brief:"Vent del nord, a ratxes, de 8 a 15 nusos. Avui no afluixa al migdia. Els penya-segats queden a l'esquerra i hi bufa més. Compta seguir les rolades i la flota.",signs:"Ja bufa del nord a primera hora i a migdia, en lloc d'afluixar, puja.",how:"No és el Pelèr tèrmic sinó vent de mapa, del nord o foehn. Bufa tot el dia per l'eix del llac, d'uns 20° a 40°, i no deixa entrar l'Ora. A l'hivern pot ser molt fort.",field:[-700,440],shore:{side:-1,x:-740,name:'Penya-segats'},loc:{side:-1,p:.2},wind:{k:'osc',spd:[9,13],osc:{A:[6,9],P:[200,360]},osc2:{A:[2,4],P:[45,100]},rz:.7,gusts:{n:8,a:[3,5],dd:10},cliff:{x:-760,side:-1,kn:4,w:320,veer:12,bay:1.5}}},
   {id:'g_peler',p:7,t:'Pelèr de matí',d:'7% dels dies. Del nord a primera hora i va baixant.',brief:"Pelèr de matí, del nord. Els penya-segats queden a l'esquerra i hi bufa més. Hi ha rolades i ratxes que baixen de la muntanya: aquí compta més seguir les rolades i la flota. Va baixant.",signs:"Bufa del nord a primera hora, però a mig matí ja afluixa.",how:"Vent tèrmic del matí: baixa de la muntanya cap al llac i mor abans de migdia. Després ve una calma i, si fa sol, l'Ora. Al febrer és poc freqüent i fluix.",field:[-700,440],shore:{side:-1,x:-740,name:'Penya-segats'},loc:{side:-1,p:.1},wind:{k:'osc',spd:[7,10],osc:{A:[6,9],P:[200,360]},osc2:{A:[2,4],P:[45,100]},rz:.7,gusts:{n:7,a:[2.5,4],dd:10},build:-4,cliff:{x:-760,side:-1,kn:3,w:320,veer:8,bay:1.5}}},
   {id:'g_any',any:['g_ora','g_weak','g_nord','g_peler'],t:'Un dia de febrer',d:'No saps quin dia toca. Mira els senyals abans de sortir.',brief:''}]},
- {id:'sr',name:'Saint-Raphaël',sub:"Badia de Fréjus i l'Esterel",
+ {id:'sr',when:{d:[2027,4,19],e:[2027,4,23],txt:'19-23 d\'abril'},name:'Saint-Raphaël',sub:"Badia de Fréjus i l'Esterel",
   // days and shares from hourly wind in the bay, 19-26 April 2016-2026, 12-17 h (weather model reanalysis, 88 days):
   // S-SSE 49% (thermal, onset ~12 h, peak ~15 h, veers ~10° right in the afternoon), E 35% (cloudy, gusty, peak at noon), W 9%, under 5 kn 7%
   guide:"Vent de la badia del 19 al 26 d'abril, de 12 a 17 h, anys 2016 a 2026 (model meteorològic). Nou dies de cada deu són tèrmic o llevant. L'endemà d'un dia de tèrmic torna a ser tèrmic una mica més de la meitat de les vegades, i amb el llevant passa igual.",
@@ -449,7 +467,7 @@ const VENUES=[
   {id:'sr_mistral',p:9,t:'Mistral',d:'9% dels dies. Vent de terra, fort i a ratxes. Aigua plana.',brief:"Mistral: vent de terra, de ponent, de 12 a 19 nusos i a ratxes, amb aigua plana. A prop de la platja bufa menys i més irregular; enfora, molt més. Les ratxes arriben amb rolades grans: mira l'aigua i la brúixola.",signs:"Bufa fort de ponent des de primera hora i no afluixa. Aigua plana a prop de la platja i borreguets enfora.",how:"Vent de terra, d'uns 280°, igual tot el dia, amb ratxes de 30 nusos. Com més a prop de la platja, menys vent i més irregular. Un de cada cinc dies de mistral passa de 18 nusos de mitjana.",wind:{k:'osc',spd:[12,17],osc:{A:[8,12],P:[200,400]},osc2:{A:[3,5],P:[45,100]},rz:.8,gusts:{n:9,a:[4,6],dd:15},lee:4}},
   {id:'sr_weak',p:7,t:'Dia fluix',d:'7% dels dies. Poc vent, a clapes i canviant.',brief:"Dia tapat i fresc: el tèrmic no arrenca. Menys de 6 nusos, a clapes i amb rolades grans. Avui cap costat paga sempre: mira on hi ha vent.",signs:"Cel tapat i fresc. A migdia encara no ha entrat res clar i les banderes canvien de costat.",how:"Sense sol la terra no s'escalfa i el tèrmic no arrenca. Menys de 5 nusos i la direcció es mou 30° amunt i avall. Guanya qui va de clapa en clapa.",shore:{side:-1,name:'Costa'},wind:{k:'press',spd:[3.5,5.5],osc:{A:[10,16],P:[240,480]},osc2:{A:[3,5],P:[60,120]},rz:1,gusts:{n:14,a:[2,4],dd:12}}},
   {id:'sr_any',any:['sr_breeze','sr_est','sr_mistral','sr_weak'],t:"Un dia d'abril",d:'No saps quin dia toca. Mira els senyals abans de sortir.',brief:''}]},
- {id:'garraf',name:'Garraf',sub:'Costa del Garraf',
+ {id:'garraf',when:{d:[2026,11,21],e:[2026,11,22],txt:'21-22 de novembre'},name:'Garraf',sub:'Costa del Garraf',
   // days and shares from hourly wind off Garraf, 14-28 November 2015-2025, 11-16 h (reanalysis, 165 days): under 5 kn 38%, W-N offshore 24%,
   // SW 19% (+S 4%), NE-E 14%. A finer model with only three years (AROME 2023-2025) gives 62% light days and 4% easterlies.
   guide:"Vent davant del Garraf del 14 al 28 de novembre, de les 11 a les 16 h, anys 2015 a 2025 (model meteorològic). Un model més fi, amb només tres anys, dona encara més dies fluixos, sis de cada deu, i menys llevant. Els 21 i 22 de novembre d'aquests onze anys van ser: 8 dies de terral, 8 de fluixos, 5 de garbí i 1 de llevant.",
@@ -459,7 +477,7 @@ const VENUES=[
   {id:'gf_garbi',p:22,t:'Garbí',d:"22% dels dies. Entra al migdia i va girant a l'esquerra.",brief:"Garbí que s'està establint, de 6 a 10 nusos. Al matí bufava de terra i ara ve del sud-oest. Mentre s'estableix va girant a l'esquerra, però no se sap quant. La costa queda a la dreta.",signs:"Matí amb vent fluix de terra. Cap a les dotze gira cap al sud-oest i va pujant.",how:"De terra al matí, d'uns 300°, i del sud-oest a partir de les dotze o la una, d'uns 245°, de 6 a 10 nusos. Entre les onze i la una gira uns 35° a l'esquerra. Bufa gairebé paral·lel a la costa, que queda a la dreta.",shore:{side:1,name:'Costa'},wind:{k:'pers',osc:{A:[3,5],P:[80,130]},rz:.5,spd:[6,9],trend:[5,12],trendSign:-1,build:2}},
   {id:'gf_llevant',p:14,t:'Llevant',d:'14% dels dies. Tapat, a ratxes i amb mar de fons.',brief:"Llevant, de 7 a 13 nusos, a ratxes i amb onada: cada virada costa més. Durant el dia va girant a poc a poc a la dreta. La costa queda a l'esquerra.",signs:"Cel tapat i mar de fons. Ja bufa del nord-est al matí.",how:"Vent de mapa, amb el cel tapat. Del nord-est al matí, d'uns 40°, i va girant a la dreta fins a l'est a la tarda, d'uns 90°. De 6 a 15 nusos amb ratxes de 22. Sol durar més d'un dia.",shore:{side:-1,name:'Costa'},wind:{k:'pers',osc:{A:[4,6],P:[150,300]},rz:.7,spd:[7,11],trend:[3,8],trendSign:1,gusts:{n:7,a:[3,5],dd:8},chop:1.5}},
   {id:'gf_any',any:['gf_fluix','gf_terral','gf_garbi','gf_llevant'],t:'Un dia de novembre',d:'No saps quin dia toca. Mira els senyals abans de sortir.',brief:''}]},
- {id:'palma',name:'Palma',sub:'Badia de Palma',
+ {id:'palma',when:{d:[2026,12,4],e:[2026,12,8],txt:'4-8 de desembre'},name:'Palma',sub:'Badia de Palma',
   // Trofeo Ciutat de Palma (4-8 December). Days and shares from hourly wind in the bay, 1-10 December 2014-2025, 10-15 h (reanalysis, 120 days):
   // under 5 kn 37%, W-NW 28% (10 of 33 days with hours over 18 kn), N 16%, NE 13%, SW 6%. A finer model with three years (AROME 2023-2025) gives 53% W-NW and 13% light.
   guide:"Vent a la badia de Palma de l'1 al 10 de desembre, de les 10 a les 15 h, anys 2014 a 2025 (model meteorològic). Un model més fi, amb només tres anys, dona molt més mestral, la meitat dels dies, i menys calma. Un de cada vuit dies té hores de més de 18 nusos. L'embat fort de l'estiu no és el vent del desembre.",
@@ -712,6 +730,7 @@ function render(realDt){if(G.phase==='debrief')return;const V=setupCanvas(cv,cx,
    const pts=[...G.tail,[me.x,me.y,G.t]];const k=Math.max(1,Math.min(3,(V.z||1)*0.55));const tm=performance.now()/1000;if(G.skin==='lava')drawTrail(cx,V,pts.slice(-14),'smoke',k,tm);drawTrail(cx,V,pts,G.trail,k,tm)}
   if(G.ghost)drawGhost(cx,V);
   drawBoat(cx,V,G.me,css('--me'),G.me.name);
+  if(G.paused){cx.fillStyle='rgba(8,20,28,.45)';cx.fillRect(0,0,V.W,V.H);cx.font='700 30px Chakra Petch, sans-serif';cx.fillStyle='#fff';cx.textAlign='center';cx.fillText('PAUSA',V.W/2,V.H/2);cx.font='14px Barlow, sans-serif';cx.fillText('Toca ▶ per continuar',V.W/2,V.H/2+24);cx.textAlign='left'}
   if(G.phase==='pre'){cx.font='700 24px Chakra Petch, sans-serif';cx.fillStyle='rgba(255,255,255,.92)';cx.textAlign='center';cx.fillText('Tria on surts',V.W/2,40);cx.textAlign='left'}
   updateHud()}
 function effAids(){return ui.aids&&!G.L.comp?{streaks:true,hint:true,lay:true,shadow:true}:G.L.aids}
@@ -788,7 +807,8 @@ const vb=$('vira');vb.addEventListener('touchstart',press,{passive:false});vb.ad
 document.addEventListener('keydown',e=>{if($('game').hidden)return;if(e.code==='Space'||e.code==='Enter'){if(G.phase==='race'){e.preventDefault();if(!e.repeat)doTack()}}if(G&&G.phase==='race'&&!e.repeat){if(e.code==='ArrowUp')setOff(1);if(e.code==='ArrowDown')setOff(-1);if(e.code==='ArrowLeft')setGate(0);if(e.code==='ArrowRight')setGate(1)}if(e.key==='p'||e.key==='P')togglePause()});
 function togglePause(){if(!G||G.phase!=='race')return;G.paused=!G.paused;$('pause').textContent=G.paused?'▶':'II'}
 $('pause').onclick=togglePause;let quitT=0;$('quit').onclick=()=>{if(G&&G.L.comp&&G.phase==='race'){if(performance.now()-quitT>3000){quitT=performance.now();warn('Toca ✕ un altre cop per abandonar: comptarà com a retirat');return}
-    G.phase='menu';simRest();const order=[...G.boats].filter(b=>!b.me).sort((a,b)=>pkey(a)-pkey(b));order.push(G.me);compRaceDone(order);showComp();return}backToPlay()};
+    G.phase='menu';simRest();const order=[...G.boats].filter(b=>!b.me).sort((a,b)=>pkey(a)-pkey(b));order.push(G.me);compRaceDone(order);showComp();return}
+  if(G&&G.phase==='race'&&G.t>20&&performance.now()-quitT>3000){quitT=performance.now();warn('Toca ✕ un altre cop per deixar la regata');return}backToPlay()};
 // after you retire, the others keep racing to the finish so their result is real
 function simRest(){const me=G.me;me.done=true;me.x=1e5;me.y=-1e5;let ld=-99;
   while(G.t<G.maxT&&G.boats.some(b=>!b.done&&!b.me)){const t=G.t;computeDirty(t);rightOfWay(t);if(t-ld>=1){ld=t;for(const b of G.boats)if(b.ai)decide(b,t)}for(const b of G.boats)stepBoat(b,t,DT);G.t+=DT}
@@ -1061,7 +1081,11 @@ const ITEMS=[
  {id:'cup',cat:'celeb',name:'Copa de campió',t:'l',set:'Or',special:'Un trofeu de la Competició',ok:p=>p.troph>=1},
  {id:'aurora',cat:'celeb',name:'Aurora boreal',t:'u',special:'Passa el Campionat d\'Espanya',ok:p=>p.tmax>=1}];
 const itemOf=(cat,id)=>ITEMS.find(i=>i.cat===cat&&i.id===id);
-const priceOf=it=>it.free||it.special?0:TIER[it.t].price;
+// set of the week: the same for everybody, changes on Monday, no countdown
+const OFFSETS=[...new Set(ITEMS.filter(i=>i.set&&!i.special&&!i.free).map(i=>i.set))];
+const offerSet=()=>OFFSETS[Math.floor((Date.now()/864e5+3)/7)%OFFSETS.length];
+const onOffer=it=>!it.free&&!it.special&&it.set===offerSet();
+const priceOf=it=>it.free||it.special?0:onOffer(it)?Math.round(TIER[it.t].price*.75/5)*5:TIER[it.t].price;
 const ikey=it=>it.cat+':'+it.id;
 function owned(){let o=pget('own',null);
   if(!o){const p=prog();o=ITEMS.filter(i=>i.old&&i.old(p)).map(ikey);pset('own',o)}
@@ -1221,17 +1245,23 @@ function fireworks(n,cols){const c=document.createElement('canvas');c.className=
   for(let b=0;b<n;b++)setTimeout(()=>{const x=W*(.2+Math.random()*.6),y=H*(.15+Math.random()*.35);for(let i=0;i<50;i++){const a=Math.random()*6.283,v=1.5+Math.random()*3.5;ps.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:1,c:cols[i%cols.length]})}beep([[90+Math.random()*40,.2]],'triangle')},b*450);
   (function f(){g.clearRect(0,0,W,H);for(const p of ps){p.x+=p.vx;p.y+=p.vy;p.vy+=.05;p.vx*=.985;p.l-=.012;if(p.l>0){g.globalAlpha=p.l;g.fillStyle=p.c;g.beginPath();g.arc(p.x,p.y,2.2,0,7);g.fill()}}if(performance.now()-t0<n*450+2200)requestAnimationFrame(f);else c.remove()})()}
 // ---------- garage = shop
-let shopCat='boat',buyPending=null;
+let shopCat='boat',buyPending=null,shopView='mine',shopMsg='';
 function showGarage(){go('garage')}
 function showGarageR(){owned();
-  $('gCoins').textContent=coins();$('gTabs').innerHTML=CATS.map(c=>`<button class="chip" data-c="${c.id}" aria-pressed="${c.id===shopCat}">${c.name}</button>`).join('')+`<button class="chip" data-c="troph" aria-pressed="${shopCat==='troph'}">Trofeus</button>`;
-  $('gTabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{shopCat=b.dataset.c;buyPending=null;showGarageR()});
+  const shop=shopView==='shop';if(shop&&shopCat==='troph')shopCat='boat';
+  $('gView').querySelectorAll('button').forEach(b=>{b.setAttribute('aria-pressed',b.dataset.v===shopView);b.onclick=()=>{shopView=b.dataset.v;buyPending=null;shopMsg='';showGarageR()}});
+  const os=offerSet(),left=ITEMS.filter(i=>onOffer(i)&&!has(i));
+  $('gOffer').innerHTML=shop?`<div class="offer"><span class="small">Conjunt de la setmana · 25% menys</span><b>${os}</b><span class="small">${left.length?left.map(i=>i.name).join(' · '):'Ja el tens sencer.'}</span></div>`:'';
+  $('gMsg').textContent=shopMsg||(shop?'Només canvia com es veu: tots van igual de ràpid.':'');
+  $('gCoins').textContent=coins();$('gTabs').innerHTML=CATS.map(c=>`<button class="chip" data-c="${c.id}" aria-pressed="${c.id===shopCat}">${c.name}</button>`).join('')+(shop?'':`<button class="chip" data-c="troph" aria-pressed="${shopCat==='troph'}">Trofeus</button>`);
+  $('gTabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{shopCat=b.dataset.c;buyPending=null;shopMsg='';showGarageR()});
   if(shopCat==='troph'){const tr=pget('trophies',[]);cancelAnimationFrame(shopRAF);$('skins').innerHTML=tr.length?tr.slice().reverse().map((t,i)=>`<div class="skin" style="--tc:${['#cd7f32','#c0c0c0','#ffd23f','#7ff0ff'][t.stage]}"><span class="tier">Temporada ${t.season}</span><canvas width="220" height="220" data-st="${t.stage}" data-p="${t.pos}"></canvas><b>${STAGES[t.stage].name}</b><span class="small">${t.pos}a de ${t.n}</span></div>`).join(''):'<p class="small">Encara no tens trofeus. Classifica\'t en un campionat de la Competició.</p>';
     $('skins').querySelectorAll('canvas').forEach(c=>drawTrophy(c.getContext('2d'),+c.dataset.st,+c.dataset.p));return}
-  const cur=equipped(shopCat);const list=ITEMS.filter(i=>i.cat===shopCat).sort((a,b)=>(a.free?-1:0)-(b.free?-1:0)||TIERS.findIndex(t=>t.id===a.t)-TIERS.findIndex(t=>t.id===b.t)||(a.special?1:0)-(b.special?1:0));
+  const cur=equipped(shopCat);const list=ITEMS.filter(i=>i.cat===shopCat&&(shop?!has(i)&&!i.special:has(i)||i.special)).sort((a,b)=>(shop?(onOffer(b)?1:0)-(onOffer(a)?1:0):(has(b)?1:0)-(has(a)?1:0))||TIERS.findIndex(t=>t.id===a.t)-TIERS.findIndex(t=>t.id===b.t));
   $('skins').innerHTML=list.map(it=>{const own=has(it),tr=it.free?null:TIER[it.t];const pr=priceOf(it);const k=ikey(it);
-    const st=own?(cur===it.id?'<span class="eq">Equipat</span>':'<span class="small">Toca per equipar</span>'):it.special?`<span class="small">🔒 ${it.special}</span>`:(buyPending===k?(coins()>=pr?`<span class="buy go">Toca per comprar</span>`:`<span class="small">Et falten ${pr-coins()} monedes</span>`):`<span class="buy">🪙 ${pr}</span>`);
+    const st=own?(cur===it.id?'<span class="eq">Equipat</span>':'<span class="small">Toca per equipar</span>'):it.special?`<span class="small">🔒 ${it.special}</span>`:(buyPending===k?(coins()>=pr?`<span class="buy go">Toca per comprar</span>`:`<span class="small">Et falten ${pr-coins()} monedes</span>`):`<span class="buy">${onOffer(it)?`<span class="was">${TIER[it.t].price}</span>`:''}🪙 ${pr}</span>`);
     return`<div class="skin ${own?'':'lock'} ${cur===it.id&&own?'sel':''}" style="--tc:${tr?tr.col:'#28495b'}" data-k="${k}" role="button" tabindex="0">${tr?`<span class="tier" style="color:${tr.col}">${tr.name}${it.special?' · premi':''}</span>`:'<span class="tier">Gratis</span>'}<canvas width="220" height="220"></canvas><b>${it.name}</b>${it.set?`<span class="set">Conjunt ${it.set}</span>`:''}${st}${it.cat==='celeb'?'<button class="chip play" type="button">▶ Mira-la</button>':''}</div>`}).join('');
+  if(!list.length)$('skins').innerHTML=`<p class="small">${shop?'Ja ho tens tot, d\'aquesta categoria.':'Encara no en tens cap.'}</p>`;
   const cards=[...$('skins').querySelectorAll('.skin')];
   cards.forEach(el=>{const it=list.find(i=>ikey(i)===el.dataset.k);el.onclick=e=>{if(e.target.classList.contains('play')){playCeleb(it.id);return}shopTap(it)}});
   cancelAnimationFrame(shopRAF);(function anim(){if($('garage').hidden)return;const tm=performance.now()/1000;cards.forEach(el=>{const it=list.find(i=>ikey(i)===el.dataset.k);previewItem(el.querySelector('canvas'),it,tm)});shopRAF=requestAnimationFrame(anim)})()}
@@ -1249,7 +1279,7 @@ function shopTap(it){const k=ikey(it);const C=CATS.find(c=>c.id===it.cat);
   if(it.special)return;
   if(buyPending!==k){buyPending=k;showGarageR();return}
   const pr=priceOf(it);if(coins()<pr){showGarageR();return}
-  pset('coins',coins()-pr);pset('own',[...owned(),k]);pset(C.key,it.id);buyPending=null;beep([[784,.1],[1047,.25]]);syncCloud();showGarageR()}
+  pset('coins',coins()-pr);pset('own',[...owned(),k]);pset(C.key,it.id);buyPending=null;shopMsg=`${it.name}: comprat i equipat. El trobaràs a «Les meves».`;beep([[784,.1],[1047,.25]]);syncCloud();showGarageR()}
 $('gBack').onclick=()=>{cancelAnimationFrame(shopRAF);go('home')};
 // ---------- competition: seasons of championships with qualification
 const EURN=['ESP','ITA','FRA','POL','GBR','NED','GER','DEN','SWE','TUR','GRE','CRO','POR','NOR','HUN','AUT'];
@@ -1384,15 +1414,20 @@ function renderHome(){const p=prog(),rk=rankOf(p.xp);const tr=pget('trophies',[]
   const nCh=CH.ok?CH.list.filter(x=>x.player_id!==P.id&&!(x.tries||[]).some(t=>t.player_id===P.id)).length:0;
   const tiles=[
     {go:'comp',ic:'🏆',t:'Competició',d:`Temporada ${c.season} · ${S.short} · ${c.champ.res.length?'regata '+(c.champ.res.length+1)+' de '+S.races:'per començar'}`,cls:'t-comp'},
-    {go:'seus',ic:'📍',t:'Seus',d:'Garda, Saint-Raphaël, Palma i Barcelona',cls:'t-seus'},
+    {go:'seus',ic:'📍',t:'Seus',d:`${VENUES.length} camps de regata, cadascun amb el seu vent`,cls:'t-seus'},
     {go:'train',ic:'🎯',t:'Entrenament',d:`Nivells i repte del dia${st.n?' · 🔥 '+st.n:''}`,cls:'t-train'},
     {go:'reptes',ic:'👻',t:'Reptes',d:CHAL_ON?(nCh?`${nCh} per jugar`:'Entre germans, amb el mateix vent'):'Aviat',cls:'t-rep'},
-    {go:'garage',ic:'🛠️',t:'Garatge',d:`Botiga i trofeus · 🪙 ${coins()}`,cls:'t-gar'}];
+    {go:'garage',ic:'🎨',t:'Skins',d:`Les teves i la botiga · 🪙 ${coins()}`,cls:'t-gar'}];
+  {const now=new Date(),day0=new Date(now.getFullYear(),now.getMonth(),now.getDate()),dt=a=>new Date(a[0],a[1]-1,a[2]);const nx=VENUES.filter(v=>v.when&&dt(v.when.e)>=day0).sort((a,b)=>dt(a.when.d)-dt(b.when.d))[0];
+   const dd=nx?Math.round((dt(nx.when.d)-day0)/864e5):0;const done=st.d===today();
+   $('quick').innerHTML=(nx?`<button id="qNext"><span class="ql">Propera regata</span><span class="qt">${nx.name.split(' ')[0]}</span><span class="qd">${dd<=0?'Ara, '+nx.when.txt:nx.when.approx?nx.when.txt:dd===1?'Demà':'D\'aquí a '+dd+' dies'} · practica-hi</span></button>`:'')+
+     `<button id="qDaily"><span class="ql">Repte del dia</span><span class="qt">${done?'Fet ✓':'Per fer'}</span><span class="qd">${st.n?'🔥 '+st.n+(st.n===1?' dia':' dies')+(done?'':' · no la perdis'):'El mateix vent per a tothom'}</span></button>`;
+   if(nx)$('qNext').onclick=()=>go('seu',nx.id);$('qDaily').onclick=()=>newGame(5,today(),true)}
   $('tiles').innerHTML=tiles.map(x=>`<button class="tile ${x.cls}" data-go="${x.go}"><span class="ic">${x.ic}</span><span class="tt">${x.t}</span><span class="td">${x.d}</span></button>`).join('');
   if(CHAL_ON&&CH.ok==null)loadChallenges().then(()=>{if(curScreen==='home')renderHome()})}
 // --- training
 function lvlCard(L,attr){const t=tierOf(L.id);const st=starsOf(lkey(L.id,t));const lg=LEAGUES[t];const b=pget('best:'+L.id,null);
-  return`<button class="lvl" ${attr}><span class="n">${L.venue?'':L.n.toUpperCase()+' · '}<b style="color:${lg.col}">${lg.name.toUpperCase()}</b></span><span class="t">${L.t}</span><span class="d">${L.d}</span><span class="stars" aria-label="${st.filter(Boolean).length} de 3 estrelles">${[...st].sort((x,y)=>(y?1:0)-(x?1:0)).map(x=>`<span class="st ${x?'':'off'}">★</span>`).join('')}</span><span class="best">${b?'Millor: '+b.pos+'a de '+b.of+' · '+fmt(b.t):'&nbsp;'}</span></button>`}
+  return`<button class="lvl" ${attr}><span class="n">${L.venue?'':L.n.toUpperCase()+' · '}<b style="color:${lg.col}">${lg.name.toUpperCase()}</b></span><span class="t">${L.t}</span><span class="d">${L.d}</span><span class="stars" aria-label="${st.filter(Boolean).length} de 3 estrelles">${[...st].sort((x,y)=>(y?1:0)-(x?1:0)).map(x=>`<span class="st ${x?'':'off'}">★</span>`).join('')}</span>${b?`<span class="best">Millor: ${b.pos}a de ${b.of} · ${fmt(b.t)}</span>`:''}</button>`}
 function renderTrain(){const st=pget('streak',{n:0,d:0});const db=pget('best:daily'+today(),null);const done=st.d===today();
   $('daily').innerHTML=`<span><b>Repte del dia</b><br><span class="small">El mateix vent per a tothom avui. ${db?'El teu millor: '+db.pos+'a, '+fmt(db.t)+'.':'Encara no l\'has fet.'}</span></span><span class="stars">${st.n?'🔥 '+st.n+(st.n===1?' dia':' dies')+(done?'':' · no la perdis'):'Comença una ratxa'}</span>`;
   $('daily').onclick=()=>newGame(5,today(),true);
@@ -1412,7 +1447,7 @@ function renderSeu(){const v=VENUES.find(x=>x.id===curSeu)||VENUES[0];$('seuTitl
   const gd=v.days.filter(d=>d.signs);$('seuGuide').innerHTML=gd.length?`<div class="vguide"><h3>Com reconèixer el dia</h3>${gd.map(d=>`<div class="vg"><b>${d.t}${d.p?' · '+d.p+'%':''}</b><p><span>Què veus.</span> ${d.signs}</p><p><span>Com funciona.</span> ${d.how}</p></div>`).join('')}${v.guide?`<p class="small">${v.guide}</p>`:''}</div>`:''}
 // --- challenges
 function renderReptes(){if(!CHAL_ON){$('chal').innerHTML='<p class="small">Els reptes entre germans s\'activaran aviat: navegareu el mateix vent i veureu el vaixell de l\'altre com un fantasma.</p>';return}
-  if(!(CLOUD_ON&&FAM&&P.cloud)){$('chal').innerHTML='<p class="small">Per fer reptes cal un codi de família: a Perfil, toca «Canvia de regatista» i escriu-lo.</p>';return}
+  if(!(CLOUD_ON&&FAM&&P.cloud)){$('chal').innerHTML='<p class="small">Per fer reptes cal un codi de família. S\'escriu a «Canvia de regatista».</p><div class="row"><button class="btn sec" id="chalWho">Posa el codi de família</button></div>';$('chalWho').onclick=showWho;return}
   renderChallenges();loadChallenges(true).then(()=>{if(curScreen==='reptes')renderChallenges()})}
 // --- profile
 function renderPerfil(){const p=prog(),rk=rankOf(p.xp);
@@ -1427,6 +1462,6 @@ window.__rolada={get G(){return G},go,VLEVELS,newGame,simStep,startRace,doTack,f
 })();
 </script>
 
-<script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=092fc47d').catch(()=>{}))}</script>
+<script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=9766f5bc').catch(()=>{}))}</script>
 </body>
 </html>

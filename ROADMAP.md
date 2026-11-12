@@ -94,7 +94,7 @@ Recorregut: sortida → cenyida → **través** → **popa** → **porta de sota
 - Els premis guanyats ja no es perden (abans l'Optimist daurat marxava si es trencava la ratxa).
 - Per ajustar amb els nens: preus i quantes estrelles o victòries demana cada premi.
 
-## v4.9 · Rolades com a l'aigua · Publicat (ara)
+## v4.9 · Rolades com a l'aigua · Publicat
 - A les seus (menys Barcelona) les rolades ja no són un vaivé regular: canvien de mida i de ritme, i arriben abans a dalt del camp i per un costat.
 - Vents de terra: rolades grans i lentes, amb girs curts a les ratxes. Tèrmics: rolades petites i ràpides; a Saint-Raphaël, a més, una de lenta que sembla persistent i torna.
 - Els temps estan escalats: una cenyida del joc dura poc més de la meitat d'una de real, i hi passen el mateix nombre de rolades.
@@ -103,10 +103,12 @@ Recorregut: sortida → cenyida → **través** → **popa** → **porta de sota
 - Per confirmar amb els nens: quant dura una primera cenyida real, i si les rolades de cada seu s'assemblen al que han vist.
 - Els reptes pendents fets a les seus abans d'aquesta versió ja no tenen el mateix vent.
 
-## v4.10 · Skins i Botiga (pendent)
-- «Garatge» passa a dir-se «Skins»: el que tens i el que portes equipat.
-- «Botiga» a part per comprar, amb oferta de la setmana (un conjunt rebaixat, sense compte enrere) i packs de conjunt.
-- Sense ruletes ni caixes sorpresa.
+## v4.10 · Interfície més clara, Skins i Botiga · Publicat (ara)
+- Inici: propera regata (amb els dies que falten) i repte del dia a un toc.
+- «Garatge» ara és «Skins», amb dues vistes: «Les meves» i «Botiga». Conjunt de la setmana amb un 25% menys, sense compte enrere.
+- Resum: botons sempre visibles a baix. Deixar una regata demana confirmar. La pausa es veu.
+- Targetes de les seus més llegibles, categories en una sola fila, formulari d'entrada que no talla el text.
+- Pendent: packs de conjunt i missions.
 
 ## v5 · Sortida real
 - Compte enrere de 3 minuts accelerat; el vaixell es pot moure abans del senyal (accelerar, frenar, virar).
