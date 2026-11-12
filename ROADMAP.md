@@ -85,7 +85,7 @@ Recorregut: sortida → cenyida → **través** → **popa** → **porta de sota
 - «Un dia de desembre» i «Com reconèixer el dia».
 - Barcelona es queda com estava: és on entrenen.
 
-## v4.8 · Més premis al garatge · Publicat (ara)
+## v4.8 · Més premis al garatge · Publicat
 - Vaixells nous: de gel, de neó, de tempesta, Moth amb foils, Holandès Errant, Kraken, nebulosa i catamarà F50.
 - Esteles noves: escuma, neu, tinta, neó i llamps.
 - Celebracions noves: nevada, dofins, disco, onada gegant, volcà i tempesta amb trons.
@@ -93,6 +93,20 @@ Recorregut: sortida → cenyida → **través** → **popa** → **porta de sota
 - Conjunts que fan joc (vaixell + estela + celebració), indicats a cada targeta.
 - Els premis guanyats ja no es perden (abans l'Optimist daurat marxava si es trencava la ratxa).
 - Per ajustar amb els nens: preus i quantes estrelles o victòries demana cada premi.
+
+## v4.9 · Rolades com a l'aigua · Publicat (ara)
+- A les seus (menys Barcelona) les rolades ja no són un vaivé regular: canvien de mida i de ritme, i arriben abans a dalt del camp i per un costat.
+- Vents de terra: rolades grans i lentes, amb girs curts a les ratxes. Tèrmics: rolades petites i ràpides; a Saint-Raphaël, a més, una de lenta que sembla persistent i torna.
+- Els temps estan escalats: una cenyida del joc dura poc més de la meitat d'una de real, i hi passen el mateix nombre de rolades.
+- Abans de sortir es veu el vent dels últims 8 minuts, com quan es prenen rumbs abans de la sortida.
+- Al resum, gràfic del vent de tota la regata: tendència, rolades i si anaves per la bordada que pujava.
+- Per confirmar amb els nens: quant dura una primera cenyida real, i si les rolades de cada seu s'assemblen al que han vist.
+- Els reptes pendents fets a les seus abans d'aquesta versió ja no tenen el mateix vent.
+
+## v4.10 · Skins i Botiga (pendent)
+- «Garatge» passa a dir-se «Skins»: el que tens i el que portes equipat.
+- «Botiga» a part per comprar, amb oferta de la setmana (un conjunt rebaixat, sense compte enrere) i packs de conjunt.
+- Sense ruletes ni caixes sorpresa.
 
 ## v5 · Sortida real
 - Compte enrere de 3 minuts accelerat; el vaixell es pot moure abans del senyal (accelerar, frenar, virar).
