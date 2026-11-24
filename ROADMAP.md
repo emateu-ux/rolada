@@ -127,6 +127,11 @@ Recorregut: sortida → cenyida → **través** → **popa** → **porta de sota
 ## v4.12.1 · Garraf fora de la llista · Publicat
 - La regata ja ha passat: la seu del Garraf no surt a Seus. Les estrelles que hi tenien es conserven.
 
+## v4.13 · Mala sortida · Publicat
+- Nou entrenament (idea del Loris): surts a la segona fila, tapat, i has de buscar vent lliure i remuntar. El lloc de la línia canvia a cada regata.
+- Estrelles: meitat de davant, primer terç, podi. Al resum: vaixells passats i segons fins a tenir vent lliure.
+- Per revisar amb els nens: si 12 m de desavantatge i el con d'aire brut de 40 m s'assemblen a la realitat.
+
 ## v5 · Sortida real
 - Compte enrere de 3 minuts accelerat; el vaixell es pot moure abans del senyal (accelerar, frenar, virar).
 - OCS si ets a sobre de la línia al senyal, amb retorn obligatori.
