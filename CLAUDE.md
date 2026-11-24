@@ -15,6 +15,7 @@ Joc web (sense framework ni dependències) per entrenar tàctica de cenyida en O
 - **Cap dada personal al codi** (noms, números de vela, correus). El repositori és públic.
 - La clau de Supabase del codi és la *publishable*, pensada per anar en una web pública. No hi posis mai la *secret* ni la *service_role*.
 - Les taules de Supabase no són accessibles directament: tot passa per les funcions `rolada_*` de `supabase/schema.sql`, que demanen el codi de família. Si canvies l'esquema, actualitza aquest fitxer i explica a l'usuari que l'ha d'executar a l'SQL Editor de Supabase.
+- Supabase gratuït s'atura després de 7 dies sense peticions (va passar el 24/11/2026). `.github/workflows/keepalive.yml` fa una crida de només lectura (`rolada_check` amb un codi que no existeix) dilluns i dijous. Si el projecte està aturat, la crida falla i GitHub avisa per correu; cal restaurar-lo des del tauler de Supabase. GitHub desactiva les tasques programades després de 60 dies sense commits.
 - El joc ha de funcionar sense connexió i sense codi de família (progrés només local). El rànquing és un extra.
 - Disseny pensat per al mòbil en vertical: mapa gran, botó VIRA gran a baix, a l'abast del polze.
 

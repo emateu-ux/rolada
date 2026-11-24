@@ -1,0 +1,26 @@
+# Keeps the free Supabase project awake: it is paused after 7 days without requests.
+# One read-only call (rolada_check with a code that does not exist) twice a week.
+# The key is the publishable one, the same that is already in the game's public code.
+# Note: GitHub switches scheduled workflows off after 60 days without commits in the repository;
+# it sends an email first, and "Enable workflow" in the Actions tab turns it back on.
+name: Manté Supabase despert
+on:
+  schedule:
+    - cron: '17 5 * * 1,4'   # Mondays and Thursdays, 05:17 UTC
+  workflow_dispatch:
+permissions: {}
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Crida de només lectura
+        run: |
+          code=$(curl -sS -o /tmp/out.txt -w '%{http_code}' --max-time 30 \
+            -X POST 'https://amnbtawcxxszgoxpbhkl.supabase.co/rest/v1/rpc/rolada_check' \
+            -H 'apikey: sb_publishable_4JoYQ5-2Vl9AKeDp3JT_ww__tFdErF3' \
+            -H 'Content-Type: application/json' \
+            -d '{"p_family":"keepalive-no-existeix"}')
+          echo "HTTP $code: $(head -c 200 /tmp/out.txt)"
+          # fail (and let GitHub send an email) if the project does not answer, e.g. because it is paused
+          test "$code" = "200"
