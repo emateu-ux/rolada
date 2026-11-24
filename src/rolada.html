@@ -455,7 +455,7 @@ const VENUES=[
   {id:'sr_mistral',p:9,t:'Mistral',d:'9% dels dies. Vent de terra, fort i a ratxes. Aigua plana.',brief:"Mistral: vent de terra, de ponent, de 12 a 19 nusos i a ratxes, amb aigua plana. A prop de la platja bufa menys i més irregular; enfora, molt més. Cada ratxa porta un gir curt: mira l'aigua i la brúixola.",signs:"Bufa fort de ponent des de primera hora i no afluixa. Aigua plana a prop de la platja i borreguets enfora.",how:"Vent de terra, d'uns 280°, igual tot el dia, amb ratxes de 30 nusos. Com més a prop de la platja, menys vent i més irregular. Un de cada cinc dies de mistral passa de 18 nusos de mitjana.",wind:{k:'osc',spd:[12,17],osc:{A:[3,5],P:[200,400]},osc2:{A:[1.5,3],P:[45,100]},rz:.7,gusts:{n:9,a:[4,6],dd:8},lee:4}},
   {id:'sr_weak',p:7,t:'Dia fluix',d:'7% dels dies. Poc vent, a clapes i canviant.',brief:"Dia tapat i fresc: el tèrmic no arrenca. Menys de 6 nusos, a clapes i amb rolades grans. Avui cap costat paga sempre: mira on hi ha vent.",signs:"Cel tapat i fresc. A migdia encara no ha entrat res clar i les banderes canvien de costat.",how:"Sense sol la terra no s'escalfa i el tèrmic no arrenca. Menys de 5 nusos i la direcció es mou 30° amunt i avall. Guanya qui va de clapa en clapa.",shore:{side:-1,name:'Costa'},wind:{k:'press',spd:[3.5,5.5],osc:{A:[10,16],P:[240,480]},osc2:{A:[3,5],P:[60,120]},rz:1,gusts:{n:14,a:[2,4],dd:12}}},
   {id:'sr_any',any:['sr_breeze','sr_est','sr_mistral','sr_weak'],t:"Un dia d'abril",d:'No saps quin dia toca. Mira els senyals abans de sortir.',brief:''}]},
- {id:'garraf',when:{d:[2026,11,21],e:[2026,11,22],txt:'21-22 de novembre'},name:'Garraf',sub:'Costa del Garraf',
+ {id:'garraf',past:1,when:{d:[2026,11,21],e:[2026,11,22],txt:'21-22 de novembre'},name:'Garraf',sub:'Costa del Garraf',
   // days and shares from hourly wind off Garraf, 14-28 November 2015-2025, 11-16 h (reanalysis, 165 days): under 5 kn 38%, W-N offshore 24%,
   // SW 19% (+S 4%), NE-E 14%. A finer model with only three years (AROME 2023-2025) gives 62% light days and 4% easterlies.
   guide:"Vent davant del Garraf del 14 al 28 de novembre, de les 11 a les 16 h, anys 2015 a 2025 (model meteorològic). Un model més fi, amb només tres anys, dona encara més dies fluixos, sis de cada deu, i menys llevant. Els 21 i 22 de novembre d'aquests onze anys van ser: 8 dies de terral, 8 de fluixos, 5 de garbí i 1 de llevant.",
@@ -1419,7 +1419,7 @@ function renderHome(){const p=prog(),rk=rankOf(p.xp);const tr=pget('trophies',[]
   const nCh=CH.ok?CH.list.filter(x=>x.player_id!==P.id&&!(x.tries||[]).some(t=>t.player_id===P.id)).length:0;
   const tiles=[
     {go:'comp',ic:'🏆',t:'Competició',d:`Temporada ${c.season} · ${S.short} · ${c.champ.res.length?'regata '+(c.champ.res.length+1)+' de '+S.races:'per començar'}`,cls:'t-comp'},
-    {go:'seus',ic:'📍',t:'Seus',d:`${VENUES.length} camps de regata, cadascun amb el seu vent`,cls:'t-seus'},
+    {go:'seus',ic:'📍',t:'Seus',d:`${VENUES.filter(v=>!v.past).length} camps de regata, cadascun amb el seu vent`,cls:'t-seus'},
     {go:'train',ic:'🎯',t:'Entrenament',d:`Nivells i repte del dia${st.n?' · 🔥 '+st.n:''}`,cls:'t-train'},
     {go:'reptes',ic:'👻',t:'Reptes',d:CHAL_ON?(nCh?`${nCh} per jugar`:'Entre germans'):'Aviat',cls:'t-rep t3'},
     {go:'garage',ic:'🎨',t:'Skins',d:'Les teves',cls:'t-gar t3'},
@@ -1444,7 +1444,7 @@ const VART={tv:{g:'linear-gradient(160deg,#8f3f66,#e39aa8)',svg:'<path d="M0 44 
   palma:{g:'linear-gradient(160deg,#b9862c,#e6b85c)',svg:'<circle cx="124" cy="18" r="10" fill="#fff3c4"/><path d="M0 44 Q40 30 80 40 T160 36 V60 H0Z" fill="#8a6420"/><rect y="48" width="160" height="12" fill="#2c84a6"/>'},
   bcn:{g:'linear-gradient(160deg,#1d3f7a,#3b74c4)',svg:'<path d="M0 46 V36 H10 V28 H18 V38 H28 V22 H36 V40 H48 V30 H58 V42 H72 V18 H76 V12 H80 V18 H84 V40 H98 V30 H110 V44 H126 V34 H136 V44 H160 V60 H0Z" fill="#14294d"/><rect y="48" width="160" height="12" fill="#2c84a6"/>'}};
 function venueStars(v){return v.days.reduce((a,d)=>{const t=tierOf(d.id);return a+3*t+starsOf(lkey(d.id,t)).reduce((x,y)=>x+y,0)},0)}
-function renderSeus(){$('vcards').innerHTML=VENUES.map(v=>`<button class="vcard" data-v="${v.id}" style="background:${VART[v.id].g}"><svg viewBox="0 0 160 60" preserveAspectRatio="none" aria-hidden="true">${VART[v.id].svg}</svg><span class="vt">${v.name}</span><span class="vs">${v.sub}</span><span class="vd">${v.days.map(d=>d.t).join(' · ')}</span><span class="vst">★ ${venueStars(v)}</span></button>`).join('');
+function renderSeus(){$('vcards').innerHTML=VENUES.filter(v=>!v.past).map(v=>`<button class="vcard" data-v="${v.id}" style="background:${VART[v.id].g}"><svg viewBox="0 0 160 60" preserveAspectRatio="none" aria-hidden="true">${VART[v.id].svg}</svg><span class="vt">${v.name}</span><span class="vs">${v.sub}</span><span class="vd">${v.days.map(d=>d.t).join(' · ')}</span><span class="vst">★ ${venueStars(v)}</span></button>`).join('');
   $('vcards').querySelectorAll('.vcard').forEach(el=>el.onclick=()=>go('seu',el.dataset.v))}
 function renderSeu(){const v=VENUES.find(x=>x.id===curSeu)||VENUES[0];$('seuTitle').textContent=v.name;
   $('seuBanner').innerHTML=`<div class="vbanner" style="background:${VART[v.id].g}"><svg viewBox="0 0 160 60" preserveAspectRatio="none" aria-hidden="true">${VART[v.id].svg}</svg><span class="vs">${v.sub}</span></div>`;

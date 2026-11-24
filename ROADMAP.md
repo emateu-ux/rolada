@@ -124,6 +124,9 @@ Recorregut: sortida → cenyida → **través** → **popa** → **porta de sota
 - Nord i Pelèr de Garda: rolades més petites.
 - Per fer: mesurar les rolades amb fitxers de MetaSail de cada seu, i que la Mia i el Loris repassin dia per dia.
 
+## v4.12.1 · Garraf fora de la llista · Publicat
+- La regata ja ha passat: la seu del Garraf no surt a Seus. Les estrelles que hi tenien es conserven.
+
 ## v5 · Sortida real
 - Compte enrere de 3 minuts accelerat; el vaixell es pot moure abans del senyal (accelerar, frenar, virar).
 - OCS si ets a sobre de la línia al senyal, amb retorn obligatori.
